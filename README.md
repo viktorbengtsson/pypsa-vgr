@@ -16,7 +16,7 @@ This repo contains a pypsa model for expanded renewable energy production in VGR
 
 ## Data used in scripts
 
-- Swedish minicipals (GeoJSON)
+- Swedish municipals (GeoJSON)
 https://data.opendatasoft.com/explore/dataset/georef-sweden-kommun%40public/map/?disjunctive.lan_code&disjunctive.lan_name&disjunctive.kom_code&disjunctive.kom_name&sort=year&location=8,56.03216,14.2218&basemap=jawg.streets
 
 
