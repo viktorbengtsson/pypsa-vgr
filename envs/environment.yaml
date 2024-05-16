@@ -1,0 +1,25 @@
+name: pypsa-vgr
+channels:
+- conda-forge
+dependencies:
+- python>=3.8
+- pip
+- atlite>=0.2.9
+- pypsa>=0.28
+
+  # Dependencies of the workflow itself
+- seaborn
+- numpy
+- pandas>=2.1
+- geopandas>=0.11.0
+
+  # Solvers
+- coin-or-cbc
+- glpk
+
+  # Keep in conda environment when calling ipython
+- ipython
+
+  # GIS dependencies:
+- cartopy
+
