@@ -40,3 +40,23 @@ https://collections.sentinel-hub.com/corine-land-cover/readme.html
 
 
 
+
+## Installation
+PyPSA-VGR relies on a set of other Python packages to function.
+We recommend using the package manager [mamba](https://mamba.readthedocs.io/en/latest/) to install them and manage your environments.
+For instructions for your operating system follow the `mamba` [installation guide](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html).
+You can also use ``conda`` equivalently.
+
+The package requirements are curated in the [envs/environment.yaml](https://github.com/PyPSA/pypsa-vgr/blob/prototype/envs/environment.yaml) file.
+The environment can be installed and activated using
+
+```bash
+mamba env create -f envs/environment.yaml
+mamba activate pypsa-vgr
+```
+
+The equivalent commands for `conda` would be
+```bash
+conda env create -f envs/environment.yaml
+conda activate pypsa-vgr
+```
