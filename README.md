@@ -60,3 +60,10 @@ The equivalent commands for `conda` would be
 conda env create -f envs/environment.yaml
 conda activate pypsa-vgr
 ```
+
+
+## Dev environment setup
+To avoid Jupyter output to be included in commits, run following command:
+```bash
+git config filter.strip-notebook-output.clean jupyter "nbconvert --ClearOutputPreprocessor.enabled=True --to=notebook --stdin --stdout --log-level=ERROR"
+```
