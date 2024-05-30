@@ -25,3 +25,11 @@ dependencies:
   # GIS dependencies:
 - cartopy
 
+  # Streamlit dashboard
+- streamlit
+- leafmap
+- xarray
+- rioxarray
+- netcdf4
+- localtileserver
+- streamlit_folium
