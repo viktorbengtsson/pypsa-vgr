@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
+import pypsa
 import matplotlib.pyplot as plt
 import netCDF4 as nc
 
-def render_network(st_obj, filepattern):
-    networkfile = filepattern.format("network", "nc")
-    st_obj.write(f"Get info from file: {networkfile}")
-    with nc.Dataset(networkfile, mode='r') as ds:
+def render_network(st_obj, config):
+    DATA_PATH=config["scenario"]["data-path"]
+
+    with nc.Dataset(f"../../{DATA_PATH}/network.nc", mode='r') as ds:
         st_obj.write("NetCDF file details:")
         st_obj.write(ds)
 
@@ -28,7 +29,7 @@ def render_network(st_obj, filepattern):
         plt.ylabel(variable)
         st_obj.pyplot(plt)
 
-def render_demand(st_obj):
+def render_demand(st_obj, config):
     # DEMAND
     #    demandfile = f"{ROOT}/data/result/demand-{selected_lan_code}-{selected_kom_code}-{START}-{END}.csv"
     #    indexfile = f"{ROOT}/data/result/index-{selected_lan_code}-{selected_kom_code}-{START}-{END}.csv"

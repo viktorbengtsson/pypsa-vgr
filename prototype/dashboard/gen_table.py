@@ -19,7 +19,7 @@ def size_text(index):
     else:
         return ""
 
-def render_generators_table(st_obj):
+def render_generators_table(st_obj, config):
     data1 = pd.DataFrame({
         '': ['Vindkraft (land)', 'Vindkraft (hav)', 'Solkraft', 'Vätgaskraft', 'Vätgaslagring', 'Vätgas generering', 'Batterilagring'],
         'Kapacitet': [f"{i} MW" for i in np.random.randint(1, 101, size=7)],

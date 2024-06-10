@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import time
 import streamlit as st
 import matplotlib.pyplot as plt
 import folium
@@ -17,21 +18,18 @@ def point_in_polygon(point, poly):
 
 def reset_geo(**kwargs):
     if "clear_kom_only" in kwargs and kwargs["clear_kom_only"]:
-        st.session_state.kom = None
         st.query_params.kom = None
     else:
-        st.session_state.lan = None
-        st.session_state.kom = None
         st.query_params.lan = None
         st.query_params.kom = None
 
 ########## \ Functions / ##########
 
-def render_map(ROOT, selected_lan_code, selected_kom_code):
+def render_map(selected_lan_code, selected_kom_code):
     ########## / Collection of data \ ##########
 
     # Select region, then municipal (start with Sweden)
-    sweden = gpd.read_file(f"{ROOT}/data/geo/georef-sweden-kommun@public.geojson") #Source Lantmäteriverket, data maintained by opendatasoft.com
+    sweden = gpd.read_file(f"../../data/geo/georef-sweden-kommun@public.geojson") #Source Lantmäteriverket, data maintained by opendatasoft.com
 
     selection = sweden
     if selected_lan_code is not None:
@@ -122,8 +120,8 @@ def render_map(ROOT, selected_lan_code, selected_kom_code):
         side_col1.button(f":x: {selected_lan_name}", on_click=reset_geo, kwargs={ "clear_kom_only": False }, use_container_width=True)
 
 
+    # This is the command that causes multiple renders
     map_output = st_folium(m, width="100%", height=height)
-    #st.sidebar.write("ToDo: Too many roundtrips per click on map")
     #st.sidebar.write("ToDo: Use maps without the ocean in clickable areas")
 
 
@@ -170,9 +168,10 @@ def render_map(ROOT, selected_lan_code, selected_kom_code):
             for polygon in item[0]:
                 if point_in_polygon((clicked_point['lng'], clicked_point['lat']), polygon):
                     if selected_lan_code is not None:
-                        st.session_state.kom = code
+                        st.query_params.kom = code
                     else:
-                        st.session_state.lan = code
+                        st.query_params.lan = code
 
+                    time.sleep(0.1) # Bug: https://github.com/streamlit/streamlit/issues/5511
                     st.rerun()
                     break

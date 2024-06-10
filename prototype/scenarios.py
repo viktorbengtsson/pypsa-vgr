@@ -33,8 +33,8 @@ def load_config_scenarios(scenarios, category=None):
                 keys.extend(more_keys)
     return [combinations, keys]
 
-def load_config(config_name, action):
-    with open(f"./configs/{config_name}.json", "r") as f:
+def load_config(root, config_name, action = None):
+    with open(f"{root}/configs/{config_name}.json", "r") as f:
         config = json.load(f)
 
     [combinations, keys] = load_config_scenarios(config.pop("scenarios", None))
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     action = str(sys.argv[1])
     config_name = str(sys.argv[2])
     selected_unique_key = None if len(sys.argv) < 4 else str(sys.argv[3])
-    [config, scenarios, keys] = load_config(config_name, action)
+    [config, scenarios, keys] = load_config(".", config_name, action)
 
     if len(scenarios) > 1000:
         raise Exception(f"Exceeded maximum number for scenarios (1000): {len(scenarios)}")

@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 
-def render_capacity_chart(st_col1, st_col2):
+def render_capacity_chart(st_col1, st_col2, config):
 
     data1 = pd.DataFrame({
         'Timestamp': np.arange(np.datetime64('2023-01-01'), np.datetime64('2024-01-01'), dtype='datetime64[W]'),

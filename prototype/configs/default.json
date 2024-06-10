@@ -4,10 +4,10 @@
     "offwind_turbine": "Vestas_V90_3MW",
     "scenarios": {
         "weather": [
-            2011, 2023
+            2023
         ],
         "costs": [
-            2020,2025,2030,2035,2040,2045,2050           
+            2030
         ],
         "demand": [
             2025
@@ -16,12 +16,12 @@
             0.03
         ],
         "load-target": [
-            10
+            10, 20
         ],
         "network": {
-            "nuclear": ["on", "off" ],
-            "h2": ["on", "off"],
-            "biogas": ["none", "small", "medium", "large"],
+            "nuclear": [true, false],
+            "h2": [true, false],
+            "biogas": ["Ingen", "Liten", "Mellan", "Stor"],
             "onwind-limit": [],
             "offwind-limit": []
         },

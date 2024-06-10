@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 
-def render_energy_chart(st_obj):
+def render_energy_chart(st_obj, config):
 
     data1 = pd.DataFrame({
         'Category': ['Vindkraft (land)', 'Vindkraft (hav)', 'Solkraft'],

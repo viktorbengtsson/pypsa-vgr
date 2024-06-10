@@ -33,3 +33,6 @@ dependencies:
 - netcdf4
 - localtileserver
 - streamlit_folium
+
+# Dev
+- jupyterlab
