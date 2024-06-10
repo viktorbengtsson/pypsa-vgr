@@ -1,0 +1,21 @@
+{
+    "eur_to_sek": 11.68,
+    "onwind_turbine": "Vestas_V90_3MW",
+    "offwind_turbine": "Vestas_V90_3MW",
+    "scenario": {
+        "weather": 2023,
+        "costs": 2030,
+        "demand": 2025,
+        "demand-target": 0.03,
+        "load-target": 10,
+        "network-nuclear": false,
+        "network-h2": false,
+        "network-biogas": "Mellan",
+        "geography": "14",
+        "data-path": "data/result/weather=2023,costs=2030,demand=2025,demand-target=0.03,load-target=10,network-nuclear=False,network-h2=False,network-biogas=Mellan,network-onwind-limit=None,network-offwind-limit=None,geography=14",
+        "geography_lan_code": "14",
+        "geography_kom_code": null,
+        "weather_start": "2023-01",
+        "weather_end": "2023-12"
+    }
+}

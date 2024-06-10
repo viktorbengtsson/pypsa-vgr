@@ -1,0 +1,32 @@
+{
+    "eur_to_sek": 11.68,
+    "onwind_turbine": "Vestas_V90_3MW",
+    "offwind_turbine": "Vestas_V90_3MW",
+    "scenarios": {
+        "weather": [
+            2023
+        ],
+        "costs": [
+            2030
+        ],
+        "demand": [
+            2025
+        ],
+        "demand-target": [
+            0.03
+        ],
+        "load-target": [
+            10, 20
+        ],
+        "network": {
+            "nuclear": [true, false],
+            "h2": [true, false],
+            "biogas": ["Ingen", "Liten", "Mellan", "Stor"],
+            "onwind-limit": [],
+            "offwind-limit": []
+        },
+        "geography": [
+            "14", "14:1480"
+        ]
+    }
+}
