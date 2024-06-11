@@ -1,0 +1,34 @@
+technology,parameter,year,value,unit,comment
+solar,capital_cost,2030,4_300_000,SEK/MW,technology_data_for_el_and_dh.xslx 22 Utility-scale PV 
+solar,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
+solar,lifetime,2030,40,years, 
+solar,space,2030,12.26,1000 m^2/MWe, 
+onwind,capital_cost,2030,13_000_000,SEK/MW, 
+onwind,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
+onwind,lifetime,2030,30,years, 
+offwind,capital_cost,2030,20_300_000,SEK/MW, 
+offwind,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
+offwind,lifetime,2030,30,years, 
+gas_turbine,capital_cost,2030,10_000_000,SEK/MW, 
+gas_turbine,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
+gas_turbine,lifetime,2030,25,years, 
+h2_electrolysis,capital_cost,2030,6_200_000,SEK/MW,data_sheets_for_renewable_fuels.xslx 86 AEC 100 MW
+h2_electrolysis,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
+h2_electrolysis,lifetime,2030,25,years, 
+h2_electrolysis,efficiency,2030,0.6217,,The efficiency of hydrogen electrolysis estimated to 62.17%
+h2_storage,capital_cost,2030,100_000,SEK/MWh,Guesstimate between tank and cavern storage
+h2_storage,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
+h2_storage,lifetime,2030,50,years,Guesstimate between tank and cavern storage
+battery_storage,capital_cost,2030,2_100_000,SEK/MWh, 
+battery_storage,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
+battery_storage,lifetime,2030,25,years, 
+battery_inverter,capital_cost,2030,2_400_000,SEK/MW, 
+battery_inverter,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
+battery_inverter,lifetime,2030,10,years, 
+battery_inverter,efficiency,2030,0.96,,The efficiency of battery inverters estimated to 96%
+biogas,cost,2030,1_000,SEK/MWh,The cost of biogas estimated to 900 SEK/MWh
+biogas,efficiency,2030,0.58,,The efficiency of biogas estimated to 58%
+h2,efficiency,2030,0.6,,The efficiency of hydrogen estimated to 60%
+backstop,capital_cost,2030,0,SEK/MW, 
+backstop,marginal_cost,2030,100_000,SEK/MWh,Intended to represent the ceiling price in the system
+backstop,lifetime,2030,40,years, 
