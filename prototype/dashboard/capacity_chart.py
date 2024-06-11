@@ -2,8 +2,15 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
+from data_loading import essential_data_from_variables
 
 def render_capacity_chart(st_col1, st_col2, config):
+    [
+        ASSUMPTIONS,
+        DEMAND,
+        NETWORK,
+        STATISTICS
+    ] = essential_data_from_variables("../", config)
 
     data1 = pd.DataFrame({
         'Timestamp': np.arange(np.datetime64('2023-01-01'), np.datetime64('2024-01-01'), dtype='datetime64[W]'),
@@ -16,6 +23,8 @@ def render_capacity_chart(st_col1, st_col2, config):
         'Batterilagring': np.random.randint(0, 15, size=52) * -1
     })
     data1.set_index('Timestamp', inplace=True)
+
+    st_col2.write(STATISTICS)
 
     col1, col2 = st_col2.columns([6, 1])
 

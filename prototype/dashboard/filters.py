@@ -10,7 +10,7 @@ def render_filters(st_obj, CONFIG_NAME, VARIABLES, var_dict):
 
     nuclear = st_obj.toggle("Kärnkraft på/av", value=VARIABLES["network_nuclear"])
     h2 = st_obj.toggle("Vätgas på/av", value=VARIABLES["network_h2"])
-    biogas = st_obj.selectbox("Biogas", SCENARIOS["network"]["biogas"], index=SCENARIOS["network"]["biogas"].index(VARIABLES["network_biogas"]))
+    biogas = st_obj.selectbox("Biogas", SCENARIOS["network"]["biogas"], index=SCENARIOS["network"]["biogas"].index(VARIABLES["network_biogas"]) if VARIABLES["network_biogas"] in SCENARIOS["network"]["biogas"] else None)
 
     load_target = st_obj.select_slider("Elproduktionsmål", options=SCENARIOS["load-target"], value=VARIABLES["load_target"])
 

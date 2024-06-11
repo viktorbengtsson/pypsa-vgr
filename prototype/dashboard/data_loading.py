@@ -84,25 +84,25 @@ def read_dashboard_available_variables(CONFIG_NAME):
     
     return CONFIG_DEFINITION["scenarios"]
 
-def deep_data_from_variables():
-    CONFIG = _config_from_variables()
+def deep_data_from_variables(ROOT, CONFIG):
  
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]
 
-    CUTOUT = atlite.Cutout(f"../{DATA_PATH}/cutout.nc")
-    SELECTION = gpd.read_file(f"../{DATA_PATH}/selection.shp")
-    EEZ = gpd.read_file(f"../{DATA_PATH}/eez.shp")
+    CUTOUT = atlite.Cutout(f"{ROOT}../{DATA_PATH}/cutout.nc")
+    SELECTION = gpd.read_file(f"{ROOT}../{DATA_PATH}/selection.shp")
+    EEZ = gpd.read_file(f"{ROOT}../{DATA_PATH}/eez.shp")
 
-    AVAIL_SOLAR = xr.open_dataarray(f"../{DATA_PATH}/avail_solar.nc")
-    AVAIL_ONWIND = xr.open_dataarray(f"../{DATA_PATH}/avail_onwind.nc")
-    AVAIL_OFFWIND = xr.open_dataarray(f"../{DATA_PATH}/avail_offwind.nc")
+    AVAIL_SOLAR = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_solar.nc")
+    AVAIL_ONWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_onwind.nc")
+    AVAIL_OFFWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_offwind.nc")
 
-    AVAIL_CAPACITY_SOLAR = xr.open_dataarray(f"../{DATA_PATH}/avail_capacity_solar.nc")
-    AVAIL_CAPACITY_ONWIND = xr.open_dataarray(f"../{DATA_PATH}/avail_capacity_onwind.nc")
-    AVAIL_CAPACITY_OFFWIND = xr.open_dataarray(f"../{DATA_PATH}/avail_capacity_offwind.nc")
+    AVAIL_CAPACITY_SOLAR = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_capacity_solar.nc")
+    AVAIL_CAPACITY_ONWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_capacity_onwind.nc")
+    AVAIL_CAPACITY_OFFWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_capacity_offwind.nc")
 
-    return essential_data_from_variables().extend([
+    data = essential_data_from_variables(ROOT, CONFIG)
+    data.extend([
         CUTOUT,
         SELECTION,
         EEZ,
@@ -113,22 +113,23 @@ def deep_data_from_variables():
         AVAIL_CAPACITY_ONWIND,
         AVAIL_CAPACITY_OFFWIND,
     ])
+    
+    return data
 
 
-def essential_data_from_variables():
-    CONFIG = _config_from_variables()
+def essential_data_from_variables(ROOT, CONFIG):
 
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]
 
-    ASSUMPTIONS = pd.read_pickle(f"../{DATA_PATH}/costs.pkl")
+    ASSUMPTIONS = pd.read_pickle(f"{ROOT}../{DATA_PATH}/costs.pkl")
 
-    DEMAND = pd.read_csv(f"../{DATA_PATH}/demand.csv")
+    DEMAND = pd.read_csv(f"{ROOT}../{DATA_PATH}/demand.csv")
 
     NETWORK = pypsa.Network()
-    NETWORK.import_from_netcdf(f"../{DATA_PATH}/network.nc")
+    NETWORK.import_from_netcdf(f"{ROOT}../{DATA_PATH}/network.nc")
 
-    STATISTICS = pd.read_pickle(f"../{DATA_PATH}/statistics.pkl")
+    STATISTICS = pd.read_pickle(f"{ROOT}../{DATA_PATH}/statistics.pkl")
 
     return [
         ASSUMPTIONS,
@@ -143,11 +144,11 @@ def ensure_default_variables(var_dict):
     if "load_target" not in var_dict:
         var_dict.load_target = 10
     if "network_nuclear" not in var_dict:
-        var_dict.network_nuclear = "off"
+        var_dict.network_nuclear = False
     if "network_h2" not in var_dict:
-        var_dict.network_h2 = "off"
+        var_dict.network_h2 = False
     if "network_biogas" not in var_dict:
-        var_dict.network_biogas = "small"
+        var_dict.network_biogas = "Liten"
     if "network_onwind_limit" not in var_dict:
         var_dict.network_onwind_limit = None
     if "network_offwind_limit" not in var_dict:

@@ -88,7 +88,7 @@ if __name__ == "__main__":
     selected_unique_key = None if len(sys.argv) < 4 else str(sys.argv[3])
     [config, scenarios, keys] = load_config(".", config_name, action)
 
-    if len(scenarios) > 1000:
+    if len(scenarios) > 10000:
         raise Exception(f"Exceeded maximum number for scenarios (1000): {len(scenarios)}")
 
     start_time = time.time()
