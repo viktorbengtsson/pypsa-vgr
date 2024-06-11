@@ -7,6 +7,7 @@ from lab import render_network, render_demand
 from map_selector import render_map
 from data_loading import _config_from_variables, ensure_default_variables
 from tab_settings import render_settings
+from advanced import render_advanced
 from filters import render_filters
 
 
@@ -74,8 +75,10 @@ if selected_lan_code:
         render_capacity_chart(col1, col1, CONFIG)
         render_energy_chart(col2, CONFIG)
 
-        render_network(col2, CONFIG)
-        render_demand(col1, CONFIG)
+        render_network(tab3, CONFIG)
+        render_demand(tab3, CONFIG)
+
+        render_advanced(tab2, CONFIG)
 else:
         col1.write("Välj ett län i kartan")
 

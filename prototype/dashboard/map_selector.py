@@ -18,10 +18,9 @@ def point_in_polygon(point, poly):
 
 def reset_geo(**kwargs):
     if "clear_kom_only" in kwargs and kwargs["clear_kom_only"]:
-        st.query_params.kom = None
+        st.query_params.geography = kwargs["lan_code"]
     else:
-        st.query_params.lan = None
-        st.query_params.kom = None
+        st.query_params.geography = None
 
 ########## \ Functions / ##########
 
@@ -114,10 +113,10 @@ def render_map(selected_lan_code, selected_kom_code):
         height = 800
     side_col1, side_col2 = st.sidebar.columns([1, 1])
     if selected_kom_code is not None:
-        side_col1.button(f":x: {selected_lan_name}", on_click=reset_geo, kwargs={ "clear_kom_only": False }, use_container_width=True)
-        side_col2.button(f":x: {selected_kom_name}", on_click=reset_geo, kwargs={ "clear_kom_only": True }, use_container_width=True)
+        side_col1.button(f":x: {selected_lan_name}", on_click=reset_geo, kwargs={ "clear_kom_only": False, "lan_code": selected_lan_code }, use_container_width=True)
+        side_col2.button(f":x: {selected_kom_name}", on_click=reset_geo, kwargs={ "clear_kom_only": True, "lan_code": selected_lan_code }, use_container_width=True)
     elif selected_lan_code is not None:
-        side_col1.button(f":x: {selected_lan_name}", on_click=reset_geo, kwargs={ "clear_kom_only": False }, use_container_width=True)
+        side_col1.button(f":x: {selected_lan_name}", on_click=reset_geo, kwargs={ "clear_kom_only": False, "lan_code": selected_lan_code }, use_container_width=True)
 
 
     # This is the command that causes multiple renders
@@ -168,9 +167,9 @@ def render_map(selected_lan_code, selected_kom_code):
             for polygon in item[0]:
                 if point_in_polygon((clicked_point['lng'], clicked_point['lat']), polygon):
                     if selected_lan_code is not None:
-                        st.query_params.kom = code
+                        st.query_params.geography = f"{selected_lan_code}:{code}"
                     else:
-                        st.query_params.lan = code
+                        st.query_params.geography = code
 
                     time.sleep(0.1) # Bug: https://github.com/streamlit/streamlit/issues/5511
                     st.rerun()
