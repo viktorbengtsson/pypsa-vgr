@@ -2,6 +2,7 @@ import sys
 import json
 import time
 import os.path
+import shutil
 import itertools
 from pathlib import Path
 from store_data import store_data
@@ -85,11 +86,25 @@ def create_scenario(config, scenario, keys):
 if __name__ == "__main__":
     action = str(sys.argv[1])
     config_name = str(sys.argv[2])
-    selected_unique_key = None if len(sys.argv) < 4 else str(sys.argv[3])
+    clear = (str(sys.argv[3]) == "True")
+    selected_unique_key = None if len(sys.argv) < 5 else str(sys.argv[4])
     [config, scenarios, keys] = load_config(".", config_name, action)
 
     if len(scenarios) > 10000:
         raise Exception(f"Exceeded maximum number for scenarios (1000): {len(scenarios)}")
+
+    if clear:
+        print("Clear result folder")
+        folder = "../data/result/"
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
 
     start_time = time.time()
     found = False
