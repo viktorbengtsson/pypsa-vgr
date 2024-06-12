@@ -55,7 +55,6 @@ def _get_scenario_key(CONSTANTS, VARIABLES):
     return f"weather={weather_data_year},\
 costs={costs_data_year},\
 demand={demand_data_year},\
-demand-target={demand_target},\
 load-target={load_target},\
 network-nuclear={network_nuclear},\
 network-h2={network_h2},\
