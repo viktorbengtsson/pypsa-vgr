@@ -1,5 +1,6 @@
 import geopandas as gpd
 import atlite
+import pathlib
 from atlite.gis import ExclusionContainer
 
 def create_and_store_availability(config):
@@ -9,6 +10,9 @@ def create_and_store_availability(config):
     WIND_TURBINE_OFFSHORE = config["offwind_turbine"]
     CUTOUT = atlite.Cutout(f"../{DATA_PATH}/cutout.nc")
     SELECTION = gpd.read_file(f"../{DATA_PATH}/selection.shp")
+
+    WIND_TURBINE = pathlib.Path(f"./lib/windturbine/{WIND_TURBINE}")
+    WIND_TURBINE_OFFSHORE = pathlib.Path(f"./lib/windturbine/{WIND_TURBINE_OFFSHORE}")
 
     
     # Exclude land use per solar/wind
@@ -53,7 +57,7 @@ def create_and_store_availability(config):
     wind_onshore_availability_matrix = wind_onshore_avail.stack(spatial=["y", "x"])
     mean_wind_onshore_capacity_factor = CUTOUT.wind(
         matrix=wind_onshore_availability_matrix,
-        turbine = f"{WIND_TURBINE}",
+        turbine = atlite.resource.get_windturbineconfig(WIND_TURBINE),
         index=SELECTION.index,
         per_unit =True,
     )
@@ -61,7 +65,7 @@ def create_and_store_availability(config):
     wind_offshore_availability_matrix = wind_offshore_avail.stack(spatial=["y", "x"])
     mean_wind_offshore_capacity_factor = CUTOUT.wind(
         matrix=wind_offshore_availability_matrix,
-        turbine = f"{WIND_TURBINE_OFFSHORE}",
+        turbine = atlite.resource.get_windturbineconfig(WIND_TURBINE_OFFSHORE),
         index=SELECTION.index,
         per_unit =True,
     )
@@ -73,4 +77,4 @@ def create_and_store_availability(config):
     mean_wind_onshore_capacity_factor.to_netcdf(f"../{DATA_PATH}/avail_capacity_onwind.nc")
     wind_offshore_avail.to_netcdf(f"../{DATA_PATH}/avail_offwind.nc")
     mean_wind_offshore_capacity_factor.to_netcdf(f"../{DATA_PATH}/avail_capacity_offwind.nc")
-    
+
