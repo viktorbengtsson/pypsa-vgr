@@ -5,20 +5,24 @@ def render_filters(st_obj, CONFIG_NAME, VARIABLES, var_dict):
 
     has_change = False
 
-    #st_obj.slider("Konstruktion start och slut år", 2020, 2050, (2023, 2026))
-    #st_obj.checkbox("Begränsa turbiner?")
+    if len(SCENARIOS["load-target"]) > 1:
+        load_target = st_obj.select_slider("Elproduktionsmål [TW]", options=SCENARIOS["load-target"], value=VARIABLES["load_target"])
+    else:
+        load_target = SCENARIOS["load-target"][0]
 
-    nuclear = st_obj.toggle("Kärnkraft på/av", value=VARIABLES["network_nuclear"])
-    h2 = st_obj.toggle("Vätgas på/av", value=VARIABLES["network_h2"])
-    biogas = st_obj.selectbox("Biogas", SCENARIOS["network"]["biogas"], index=SCENARIOS["network"]["biogas"].index(VARIABLES["network_biogas"]) if VARIABLES["network_biogas"] in SCENARIOS["network"]["biogas"] else None)
+    nuclear = st_obj.toggle("Kärnkraft på/av", value=(VARIABLES["network_nuclear"] == "True"))
+    h2 = st_obj.toggle("Vätgas på/av", value=(VARIABLES["network_h2"] == "True"))
+    offwind = st_obj.toggle("Havsvind på/av", value=True)
+    biogas = st_obj.selectbox("Biogas scenario", SCENARIOS["network"]["biogas"], index=SCENARIOS["network"]["biogas"].index(VARIABLES["network_biogas"]) if VARIABLES["network_biogas"] in SCENARIOS["network"]["biogas"] else None)
+    wind = st_obj.selectbox("Vindkrafts scenario", ["Statisk", "Försiktig", "Aggresiv"], index=0)
+    h2_industry = st_obj.selectbox("Vätgas till industri", ["Liten", "Medel", "Stor"], index=0)
 
-    load_target = st_obj.select_slider("Elproduktionsmål", options=SCENARIOS["load-target"], value=VARIABLES["load_target"])
-
-    if bool(VARIABLES["network_nuclear"]) != bool(nuclear):
+    if (VARIABLES["network_nuclear"] == "True") != nuclear:
         var_dict.network_nuclear = nuclear
         has_change = True
-    if bool(VARIABLES["network_h2"]) != bool(h2):
-        var_dict.network_h2 = h2
+
+    if (VARIABLES["network_h2"] == "True") != h2:
+        var_dict.network_h2 = str(h2)
         has_change = True
     if str(VARIABLES["network_biogas"]) != str(biogas):
         var_dict.network_biogas = biogas

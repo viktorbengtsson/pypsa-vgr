@@ -1,8 +1,7 @@
-import numpy as np
 import pandas as pd
-import streamlit as st
-import matplotlib.pyplot as plt
 from data_loading import essential_data_from_variables
+from visualizations import get_plot_config
+import altair as alt
 
 def render_capacity_chart(st_col1, st_col2, config):
     [
@@ -12,43 +11,93 @@ def render_capacity_chart(st_col1, st_col2, config):
         STATISTICS
     ] = essential_data_from_variables("../", config)
 
-    data1 = pd.DataFrame({
-        'Timestamp': np.arange(np.datetime64('2023-01-01'), np.datetime64('2024-01-01'), dtype='datetime64[W]'),
-        'Vindkraft (land)': np.random.randint(30, 50, size=52) * 1.4,
-        'Vindkraft (hav)': np.random.randint(40, 90, size=52) * 1.4,
-        'Solkraft': np.random.randint(0, 80, size=52) * 1.4,
-        'Vätgaskraft': np.random.randint(0, 10, size=52) * 1.4,
-        'Batteriproduktion': np.random.randint(0, 10, size=52) * 1.4,
-        'Vätgas generering': np.random.randint(0, 20, size=52) * -1,
-        'Batterilagring': np.random.randint(0, 15, size=52) * -1
-    })
-    data1.set_index('Timestamp', inplace=True)
+    GEN = NETWORK.generators_t.p.abs()
+    
+    #Exclude if we have no data
+    columns = [column for column in GEN.columns if GEN[column].sum() > 0]
+    [
+        window_size,
+        legend_labels,
+        main_series_labels,
+        main_series_keys,
+        series_colors,
+        labels,
+        colors
+    ] = get_plot_config(columns, True)
 
-    st_col2.write(STATISTICS)
+    #options = col1.multiselect(
+    #    'Category',
+    #    main_series_labels,
+    #    default=main_series_labels
+    #)
 
-    col1, col2 = st_col2.columns([6, 1])
+    #col2.selectbox("", ("Behov (MW)", "Kostnad (MSEK)"))
 
-    options = col1.multiselect(
-        'Energislag',
-        data1.columns.tolist(),
-        default=data1.columns.tolist()
+    #if options:
+    index_to_exclude = [] #[idx for idx, col in enumerate(columns) if not main_series_labels[main_series_keys.index(col)] in options]
+    GEN = GEN[[col for idx, col in enumerate(columns) if idx not in index_to_exclude]]
+
+    DEMAND_rolling = DEMAND.rolling(window=window_size, center=True).mean()
+    GEN_rolling = GEN.rolling(window=window_size, center=True).mean()
+    for col in DEMAND.columns:
+        DEMAND_rolling[col].iloc[0] = DEMAND[col].iloc[0::7].mean()
+        DEMAND_rolling[col].iloc[-1] = DEMAND[col].iloc[-1::-9].mean()
+    for col in GEN.columns:
+        GEN_rolling[col].iloc[0] = GEN[col].iloc[0::7].mean()
+        GEN_rolling[col].iloc[-1] = GEN[col].iloc[-1::-9].mean()
+    DEMAND_rolling = DEMAND_rolling.interpolate()
+    GEN_rolling = GEN_rolling.interpolate()
+
+    data = {
+        "Date": GEN.index,
+        "Demand_rolling": DEMAND_rolling["se3"],
+        "Demand": DEMAND["se3"]
+    }
+
+    for col in GEN_rolling.columns:
+        data[labels[col]] = GEN_rolling[col].values
+
+    data = pd.DataFrame(data)
+
+    # Melt the data for Altair
+    melted_data = data.melt(id_vars=['Date', 'Demand_rolling', 'Demand'], value_vars=main_series_labels, var_name='Category', value_name='Value')
+
+    #melted_data['Category'] = melted_data['Category'].map(labels)
+
+    # Create an Altair chart
+    base = alt.Chart(melted_data).encode(
+        x=alt.X('Date:T', title=''),
     )
 
-    col2.selectbox("", ("MW", "Kostnad"))
+    # Stacked area chart for two categories
+    area_chart = base.mark_area().encode(
+        y=alt.Y('sum(Value):Q', stack='zero'),
+        color=alt.Color('Category:N', scale=alt.Scale(domain=main_series_labels, range=list(colors.values())))
+        .legend(title="", orient='bottom-left', fillColor="#FFFFFF", strokeColor="#000000", cornerRadius=10)
+    )
 
-    if options:
-        plt.figure(figsize=(20, 8))
+    # Line chart for single line data
+    line_chart_rolling = base.mark_line(color='black').encode(
+        y=alt.Y('Demand_rolling:Q', title=''),
+    )
+    line_chart = base.mark_line(color='grey', strokeWidth=1, opacity=0.5).encode(
+        y=alt.Y('Demand:Q', title=''),
+    )
 
-        for column in options:
-            plt.plot(data1.index, data1[column], label=column, linewidth=1)
+    # Combine the charts
+    combined_chart = alt.layer(area_chart, line_chart, line_chart_rolling).properties(
+        width=800,
+        height=450,
+        title="Elproduktion/konsumption (MW)"
+    ).configure_title(
+        anchor='middle',
+        color='black'
+    )
 
-        plt.xlabel('Date')
-        plt.ylabel('Elproduktion/konsumption')
-        plt.title('Produktion')
-        plt.legend(loc='upper left')
-        plt.grid(True)
+    # Display the chart in Streamlit
+    st_col1.altair_chart(combined_chart, use_container_width=True)
 
-        st_col1.pyplot(plt)
-    else:
-        st_col1.write("Välj minst 1 energislag")
+#    else:
+#        st_col1.write("Välj minst ett energislag")
+
 

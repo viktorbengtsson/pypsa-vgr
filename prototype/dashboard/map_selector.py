@@ -129,7 +129,7 @@ def render_map(selected_lan_code, selected_kom_code):
         f"""
         <style>
             section[data-testid="stSidebar"] {{
-                width: 450px !important;
+                width: 600px !important;
             }}
             div[data-testid="stSidebarUserContent"] {{
                 padding-top: 3em;
@@ -142,7 +142,7 @@ def render_map(selected_lan_code, selected_kom_code):
                 position: fixed;
                 top: 2px;
                 left: 0;
-                width: 450px;
+                width: 600px;
                 height: {height-2}px;
                 z-index: 10;
             }}
