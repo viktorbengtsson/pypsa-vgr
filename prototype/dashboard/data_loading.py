@@ -43,11 +43,10 @@ def _get_scenario_key(CONSTANTS, VARIABLES):
     costs_data_year = CONSTANTS["costs"]
     demand_data_year = CONSTANTS["demand"]
 
-    demand_target = VARIABLES.get("demand_target") or 0.03
     load_target = VARIABLES.get("load_target") or 10
-    network_nuclear = VARIABLES.get("network_nuclear") or "off"
-    network_h2 = VARIABLES.get("network_h2") or "off"
-    network_biogas = VARIABLES.get("network_biogas") or "small"
+    network_nuclear = VARIABLES.get("network_nuclear") or False
+    network_h2 = VARIABLES.get("network_h2") or False
+    network_biogas = VARIABLES.get("network_biogas") or "Liten"
     network_onwind_limit = VARIABLES.get("network_onwind_limit")
     network_offwind_limit = VARIABLES.get("network_offwind_limit")
     geography = VARIABLES.get("geography") or "14"
@@ -123,7 +122,7 @@ def essential_data_from_variables(ROOT, CONFIG):
 
     ASSUMPTIONS = pd.read_pickle(f"{ROOT}../{DATA_PATH}/costs.pkl")
 
-    DEMAND = pd.read_csv(f"{ROOT}../{DATA_PATH}/demand.csv")
+    DEMAND = pd.read_csv(f"{ROOT}../{DATA_PATH}/demand.csv", index_col=0, parse_dates=[0])
 
     NETWORK = pypsa.Network()
     NETWORK.import_from_netcdf(f"{ROOT}../{DATA_PATH}/network.nc")
@@ -138,16 +137,14 @@ def essential_data_from_variables(ROOT, CONFIG):
     ]
 
 def ensure_default_variables(var_dict):
-    if "demand_target" not in var_dict:
-        var_dict.demand_target = 0.03
     if "load_target" not in var_dict:
         var_dict.load_target = 10
     if "network_nuclear" not in var_dict:
         var_dict.network_nuclear = False
     if "network_h2" not in var_dict:
-        var_dict.network_h2 = False
+        var_dict.network_h2 = True
     if "network_biogas" not in var_dict:
-        var_dict.network_biogas = "Liten"
+        var_dict.network_biogas = "Stor"
     if "network_onwind_limit" not in var_dict:
         var_dict.network_onwind_limit = None
     if "network_offwind_limit" not in var_dict:
@@ -157,7 +154,6 @@ def ensure_default_variables(var_dict):
 
     return {
         "geography": var_dict.get("geography"),
-        "demand_target": float(var_dict.get("demand_target")),
         "load_target": int(var_dict.get("load_target")),
         "network_nuclear": var_dict.get("network_nuclear"),
         "network_h2": var_dict.get("network_h2"),

@@ -25,18 +25,21 @@ def render_advanced(st_obj, config):
         AVAIL_CAPACITY_OFFWIND,
     ] = deep_data_from_variables("../", config)
 
-    #with st_obj:
-       #col1, col2, col3 = st.columns([1, 1, 1])
+    with st_obj:
+       col1, col2, col3 = st.columns([1, 1, 1])
 
-
-    fig = plt.figure(figsize=(18, 10))
-    gs = GridSpec(3, 3, figure=fig)
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax2 = fig.add_subplot(gs[0, 1])
-    ax3 = fig.add_subplot(gs[0, 2])
-    ax4 = fig.add_subplot(gs[1, 0])
-    ax5 = fig.add_subplot(gs[1, 1])
-    ax6 = fig.add_subplot(gs[1, 2])
+    fig1 = plt.figure()
+    fig2 = plt.figure()
+    fig3 = plt.figure()
+    gs1 = GridSpec(2, 1, figure=fig1)
+    gs2 = GridSpec(2, 1, figure=fig2)
+    gs3 = GridSpec(2, 1, figure=fig3)
+    ax1 = fig1.add_subplot(gs1[0, 0])
+    ax2 = fig2.add_subplot(gs2[0, 0])
+    ax3 = fig3.add_subplot(gs3[0, 0])
+    ax4 = fig1.add_subplot(gs1[1, 0])
+    ax5 = fig2.add_subplot(gs2[1, 0])
+    ax6 = fig3.add_subplot(gs3[1, 0])
 
     # Solar avail
     AVAIL_SOLAR.sel(dim_0=0).plot(cmap="Reds", ax=ax1)
@@ -61,4 +64,6 @@ def render_advanced(st_obj, config):
     AVAIL_CAPACITY_ONWIND.plot(color="Green", ax=ax5)
     AVAIL_CAPACITY_OFFWIND.plot(color="Blue", ax=ax6)
 
-    st.pyplot(fig)
+    col1.pyplot(fig1)
+    col2.pyplot(fig2)
+    col3.pyplot(fig3)

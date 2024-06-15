@@ -11,7 +11,7 @@ from advanced import render_advanced
 from filters import render_filters
 
 
-CONFIG_NAME = "default"
+CONFIG_NAME = "full"
 
 ########## / Streamlit init \ ##########
 
@@ -21,14 +21,32 @@ st.markdown(
     """
     <style>
         div[class^='block-container'] {
-            padding-top: 0rem;
+            padding-top: 1rem;
+            padding-left: 6rem;
+            padding-bottom: 2rem;
         }
         .stTabs {
             z-index: 1000000;
         }
+        header[data-testid="stHeader"] {
+            background: transparent;
+        }
         .stException {
             margin-top: 2em;
         }
+        div[data-baseweb="select"] {
+            font-size: 0.85rem;
+        }
+        div[data-baseweb="select"] > div > div {
+            padding: 0.5rem 0.35rem 0.25rem 0.35rem;
+        }
+        div[data-baseweb="popover"] li {
+            font-size: 0.85rem;
+        }
+        .stDeployButton {
+            display: none;
+        }
+        
     </style>
     """,
     unsafe_allow_html=True,
@@ -37,12 +55,11 @@ st.markdown(
 ########## \ Streamlit init / ##########
 
 ########## / State \ ##########
-if 'count' not in st.session_state:
-   st.session_state.count = 0
 
 VARIABLES = ensure_default_variables(st.query_params)
 
-st.session_state.count += 1
+DEBUG = ("debug" in st.query_params and st.query_params.debug == "True")
+
 selected_lan_code = None if st.query_params.geography == "None" else st.query_params.geography.split(":")[0]
 selected_kom_code = None if (st.query_params.geography == "None" or len(st.query_params.geography.split(":")) != 2) else st.query_params.geography.split(":")[1]
 
@@ -51,11 +68,15 @@ selected_kom_code = None if (st.query_params.geography == "None" or len(st.query
 with st.sidebar:
     render_map(selected_lan_code, selected_kom_code)
 
-tab1, tab2, tab3, tab4 = st.tabs(["Översikt", "Avancerat", "Lab", "Inställningar"])
-with tab1:
-   col1, col2 = st.columns([2, 1])
+if DEBUG:
+    tab1, tab2, tab3, tab4 = st.tabs(["Översikt", "Avancerat", "Lab", "Inställningar"])
+    with tab1:
+        col2, col1 = st.columns([1, 4], gap="large")
+else:
+    col2, col1 = st.columns([1, 4], gap="large")
 
-render_settings(tab4, CONFIG_NAME)
+if DEBUG:
+    render_settings(tab4, CONFIG_NAME)
 
 ########## / Energy info from selection \ ##########
 
@@ -71,14 +92,22 @@ if selected_lan_code:
     if CONFIG is None:
         col1.write("Inget scenario har genererats för detta län med dina filter val")
     else:
-        render_generators_table(col1, CONFIG)
         render_capacity_chart(col1, col1, CONFIG)
-        render_energy_chart(col2, CONFIG)
 
-        render_network(tab3, CONFIG)
-        render_demand(tab3, CONFIG)
+        st.write("")
+        colA, colB = st.columns([2, 1])
+       
+        render_energy_chart(colB, CONFIG)
+        render_generators_table(colA, CONFIG)
 
-        render_advanced(tab2, CONFIG)
+        colFoot01, colFoot02, colFoot03, colFoot04, colFoot05, colFoot06 = st.columns([3, 3, 3, 3, 3, 2])
+        colFoot06.image("./qr.png", use_column_width=True)
+
+        if DEBUG:
+            render_network(tab3, CONFIG)
+            render_demand(tab3, CONFIG)
+
+            render_advanced(tab2, CONFIG)
 else:
         col1.write("Välj ett län i kartan")
 
