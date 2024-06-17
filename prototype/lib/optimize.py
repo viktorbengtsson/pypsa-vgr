@@ -15,6 +15,7 @@ def create_and_store_optimize(config):
     store_level = model.variables["Store-e"]
     
     
+    '''
     ## Solar link capacity
     solar_link_constraint = generator_capacity.loc['Solar park'] - link_capacity.loc['Solar link']
     model.add_constraints(solar_link_constraint == 0, name="Solar_park-solar_link-match")
@@ -30,10 +31,13 @@ def create_and_store_optimize(config):
     ## H2 input + H2 store >= H2 output
     #h2_flow_constraint = link_flow.loc["H2 electrolysis"] + store_level.loc['H2 storage'] - link_flow.loc["H2 pipeline"]
     #model.add_constraints(h2_flow_constraint >= 0, name="H2_flow_constraint")
-    
+    '''
+
     ## Battery charge/discharge ratio
     lhs = link_capacity.loc["Battery charge"] - NETWORK.links.at["Battery charge", "efficiency"] * link_capacity.loc["Battery discharge"]
     model.add_constraints(lhs == 0, name="Link-battery_fix_ratio")
+
+#    NETWORK.optimize.add_load_shedding(marginal_cost=200)
     
     NETWORK.optimize.solve_model(solver_name='highs')
 

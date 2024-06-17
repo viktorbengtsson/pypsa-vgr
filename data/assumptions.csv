@@ -1,34 +1,66 @@
 technology,parameter,year,value,unit,comment
-solar,capital_cost,2030,4_300_000,SEK/MW,technology_data_for_el_and_dh.xslx 22 Utility-scale PV 
-solar,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
-solar,lifetime,2030,40,years, 
-solar,space,2030,12.26,1000 m^2/MWe, 
-onwind,capital_cost,2030,13_000_000,SEK/MW, 
-onwind,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
-onwind,lifetime,2030,30,years, 
-offwind,capital_cost,2030,20_300_000,SEK/MW, 
-offwind,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
-offwind,lifetime,2030,30,years, 
-gas_turbine,capital_cost,2030,10_000_000,SEK/MW, 
-gas_turbine,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
-gas_turbine,lifetime,2030,25,years, 
-h2_electrolysis,capital_cost,2030,6_200_000,SEK/MW,data_sheets_for_renewable_fuels.xslx 86 AEC 100 MW
-h2_electrolysis,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
-h2_electrolysis,lifetime,2030,25,years, 
-h2_electrolysis,efficiency,2030,0.6217,,The efficiency of hydrogen electrolysis estimated to 62.17%
-h2_storage,capital_cost,2030,100_000,SEK/MWh,Guesstimate between tank and cavern storage
-h2_storage,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
-h2_storage,lifetime,2030,50,years,Guesstimate between tank and cavern storage
-battery_storage,capital_cost,2030,2_100_000,SEK/MWh, 
-battery_storage,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
-battery_storage,lifetime,2030,25,years, 
-battery_inverter,capital_cost,2030,2_400_000,SEK/MW, 
-battery_inverter,marginal_cost,2030,0,SEK/MWh,All marginal costs set to 0
-battery_inverter,lifetime,2030,10,years, 
-battery_inverter,efficiency,2030,0.96,,The efficiency of battery inverters estimated to 96%
-biogas,cost,2030,1_000,SEK/MWh,The cost of biogas estimated to 900 SEK/MWh
-biogas,efficiency,2030,0.58,,The efficiency of biogas estimated to 58%
-h2,efficiency,2030,0.6,,The efficiency of hydrogen estimated to 60%
-backstop,capital_cost,2030,0,SEK/MW, 
-backstop,marginal_cost,2030,100_000,SEK/MWh,Intended to represent the ceiling price in the system
-backstop,lifetime,2030,40,years, 
+solar,capital_cost,2030,4_300_000,SEK/MW,"technology_data_for_el_and_dh.xslx 22 Utility-scale PV"
+solar,FOM,2030,0.024757,factor,"technology_data_for_el_and_dh.xslx 22 Utility-scale PV"
+solar,VOM,2030,0,SEK/MWh,"technology_data_for_el_and_dh.xslx 22 Utility-scale PV"
+solar,lifetime,2030,40,years,"technology_data_for_el_and_dh.xslx 22 Utility-scale PV"
+solar,unit_size,2030,0.5,MWe/ha,"Viktor Walter"
+onwind,capital_cost,2030,12_916_000,SEK/MW,"technology_data_for_el_and_dh.xslx - 20 Onshore turbines"
+onwind,FOM,2030,0.014531672,factor,"technology_data_for_el_and_dh.xslx - 20 Onshore turbines"
+onwind,VOM,2030,22.30,SEK/MWh,"technology_data_for_el_and_dh.xslx - 20 Onshore turbines"
+onwind,lifetime,2030,30,years,"technology_data_for_el_and_dh.xslx - 20 Onshore turbines"
+onwind,unit_size,2030,5.5,MWe/turbine,""
+offwind,capital_cost,2030,20_276_000,SEK/MW,"technology_data_for_el_and_dh.xslx - 21 Offshore turbines"
+offwind,FOM,2030,0.021666667,%,"technology_data_for_el_and_dh.xslx - 21 Offshore turbines"
+offwind,VOM,2030,43.82,SEK/MWh,"technology_data_for_el_and_dh.xslx - 21 Offshore turbines"
+offwind,lifetime,2030,30,years,"technology_data_for_el_and_dh.xslx - 21 Offshore turbines"
+offwind,unit_size,2030,20,MWe/turbine,""
+simple_cycle_gas_turbine,capital_cost,2030,6_708_000,SEK/MW,"Danish Energy Agency technology_data_for_el_and_dh.xlsx - 04 Gas turb. simple cycle L"
+simple_cycle_gas_turbine,FOM,2030,0.017795,factor,"Danish Energy Agency technology_data_for_el_and_dh.xlsx - 04 Gas turb. simple cycle L"
+simple_cycle_gas_turbine,VOM,2030,65.69,SEK/MWh,"Danish Energy Agency technology_data_for_el_and_dh.xlsx - 04 Gas turb. simple cycle L"
+simple_cycle_gas_turbine,lifetime,2030,25,years,"Danish Energy Agency technology_data_for_el_and_dh.xlsx - 04 Gas turb. simple cycle L"
+simple_cycle_gas_turbine,efficiency,2030,0.41,factor,"Danish Energy Agency technology_data_for_el_and_dh.xlsx - 04 Gas turb. simple cycle L"
+simple_cycle_gas_turbine,unit_size,2030,82.5,MWe,"Danish Energy Agency technology_data_for_el_and_dh.xlsx - 04 Gas turb. simple cycle L, average of 40 and 125 MWe"
+combined_cycle_gas_turbine,capital_cost,2030,9_942_000,SEK/MW,"Danish Energy Agency technology_data_for_el_and_dh.xlsx 05 Gas turb. CC steam extract"
+combined_cycle_gas_turbine,FOM,2030,0.033493976,factor,"Danish Energy Agency technology_data_for_el_and_dh.xlsx 05 Gas turb. CC steam extract"
+combined_cycle_gas_turbine,VOM,2030,50.31,SEK/MWh,"Danish Energy Agency technology_data_for_el_and_dh.xlsx 05 Gas turb. CC steam extract"
+combined_cycle_gas_turbine,lifetime,2030,25,years,"Danish Energy Agency technology_data_for_el_and_dh.xlsx 05 Gas turb. CC steam extract"
+combined_cycle_gas_turbine,efficiency,2030,0.58,factor,"Danish Energy Agency technology_data_for_el_and_dh.xlsx 05 Gas turb. CC steam extract"
+combined_cycle_gas_turbine,unit_size,2030,300,MWe,"Danish Energy Agency technology_data_for_el_and_dh.xlsx 05 Gas turb. CC steam extract, average of 100 and 500 MWe"
+h2_electrolysis,capital_cost,2030,7_322_000,SEK/MW,"data_sheets_for_renewable_fuels.xslx - 86 PEMEC 100 MW"
+h2_electrolysis,FOM,2030,0.02,factor,"data_sheets_for_renewable_fuels.xslx - 86 PEMEC 100 MW"
+h2_electrolysis,VOM,2030,0,SEK/MWh,"data_sheets_for_renewable_fuels.xslx - 86 PEMEC 100 MW"
+h2_electrolysis,lifetime,2030,25,years,"data_sheets_for_renewable_fuels.xslx - 86 PEMEC 100 MW"
+h2_electrolysis,efficiency,2030,0.585,,"data_sheets_for_renewable_fuels.xslx - 86 PEMEC 100 MW"
+h2_electrolysis,unit_size,2030,100,MWe/plant,"data_sheets_for_renewable_fuels.xslx - 86 PEMEC 100 MW"
+h2_storage,capital_cost,2030,100_000,SEK/MWh,"Guesstimate between tank and cavern storage"
+h2_storage,FOM,2030,0.02,%,"Base assumption 2%"
+h2_storage,VOM,2030,0,SEK/MWh,""
+h2_storage,lifetime,2030,50,years,"Guesstimate between tank and cavern storage"
+battery_storage,capital_cost,2030,2_100_000,SEK/MWh,"Danish Energy Agency technology_datasheet_for_energy_storage.xlsx - 180 Lithium Ion Battery"
+battery_storage,FOM,2030,0,%,"Danish Energy Agency technology_datasheet_for_energy_storage.xlsx - 180 Lithium Ion Battery"
+battery_storage,VOM,2030,0,SEK/MWh,"Danish Energy Agency technology_datasheet_for_energy_storage.xlsx - 180 Lithium Ion Battery"
+battery_storage,lifetime,2030,25,years,"Danish Energy Agency technology_datasheet_for_energy_storage.xlsx - 180 Lithium Ion Battery"
+battery_inverter,capital_cost,2030,2_400_000,SEK/MW,"Danish Energy Agency technology_datasheet_for_energy_storage.xlsx - 180 Lithium Ion Battery"
+battery_inverter,FOM,2030,0,%,"Danish Energy Agency technology_datasheet_for_energy_storage.xlsx - 180 Lithium Ion Battery"
+battery_inverter,VOM,2030,0,SEK/MWh,"Danish Energy Agency technology_datasheet_for_energy_storage.xlsx - 180 Lithium Ion Battery"
+battery_inverter,lifetime,2030,10,years,"Danish Energy Agency technology_datasheet_for_energy_storage.xlsx - 180 Lithium Ion Battery"
+battery_inverter,efficiency,2030,0.959166305,factor,"sqrt(0.92) Danish Energy Agency technology_datasheet_for_energy_storage.xlsx - 180 Lithium Ion Battery"
+nuclear_conv,capital_cost,2030,53_613_000,SEK/MW,"https://iea.blob.core.windows.net/assets/deebef5d-0c34-4539-9d0c-10b13d840027/NetZeroby2050-ARoadmapfortheGlobalEnergySector_CORR.pdf"
+nuclear_conv,FOM,2030,0.0127,factor,"https://www.lazard.com/media/xemfey0k/lazards-lcoeplus-june-2024-_vf.pdf"
+nuclear_conv,VOM,2030,50.33,SEK/MWh,"https://www.lazard.com/media/xemfey0k/lazards-lcoeplus-june-2024-_vf.pdf"
+nuclear_conv,fuel,2030,93.62,SEK/MWh,"https://www.lazard.com/media/xemfey0k/lazards-lcoeplus-june-2024-_vf.pdf"
+nuclear_conv,lifetime,2030,60,years,"https://www.lazard.com/media/xemfey0k/lazards-lcoeplus-june-2024-_vf.pdf"
+nuclear_conv,p_nom,2030,1500,MW,"Taking the top range of numbers from Vattenfall https://www.vattenfall.se/fokus/trender-och-innovation/sma-karnkraftsreaktorer/"
+nuclear_smr,capital_cost,2030,53_613_000,SEK/MW,"Temporarily same as nuclear_conv - was 37_642_000 or 1 billion euros for a 300 MW reactor according to https://fermi.ee/en/bwrx-300/- There is a capital_cost competing claim from https://ieefa.org/sites/default/files/2024-05/SMRs%20Still%20Too%20Expensive%20Too%20Slow%20Too%20Risky_May%202024.pdf"
+nuclear_smr,FOM,2030,0.0127,factor,"https://www.lazard.com/media/xemfey0k/lazards-lcoeplus-june-2024-_vf.pdf (same as nuclear_conv)"
+nuclear_smr,VOM,2030,50.33,SEK/MWh,"https://www.lazard.com/media/xemfey0k/lazards-lcoeplus-june-2024-_vf.pdf (same as nuclear_conv)"
+nuclear_smr,fuel,2030,93.62,SEK/MWh,"https://www.lazard.com/media/xemfey0k/lazards-lcoeplus-june-2024-_vf.pdf (same as nuclear_conv)"
+nuclear_smr,lifetime,2030,60,years,"https://www.gevernova.com/nuclear/carbon-free-power/bwrx-300-small-modular-reactor"
+nuclear_smr,p_nom,2030,300,MW,"Taking the top range of numbers from Vattenfall https://www.vattenfall.se/fokus/trender-och-innovation/sma-karnkraftsreaktorer/ (GE Hitachi BWRX-300 shortlisted)"
+biogas,cost,2030,1_000,SEK/MWh,"The cost of biogas estimated to 1000 SEK/MWhth"
+biogas,efficiency,2030,0.58,,"The efficiency of biogas estimated to 58%"
+h2,efficiency,2030,0.6,,"The efficiency of hydrogen estimated to 60%"
+backstop,capital_cost,2030,0,SEK/MW,""
+backstop,marginal_cost,2030,10_000,SEK/MWh,"Intended to represent the ceiling price in the system"
+backstop,lifetime,2030,40,years,""
+general,discount_rate,2030,0.04,,"The discount rate used in the model is 4%"
