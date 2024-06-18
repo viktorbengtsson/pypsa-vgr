@@ -4,26 +4,30 @@ from gen_table import render_generators_table
 from capacity_chart import render_capacity_chart
 from energy_chart import render_energy_chart
 from lab import render_network, render_demand
-from map_selector import render_map
 from data_loading import _config_from_variables, ensure_default_variables
 from tab_settings import render_settings
 from advanced import render_advanced
 from filters import render_filters
 
-
 CONFIG_NAME = "full"
 
 ########## / Streamlit init \ ##########
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown(
     """
     <style>
+        [data-testid="collapsedControl"] {
+            display: none;
+        }
         div[class^='block-container'] {
             padding-top: 1rem;
             padding-left: 6rem;
             padding-bottom: 2rem;
+        }
+        .element-container-OFF {
+            transition: none !important;
         }
         .stTabs {
             z-index: 1000000;
@@ -46,7 +50,6 @@ st.markdown(
         .stDeployButton {
             display: none;
         }
-        
     </style>
     """,
     unsafe_allow_html=True,
@@ -56,17 +59,12 @@ st.markdown(
 
 ########## / State \ ##########
 
-VARIABLES = ensure_default_variables(st.query_params)
-
 DEBUG = ("debug" in st.query_params and st.query_params.debug == "True")
 
-selected_lan_code = None if st.query_params.geography == "None" else st.query_params.geography.split(":")[0]
-selected_kom_code = None if (st.query_params.geography == "None" or len(st.query_params.geography.split(":")) != 2) else st.query_params.geography.split(":")[1]
+selected_lan_code = None if not "geography" in st.query_params or st.query_params.geography == "None" else st.query_params.geography.split(":")[0]
+selected_kom_code = None if not "geography" in st.query_params or (st.query_params.geography == "None" or len(st.query_params.geography.split(":")) != 2) else st.query_params.geography.split(":")[1]
 
 ########## \ State / ##########
-
-with st.sidebar:
-    render_map(selected_lan_code, selected_kom_code)
 
 if DEBUG:
     tab1, tab2, tab3, tab4 = st.tabs(["Översikt", "Avancerat", "Lab", "Inställningar"])
@@ -83,11 +81,11 @@ if DEBUG:
 if selected_lan_code:
     selected_year = 2011
 
-    CONFIG = _config_from_variables(CONFIG_NAME, VARIABLES)
+    VARIABLES = ensure_default_variables(st.query_params)
+    VARIABLES = render_filters(col2, CONFIG_NAME, VARIABLES, st.query_params)
+    print(VARIABLES["load_target"])
 
-    if render_filters(col2, CONFIG_NAME, VARIABLES, st.query_params):
-        time.sleep(1) # Bug: https://github.com/streamlit/streamlit/issues/5511
-        st.rerun()
+    CONFIG = _config_from_variables(CONFIG_NAME, VARIABLES)
 
     if CONFIG is None:
         col1.write("Inget scenario har genererats för detta län med dina filter val")
@@ -108,8 +106,6 @@ if selected_lan_code:
             render_demand(tab3, CONFIG)
 
             render_advanced(tab2, CONFIG)
-else:
-        col1.write("Välj ett län i kartan")
 
 ########## \ Energy info from selection / ##########
 

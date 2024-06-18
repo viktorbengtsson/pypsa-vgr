@@ -1,22 +1,17 @@
 import pandas as pd
-from data_loading import essential_data_from_variables
+from data_loading import network_data_from_variables
 from visualizations import get_plot_config
 import seaborn as sns
 import altair as alt
 
 def render_energy_chart(st_obj, config):
 
-    [
-        ASSUMPTIONS,
-        DEMAND,
-        NETWORK,
-        STATISTICS
-    ] = essential_data_from_variables("../", config)
+    NETWORK = network_data_from_variables("../", config)
 
     GEN = NETWORK.generators_t.p.sum()
     STOR = NETWORK.stores.loc[["H2 storage", "Battery"]]['e_nom_opt']
 
-    gen_columns = [col for idx, col in enumerate(GEN.index) if GEN[idx].sum() > 0]
+    gen_columns = [col for idx, col in enumerate(GEN.index) if GEN.iloc[idx].sum() > 0]
     [
         gen_window_size,
         gen_legend_labels,
@@ -32,7 +27,7 @@ def render_energy_chart(st_obj, config):
     GEN.index = [col for col in gen_main_series_labels]
     gen_palette = sns.color_palette('pastel', len(GEN.values))
 
-    stor_columns = [col for idx, col in enumerate(STOR.index) if STOR[idx].sum() > 0]
+    stor_columns = [col for idx, col in enumerate(STOR.index) if STOR.iloc[idx].sum() > 0]
     [
         stor_window_size,
         stor_legend_labels,

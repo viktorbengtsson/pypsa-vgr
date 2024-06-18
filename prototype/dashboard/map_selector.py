@@ -5,10 +5,11 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import folium
 from shapely.geometry import Point
-from streamlit_folium import st_folium
+from streamlit_folium import st_folium, folium_static
 from streamlit_js_eval import streamlit_js_eval
 import geopandas as gpd
 from shapely.ops import unary_union
+from streamlit.components.v1 import html
 
 ########## / Functions etc \ ##########
 
@@ -24,11 +25,18 @@ def reset_geo(**kwargs):
 
 ########## \ Functions / ##########
 
-def render_map(selected_lan_code, selected_kom_code):
+def render_map(selected_lan_code, selected_kom_code, interactive):
     ########## / Collection of data \ ##########
 
     # Select region, then municipal (start with Sweden)
     sweden = gpd.read_file(f"../../data/geo/georef-sweden-kommun@public.geojson") #Source Lantmäteriverket, data maintained by opendatasoft.com
+    selection = sweden
+
+    width = 1920 if selected_lan_code is None else 600
+    height = 1080
+    #height = streamlit_js_eval(js_expressions='screen.height', key = 'SCR')
+    #if height is None:
+    #    height = 1080
 
     selection = sweden
     if selected_lan_code is not None:
@@ -92,7 +100,9 @@ def render_map(selected_lan_code, selected_kom_code):
 
     ########## \ Collection of data / ##########
 
-    m = folium.Map(location=[(min_y+max_y)/2,(min_x+max_x)/2], zoom_start=5, tiles="cartodb positron")
+    zoom = 5 if selected_lan_code is None or selected_lan_code == "None" else 7
+    padding = 0.975 if selected_lan_code is None or selected_lan_code == "None" else 0.985
+    m = folium.Map(location=[((min_y+max_y)/2) * padding,(min_x+max_x)/2], zoom_start=zoom, tiles="cartodb positron", bounds=[[min_y,min_x],[max_y,max_x]])
     m.fit_bounds([[min_y,min_x],[max_y,max_x]])
 
     color = "#000000"
@@ -106,71 +116,64 @@ def render_map(selected_lan_code, selected_kom_code):
         for polygon in item[0]:
             folium.Polygon(locations=[(y, x) for x, y in polygon.exterior.coords], color=color, weight=0.25, fillColor=fillColor, tooltip=f"<div style=\"font-size: 1.5rem;\">{item[1]}</div>").add_to(m)
 
-    #selected_year = st.sidebar.number_input("Year", min_value=2010, max_value=2050, value=2011)
-
-    height = streamlit_js_eval(js_expressions='screen.height', key = 'SCR')
-    if height is None:
-        height = 800
-    side_col1, side_col2 = st.sidebar.columns([1, 1])
+    side_col1, side_col2, margin = st.columns([5, 5, 1])
     if selected_kom_code is not None:
         side_col1.button(f":x: {selected_lan_name}", on_click=reset_geo, kwargs={ "clear_kom_only": False, "lan_code": selected_lan_code }, use_container_width=True)
         side_col2.button(f":x: {selected_kom_name}", on_click=reset_geo, kwargs={ "clear_kom_only": True, "lan_code": selected_lan_code }, use_container_width=True)
     elif selected_lan_code is not None:
         side_col1.button(f":x: {selected_lan_name}", on_click=reset_geo, kwargs={ "clear_kom_only": False, "lan_code": selected_lan_code }, use_container_width=True)
+        side_col2.empty()
 
 
     # This is the command that causes multiple renders
-    map_output = st_folium(m, width="100%", height=height)
-    #st.sidebar.write("ToDo: Use maps without the ocean in clickable areas")
-
+    if interactive:
+        map_output = st_folium(m, width=width, height=height)
+    else:
+        map_output = folium_static(m, width=width, height=height)
 
     # Inject custom CSS to set the width of the sidebar
     st.markdown(
         f"""
         <style>
             section[data-testid="stSidebar"] {{
-                width: 600px !important;
+                width: {width}px !important;
             }}
-            div[data-testid="stSidebarUserContent"] {{
-                padding-top: 3em;
-            }}
-            section[data-testid="stSidebar"] div.stHeadingContainer h1 {{
-                padding-top: 0;
-                padding-bottom: 0.5em;
-            }}
-            div[data-testid="stSidebarUserContent"] iframe {{
+            iframe {{
                 position: fixed;
                 top: 2px;
                 left: 0;
-                width: 600px;
+                width: {width}px;
                 height: {height-2}px;
                 z-index: 10;
             }}
-            div[data-testid="stSidebarUserContent"] > div div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"] {{
-                position: absolute;
-                margin-top: -3em;
+            div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"] {{
+                margin-top: -0.25em;
                 zoom: 0.8;
                 z-index: 20;
-                margin-left: 2.5em;
+                margin-left: 4.5em;
             }}
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    if map_output and map_output['last_clicked']:
-        clicked_point = map_output['last_clicked']
+    # Movie trick, use following to "start from scratch" and select VG
+    #document.querySelector('iframe').contentWindow.document.onclick = () => window.location = "?geography=14"
 
-        # Check which area was clicked
-        selected_kom_code = None
-        for code, item in area_polygons.items():
-            for polygon in item[0]:
-                if point_in_polygon((clicked_point['lng'], clicked_point['lat']), polygon):
-                    if selected_lan_code is not None:
-                        st.query_params.geography = f"{selected_lan_code}:{code}"
-                    else:
-                        st.query_params.geography = code
+    if interactive:
+        if map_output and map_output['last_clicked']:
+            clicked_point = map_output['last_clicked']
 
-                    time.sleep(0.1) # Bug: https://github.com/streamlit/streamlit/issues/5511
-                    st.rerun()
-                    break
+            # Check which area was clicked
+            selected_kom_code = None
+            for code, item in area_polygons.items():
+                for polygon in item[0]:
+                    if point_in_polygon((clicked_point['lng'], clicked_point['lat']), polygon):
+                        if selected_lan_code is not None:
+                            st.query_params.geography = f"{selected_lan_code}:{code}"
+                        else:
+                            st.query_params.geography = code
+
+                        time.sleep(0.1) # Bug: https://github.com/streamlit/streamlit/issues/5511
+                        st.rerun()
+                        break

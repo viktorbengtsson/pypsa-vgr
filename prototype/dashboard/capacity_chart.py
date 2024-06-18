@@ -1,15 +1,12 @@
 import pandas as pd
-from data_loading import essential_data_from_variables
+from data_loading import network_data_from_variables, demand_data_from_variables
 from visualizations import get_plot_config
 import altair as alt
 
 def render_capacity_chart(st_col1, st_col2, config):
-    [
-        ASSUMPTIONS,
-        DEMAND,
-        NETWORK,
-        STATISTICS
-    ] = essential_data_from_variables("../", config)
+
+    DEMAND = demand_data_from_variables("../", config)
+    NETWORK = network_data_from_variables("../", config)
 
     GEN = NETWORK.generators_t.p.abs()
     
@@ -40,11 +37,11 @@ def render_capacity_chart(st_col1, st_col2, config):
     DEMAND_rolling = DEMAND.rolling(window=window_size, center=True).mean()
     GEN_rolling = GEN.rolling(window=window_size, center=True).mean()
     for col in DEMAND.columns:
-        DEMAND_rolling[col].iloc[0] = DEMAND[col].iloc[0::7].mean()
-        DEMAND_rolling[col].iloc[-1] = DEMAND[col].iloc[-1::-9].mean()
+        DEMAND_rolling.loc[DEMAND_rolling.index[0], col] = DEMAND[col].iloc[0::7].mean()
+        DEMAND_rolling.loc[DEMAND_rolling.index[-1], col] = DEMAND[col].iloc[-1::-9].mean()
     for col in GEN.columns:
-        GEN_rolling[col].iloc[0] = GEN[col].iloc[0::7].mean()
-        GEN_rolling[col].iloc[-1] = GEN[col].iloc[-1::-9].mean()
+        GEN_rolling.loc[GEN_rolling.index[0], col]= GEN[col].iloc[0::7].mean()
+        GEN_rolling.loc[GEN_rolling.index[-1], col] = GEN[col].iloc[-1::-9].mean()
     DEMAND_rolling = DEMAND_rolling.interpolate()
     GEN_rolling = GEN_rolling.interpolate()
 

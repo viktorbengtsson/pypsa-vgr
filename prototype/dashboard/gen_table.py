@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-from data_loading import essential_data_from_variables
+from data_loading import network_data_from_variables
 from visualizations import get_labels
 
 def size_text(index):
@@ -23,12 +23,8 @@ def size_text(index):
         return ""
 
 def render_generators_table(st_obj, config):
-    [
-        ASSUMPTIONS,
-        DEMAND,
-        NETWORK,
-        STATISTICS
-    ] = essential_data_from_variables("../", config)
+    
+    NETWORK = network_data_from_variables("../", config)
     parameters = pd.read_csv("../../data/assumptions.csv")
     parameters.set_index(['technology', 'parameter'], inplace=True)
 
