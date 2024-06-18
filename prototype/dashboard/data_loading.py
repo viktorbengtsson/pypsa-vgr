@@ -1,3 +1,4 @@
+import streamlit as st
 import json
 import pickle
 import os.path
@@ -82,7 +83,7 @@ def read_dashboard_available_variables(CONFIG_NAME):
     
     return CONFIG_DEFINITION["scenarios"]
 
-def deep_data_from_variables(ROOT, CONFIG):
+def all_data_from_variables(ROOT, CONFIG):
  
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]
@@ -99,27 +100,6 @@ def deep_data_from_variables(ROOT, CONFIG):
     AVAIL_CAPACITY_ONWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_capacity_onwind.nc")
     AVAIL_CAPACITY_OFFWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_capacity_offwind.nc")
 
-    data = essential_data_from_variables(ROOT, CONFIG)
-    data.extend([
-        CUTOUT,
-        SELECTION,
-        EEZ,
-        AVAIL_SOLAR,
-        AVAIL_ONWIND,
-        AVAIL_OFFWIND,
-        AVAIL_CAPACITY_SOLAR,
-        AVAIL_CAPACITY_ONWIND,
-        AVAIL_CAPACITY_OFFWIND,
-    ])
-    
-    return data
-
-
-def essential_data_from_variables(ROOT, CONFIG):
-
-    # Setting variables based on config
-    DATA_PATH=CONFIG["scenario"]["data-path"]
-
     ASSUMPTIONS = pd.read_pickle(f"{ROOT}../{DATA_PATH}/costs.pkl")
 
     DEMAND = pd.read_csv(f"{ROOT}../{DATA_PATH}/demand.csv", index_col=0, parse_dates=[0])
@@ -133,8 +113,34 @@ def essential_data_from_variables(ROOT, CONFIG):
         ASSUMPTIONS,
         DEMAND,
         NETWORK,
-        STATISTICS
+        STATISTICS,
+        CUTOUT,
+        SELECTION,
+        EEZ,
+        AVAIL_SOLAR,
+        AVAIL_ONWIND,
+        AVAIL_OFFWIND,
+        AVAIL_CAPACITY_SOLAR,
+        AVAIL_CAPACITY_ONWIND,
+        AVAIL_CAPACITY_OFFWIND,
     ]
+
+@st.cache_data
+def demand_data_from_variables(ROOT, CONFIG):
+    # Setting variables based on config
+    DATA_PATH=CONFIG["scenario"]["data-path"]
+
+    return pd.read_csv(f"{ROOT}../{DATA_PATH}/demand.csv", index_col=0, parse_dates=[0])
+
+@st.cache_data
+def network_data_from_variables(ROOT, CONFIG):
+    # Setting variables based on config
+    DATA_PATH=CONFIG["scenario"]["data-path"]
+
+    NETWORK = pypsa.Network()
+    NETWORK.import_from_netcdf(f"{ROOT}../{DATA_PATH}/network.nc")
+
+    return NETWORK
 
 def ensure_default_variables(var_dict):
     if "load_target" not in var_dict:

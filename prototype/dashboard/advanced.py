@@ -2,7 +2,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
-from data_loading import deep_data_from_variables
+from data_loading import all_data_from_variables
 
 
 def render_advanced(st_obj, config):
@@ -23,7 +23,7 @@ def render_advanced(st_obj, config):
         AVAIL_CAPACITY_SOLAR,
         AVAIL_CAPACITY_ONWIND,
         AVAIL_CAPACITY_OFFWIND,
-    ] = deep_data_from_variables("../", config)
+    ] = all_data_from_variables("../", config)
 
     with st_obj:
        col1, col2, col3 = st.columns([1, 1, 1])
