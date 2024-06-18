@@ -4,24 +4,23 @@ from gen_table import render_generators_table
 from capacity_chart import render_capacity_chart
 from energy_chart import render_energy_chart
 from lab import render_network, render_demand
-from map_selector import render_map
 from data_loading import _config_from_variables, ensure_default_variables
 from tab_settings import render_settings
 from advanced import render_advanced
 from filters import render_filters
 
-print("Rendering...XX")
-
 CONFIG_NAME = "full"
-do_movie = True
 
 ########## / Streamlit init \ ##########
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown(
     """
     <style>
+        [data-testid="collapsedControl"] {
+            display: none;
+        }
         div[class^='block-container'] {
             padding-top: 1rem;
             padding-left: 6rem;
@@ -79,15 +78,12 @@ if DEBUG:
 
 ########## / Energy info from selection \ ##########
 
-with st.sidebar:
-    render_map(selected_lan_code, selected_kom_code, do_movie)
-
-
 if selected_lan_code:
     selected_year = 2011
 
     VARIABLES = ensure_default_variables(st.query_params)
     VARIABLES = render_filters(col2, CONFIG_NAME, VARIABLES, st.query_params)
+    print(VARIABLES["load_target"])
 
     CONFIG = _config_from_variables(CONFIG_NAME, VARIABLES)
 
