@@ -3,7 +3,7 @@ from data_loading import network_data_from_variables, demand_data_from_variables
 from visualizations import get_plot_config
 import altair as alt
 
-def render_capacity_chart(st_col1, st_col2, config):
+def render_capacity_chart(st_col1, config):
 
     DEMAND = demand_data_from_variables("../", config)
     NETWORK = network_data_from_variables("../", config)
@@ -69,8 +69,7 @@ def render_capacity_chart(st_col1, st_col2, config):
     # Stacked area chart for two categories
     area_chart = base.mark_area().encode(
         y=alt.Y('sum(Value):Q', stack='zero'),
-        color=alt.Color('Category:N', scale=alt.Scale(domain=main_series_labels, range=list(colors.values())))
-        .legend(title="", orient='bottom-left', fillColor="#FFFFFF", strokeColor="#000000", cornerRadius=10)
+        color=alt.Color('Category:N', scale=alt.Scale(domain=main_series_labels, range=list(colors.values())), legend=None)
     )
 
     # Line chart for single line data
@@ -84,8 +83,8 @@ def render_capacity_chart(st_col1, st_col2, config):
     # Combine the charts
     combined_chart = alt.layer(area_chart, line_chart, line_chart_rolling).properties(
         width=800,
-        height=450,
-        title="Elproduktion/konsumption (MW)"
+        height=465,
+        title="Elproduktion/konsumption (MWh)"
     ).configure_title(
         anchor='middle',
         color='black'

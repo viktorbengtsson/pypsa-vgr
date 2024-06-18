@@ -4,7 +4,7 @@ from visualizations import get_plot_config
 import seaborn as sns
 import altair as alt
 
-def render_energy_chart(st_obj, config):
+def render_legend(st_obj, config):
 
     NETWORK = network_data_from_variables("../", config)
 
@@ -50,21 +50,14 @@ def render_energy_chart(st_obj, config):
     colors = gen_colors | stor_colors
     main_series_labels = gen_main_series_labels + stor_main_series_labels
 
-    chart = alt.Chart(data).mark_bar().encode(
-        x=alt.X('Category:N', title='', sort=[0,1], axis=alt.Axis(labelAngle=0)),
-        y=alt.Y('Value:Q', title=''),
-        color=alt.Color('Type:N', scale=alt.Scale(domain=main_series_labels, range=list(colors.values())), legend=None),
-        tooltip=['Category:N', 'Type:N', 'Value:Q']
+    chart = alt.Chart(data).mark_circle(size=0).encode(
+        color=alt.Color('Type:N', scale=alt.Scale(domain=main_series_labels, range=list(colors.values())))
+            .legend(title="", fillColor="#FFFFFF", symbolOpacity=1, symbolType="square", orient='left'),
+    ).configure_view(strokeWidth=0
     ).properties(
-        width=600,
-        height=375,
-        title='Produktion / lagring (%)'
-    ).configure_axis(
-        labelFontSize=12,
-        titleFontSize=14
-    ).configure_title(
-        anchor='middle',
-        color='black'
+        width=100,
+        height=110,
+        title=''
     )
 
     st_obj.altair_chart(chart, use_container_width=True)

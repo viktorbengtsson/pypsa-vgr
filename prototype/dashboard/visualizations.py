@@ -9,10 +9,16 @@ def get_labels():
         "Onwind park" : "Vindkraft (land)",
         "Solar park" : "Sol",
         "H2 storage": "Vätgas",
-        "Battery": "Batteri",
+        "Battery storage": "Batteri",
         "Gas turbine": "Gas turbin",
         "H2 electrolysis": "Vätgas electrolys",
         "Battery charge": "Batteri laddning",
+        "Biogas input": "Biogas",
+        "SMR nuclear": "Kärnkraft",
+        "Conventional nuclear": "Kärnkraft",
+        "Combined Cycle Gas turbine": "Kombinerad gas turbin",
+        "Simple Cycle Gas turbine": "Enkel gas turbin",
+        "Total": "Total",
     }
 
 
@@ -32,7 +38,9 @@ def get_plot_config(columns, include_demand):
         "Onwind park" : palette[0],
         "Solar park" : palette[3],
         "H2 storage": palette[4],
-        "Battery": palette[5]
+        "Battery storage": palette[5],
+        "Biogas input": palette[6],
+        "SMR nuclear": palette[7]
     }
 
     sortorder = {
@@ -42,7 +50,9 @@ def get_plot_config(columns, include_demand):
         "Onwind park" : 1,
         "Solar park" : 0,
         "H2 storage": 11,
-        "Battery": 10
+        "Battery storage": 10,
+        "Biogas input": 20,
+        "SMR nuclear": 21,
     }
 
     main_series_labels = []
@@ -52,8 +62,9 @@ def get_plot_config(columns, include_demand):
     for col in columns:
         legend_labels.append(plt.Line2D([0], [0], marker='o', color='w', label=labels[col], markerfacecolor=colors[col], markersize=10))
         series_colors.append(colors[col])
-        main_series_labels.append(labels[col])
-        main_series_keys.append(col)
+        if col != "Backstop":
+            main_series_labels.append(labels[col])
+            main_series_keys.append(col)
 
     if include_demand:
         legend_labels.append(plt.Line2D([0], [0], marker='o', color='w', label="Behov", markerfacecolor="black", markersize=10))
