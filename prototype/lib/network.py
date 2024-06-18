@@ -31,6 +31,12 @@ def create_and_store_network(config):
 
     print(f"Using config:\n\th2:{use_h2}\n\tnuclear:{use_nuclear}\n\tbiogas:{biogas_profile}")
 
+    def annuity(r, n):
+        return r / (1.0 - 1.0 / (1.0 + r) ** n)
+    
+    def annualized_capex(asset):
+        return (annuity(float(parameters.loc[('general', 'discount_rate'), 'value']), float(parameters.loc[(asset, 'lifetime'), 'value'])) + float(parameters.loc[(asset, 'FOM'), 'value'])) * float(parameters.loc[(asset, 'capital_cost'), 'value'])
+
     # Build the network
 
     ## Initialize the network
@@ -47,9 +53,12 @@ def create_and_store_network(config):
         'li-ion',
         'h2',
         'biogas',
+        'mixedgas',
+        'backstop',
+        'nuclear',
         ]
 
-    carrier_colors = ['black', 'green', 'blue', 'red', 'lightblue', 'grey', 'brown']
+    carrier_colors = ['black', 'green', 'blue', 'red', 'lightblue', 'grey', 'brown', 'brown', 'white', 'mintgreen']
 
     network.madd(
         'Carrier',
@@ -57,29 +66,32 @@ def create_and_store_network(config):
         color=carrier_colors,
         )
 
-    ## Main bus location
+    ## Load bus location
     minx, miny, maxx, maxy = SELECTION.total_bounds
     midx = (minx + maxx)/2
     midy = (miny + maxy)/2
 
     ## Add the buses
-    network.add('Bus', 'Main bus', carrier='AC', x=midx, y=midy)
+    network.add('Bus', 'Load bus', carrier='AC', x=midx, y=midy)
     network.add('Bus', 'Solar', x=midx+0.5, y=midy+0.25)
     network.add('Bus', 'Onwind', x=midx+0.5, y=midy-0.15)
     network.add('Bus', 'Offwind', x=midx-1.25, y=midy-0.75)
-    network.add('Bus', 'Battery', carrier='li-ion', x=midx-0.5, y=midy)
+    network.add('Bus', 'Battery bus', carrier='li-ion', x=midx-0.5, y=midy)
+    network.add('Bus', 'Battery storage', carrier='li-ion', x=midx-0.5, y=midy)
     network.add('Bus', 'Gas turbine', x=midx, y=midy+0.5)
+    network.add('Bus', 'H2 bus', carrier='h2', x=midx-0.5, y=midy+0.5)
     network.add('Bus', 'H2 storage', carrier='h2', x=midx-0.5, y=midy+0.5)
     network.add('Bus', 'Biogas market', x=midx, y=midy+0.9)
+    network.add('Bus', 'Nuclear', carrier='nuclear', x=midx, y=midy+0.9)
+    
 
     ## Add loads
-    network.add('Load', 'Desired load', bus='Main bus',
+    network.add('Load', 'Desired load', bus='Load bus',
                 p_set=LOAD
                 )
 
-    network.add('Generator', 'Backstop', carrier='AC', bus='Main bus',
-                p_nom_extendable=False,
-                p_set=0,
+    network.add('Generator', 'Backstop', carrier='backstop', bus='Load bus',
+                p_nom_extendable=True,
                 capital_cost=parameters.loc[('backstop', 'capital_cost'), 'value'],
                 marginal_cost=parameters.loc[('backstop', 'marginal_cost'), 'value'],
                 lifetime=parameters.loc[('backstop', 'lifetime'), 'value'],
@@ -91,14 +103,21 @@ def create_and_store_network(config):
     network.add('Generator', 'Solar park', carrier='solar', bus='Solar',
                 p_nom_extendable=True, 
                 p_max_pu=AVAIL_CAPACITY_SOLAR.values.flatten(),
-                capital_cost=parameters.loc[('solar', 'capital_cost'), 'value'],
-                #marginal_cost=assumptions.loc['solar-utility','FOM'].value / 100 * assumptions.loc['solar-utility','investment'].value / (mean_solar_capacity_factor.values.flatten().sum() * 3),
+                p_nom_mod=parameters.loc['solar','unit_size'].value,
+                capital_cost= annualized_capex('solar'),
+                marginal_cost=parameters.loc[('solar', 'VOM'), 'value'],
                 lifetime=parameters.loc[('solar', 'lifetime'), 'value'],
                 )
 
-    network.add('Link', 'Solar link',
-                bus0='Solar',
-                bus1='Main bus',
+    network.add('Link', 'Solar load link', carrier='solar', bus0='Solar', bus1='Load bus',
+                p_nom_extendable=True,
+                )
+
+    network.add('Link', 'Solar battery link', carrier='solar', bus0='Solar', bus1='Battery bus',
+                p_nom_extendable=True,
+                )
+
+    network.add('Link', 'Solar H2 link', carrier='solar', bus0='Solar', bus1='H2 bus',
                 p_nom_extendable=True,
                 )
 
@@ -106,14 +125,21 @@ def create_and_store_network(config):
     network.add('Generator', 'Onwind park', carrier='onwind', bus='Onwind',
                 p_nom_extendable=True,
                 p_max_pu=AVAIL_CAPACITY_ONWIND.values.flatten(),
-                capital_cost=parameters.loc[('onwind', 'capital_cost'), 'value'],
-                #marginal_cost=assumptions.loc['onwind','VOM'].value + assumptions.loc['onwind','FOM'].value / 100 * assumptions.loc['onwind','investment'].value  / (mean_onwind_capacity_factor.values.flatten().sum() * 3),
+                p_nom_mod=parameters.loc['onwind','unit_size'].value,
+                capital_cost= annualized_capex('onwind'),
+                marginal_cost=parameters.loc[('onwind', 'VOM'), 'value'],
                 lifetime=parameters.loc['onwind','lifetime'].value,
                 )
 
-    network.add('Link', 'Onwind link',
-                bus0='Onwind',
-                bus1='Main bus',
+    network.add('Link', 'Onwind load link', carrier='onwind', bus0='Onwind', bus1='Load bus',
+                p_nom_extendable=True,
+                )
+
+    network.add('Link', 'Onwind battery link', carrier='onwind', bus0='Onwind', bus1='Battery bus',
+                p_nom_extendable=True,
+                )
+
+    network.add('Link', 'Onwind H2 link', carrier='onwind', bus0='Onwind', bus1='H2 bus',
                 p_nom_extendable=True,
                 )
 
@@ -121,95 +147,143 @@ def create_and_store_network(config):
     network.add('Generator', 'Offwind park', carrier='offwind', bus='Offwind',
                 p_nom_extendable=True, 
                 p_max_pu=AVAIL_CAPACITY_OFFWIND.values.flatten(),
-                capital_cost=parameters.loc[('offwind', 'capital_cost'), 'value'],
-                #marginal_cost=assumptions.loc['onwind','VOM'].value + assumptions.loc['offwind','FOM'].value / 100 * assumptions.loc['offwind','investment'].value  / (mean_offwind_capacity_factor.values.flatten().sum() * 3),
+                p_nom_mod=parameters.loc['offwind','unit_size'].value,
+                capital_cost= annualized_capex('offwind'),
+                marginal_cost=parameters.loc[('offwind', 'VOM'), 'value'],
                 lifetime=parameters.loc['offwind','lifetime'].value,
                 )
 
-    network.add('Link', 'Offwind link',
-                bus0='Offwind',
-                bus1='Main bus',
+    network.add('Link', 'Offwind load link', carrier='offwind', bus0='Offwind', bus1='Load bus',
+                p_nom_extendable=True,
+                )
+
+    network.add('Link', 'Offwind battery link', carrier='offwind', bus0='Offwind', bus1='Battery bus',
+                p_nom_extendable=True,
+                )
+
+    network.add('Link', 'Offwind H2 link', carrier='offwind', bus0='Offwind', bus1='H2 bus',
                 p_nom_extendable=True,
                 )
 
     ## Add H2 electrolysis, storage, pipline to gas turbine
 
-    network.add('Link',
-                'H2 electrolysis',
-                bus0='Main bus',
-                bus1='H2 storage',
+    network.add('Link', 'toH2', bus0='Load bus', bus1='H2 bus',
+                p_nom_extendable=True
+                )
+
+    network.add('Link', 'H2 electrolysis', carrier='h2', bus0='H2 bus', bus1='H2 storage',
                 p_nom_extendable=True,
-                efficiency=parameters.loc['h2_electrolysis','efficiency'].value,
-                capital_cost=parameters.loc['h2_electrolysis','capital_cost'].value,
-                #marginal_cost=230+55,
+                p_nom_mod=parameters.loc['h2_electrolysis','unit_size'].value,
+                capital_cost= annualized_capex('h2_electrolysis'),
+                marginal_cost=parameters.loc[('h2_electrolysis', 'VOM'), 'value'],
                 lifetime=parameters.loc['h2_electrolysis','lifetime'].value,
+                efficiency=parameters.loc['h2_electrolysis','efficiency'].value,
                 )
 
     network.add('Store', 'H2 storage', carrier='h2', bus='H2 storage',
-                e_nom_extendable=use_h2,
                 e_initial=(150_000 if use_h2 else 0),
-                # e_nom_max=target_load.max()*hours_h2_storage,
-                capital_cost=parameters.loc['h2_storage','capital_cost'].value,
+                e_nom_extendable=use_h2,
+                e_cyclic=True,
+                capital_cost= annualized_capex('h2_storage'),
+                marginal_cost=parameters.loc['h2_storage','VOM'].value,
                 lifetime=parameters.loc['h2_storage','lifetime'].value
                 )
 
-    network.add('Link',
-                'H2 pipeline',
-                bus0='H2 storage',
-                bus1='Gas turbine',
+    network.add('Link', 'H2 pipeline', carrier='h2', bus0='H2 storage', bus1='Gas turbine',
                 p_nom_extendable=True,
-                efficiency=parameters.loc['h2','efficiency'].value,
                 )
 
     ### Biogas pipeline
 
-    network.add('Generator', 'Biogas market', carrier='biogas', bus='Biogas market',
+    network.add('Generator', 'Biogas input', carrier='biogas', bus='Biogas market',
                 p_nom_extendable=True,
                 p_nom_max=biogas_production_max_nominal,
                 marginal_cost=parameters.loc['biogas','cost'].value,
                 lifetime=100,
                 )
 
-    network.add('Link', 'Biogas pipeline', bus0='Biogas market', bus1='Gas turbine',
+    network.add('Link', 'Biogas pipeline', carrier='biogas', bus0='Biogas market', bus1='Gas turbine',
                 p_nom_extendable=True,
-                efficiency=parameters.loc['biogas','efficiency'].value,
                 )
 
-    ### Gas turbine
-    network.add('Link', 'Gas turbine', bus0='Gas turbine', bus1='Main bus',
+    ### Gas turbines
+    network.add('Link', 'Simple Cycle Gas turbine', carrier='mixedgas', bus0='Gas turbine', bus1='Load bus',
                 p_nom_extendable=True,
-                capital_cost=parameters.loc['gas_turbine','capital_cost'].value,
-                #marginal_cost=assumptions.loc['CCGT','VOM'].value,
-                lifetime=parameters.loc['gas_turbine','lifetime'].value,
+                p_nom_mod=parameters.loc['simple_cycle_gas_turbine','unit_size'].value,
+                capital_cost= annualized_capex('simple_cycle_gas_turbine'),
+                marginal_cost=parameters.loc['simple_cycle_gas_turbine','VOM'].value,
+                lifetime=parameters.loc['simple_cycle_gas_turbine','lifetime'].value,
+                efficiency=parameters.loc['simple_cycle_gas_turbine','efficiency'].value,
                 )
 
-    ## Add battery storage TODO: add running cost, 
-    network.add('Store', 'Battery', carrier='li-ion', bus='Battery',
+    network.add('Link', 'Combined Cycle Gas turbine', carrier='mixedgas', bus0='Gas turbine', bus1='Load bus',
+                p_nom_extendable=True,
+                p_nom_mod=parameters.loc['combined_cycle_gas_turbine','unit_size'].value,
+                capital_cost= annualized_capex('combined_cycle_gas_turbine'),
+                marginal_cost=parameters.loc['combined_cycle_gas_turbine','VOM'].value,
+                lifetime=parameters.loc['combined_cycle_gas_turbine','lifetime'].value,
+                efficiency=parameters.loc['combined_cycle_gas_turbine','efficiency'].value,
+                )
+
+    ## Add battery storage
+
+    network.add('Link', 'toBattery', carrier='li-ion', bus0='Load bus', bus1='Battery bus',
+                p_nom_extendable=True
+                )
+
+    network.add('Link','Battery charge', bus0 = 'Battery bus', bus1 = 'Battery storage',
+                p_nom_extendable = True,
+                capital_cost= annualized_capex('battery_inverter'),
+                marginal_cost=parameters.loc['battery_inverter','VOM'].value,
+                lifetime=parameters.loc['battery_inverter','lifetime'].value,
+                efficiency = parameters.loc['battery_inverter','efficiency'].value,
+                )
+
+    network.add('Store', 'Battery storage', carrier='li-ion', bus='Battery storage',
+                e_initial=100,
                 e_nom_extendable=True,
                 e_cyclic=True,
                 e_min_pu=0.15,
                 standing_loss=0.00008, # TODO: Check if this is really per hour as in the documentation or if it is per snapshot
-                capital_cost=parameters.loc['battery_storage', 'capital_cost'].value,
+                capital_cost= annualized_capex('battery_storage'),
+                marginal_cost=parameters.loc['battery_storage','VOM'].value,
                 lifetime=parameters.loc['battery_storage', 'lifetime'].value,
                 )
 
-    network.add('Link','Battery charge',
-                bus0 = 'Main bus',
-                bus1 = 'Battery',
-                efficiency = parameters.loc['battery_inverter','efficiency'].value,
+    network.add('Link','Battery discharge', carrier='li-ion', bus0 = 'Battery storage', bus1 = 'Load bus',
                 p_nom_extendable = True,
-                capital_cost=parameters.loc['battery_inverter','capital_cost'].value,
-                #marginal_cost=0,#assumptions.loc['battery inverter','FOM'].value / 100 * assumptions.loc['battery inverter','investment'].value,
-                lifetime=parameters.loc['battery_inverter','lifetime'].value,
-                )
-
-    network.add('Link','Battery discharge',
-                bus0 = 'Battery',
-                bus1 = 'Main bus',
                 efficiency = parameters.loc['battery_inverter','efficiency'].value,
-                p_nom_extendable = True,
                 )
 
     ## Nuclear
+    num_nuclear_conv = 0
+    num_nuclear_smr = 2
+
+    if use_nuclear:
+ #       for i in range(num_nuclear_conv):
+        network.add('Generator', f"{'Conventional nuclear'}", carrier='nuclear', bus='Nuclear',
+                p_nom_extendable=True,
+                p_nom_mod=parameters.loc['nuclear_conv','p_nom'].value,
+                p_nom_max=num_nuclear_conv * float(parameters.loc['nuclear_conv','p_nom'].value),
+#                p_nom=parameters.loc['nuclear_conv','p_nom'].value,
+                capital_cost= annualized_capex('nuclear_conv'),
+                marginal_cost=float(parameters.loc['nuclear_conv','VOM'].value) + float(parameters.loc['nuclear_conv','fuel'].value),
+                lifetime=parameters.loc['nuclear_conv','lifetime'].value,
+                )
+
+#        for j in range(num_nuclear_smr):
+        network.add('Generator', f"{'SMR nuclear'}", carrier='nuclear', bus='Nuclear',
+                p_nom_extendable=True,
+                p_nom_mod=parameters.loc['nuclear_smr','p_nom'].value,
+                p_nom_max=num_nuclear_smr * float(parameters.loc['nuclear_smr','p_nom'].value),
+#                p_nom=parameters.loc['nuclear_smr','p_nom'].value,
+                capital_cost= annualized_capex('nuclear_smr'),
+                marginal_cost=float(parameters.loc['nuclear_smr','VOM'].value) + float(parameters.loc['nuclear_smr','fuel'].value),
+                lifetime=parameters.loc['nuclear_smr','lifetime'].value,
+                )
+
+    network.add('Link', 'Nuclear to load', carrier='nuclear', bus0='Nuclear', bus1='Load bus',
+            p_nom_extendable=True,
+            )
 
     network.export_to_netcdf(f"../{DATA_PATH}/network.nc")
