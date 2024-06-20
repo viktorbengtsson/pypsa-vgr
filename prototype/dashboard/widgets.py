@@ -30,10 +30,8 @@ def render_widgets(st_obj, config):
                 text-transform: uppercase;
             }
             div[data-testid="stHorizontalBlock"] > div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] > div > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
-                max-width: 14rem;
+                #max-width: 14rem;
                 min-height: 10.25rem;
-                margin-top: -1em;
-                margin-bottom: 1em;
             }
         </style>
         """,
@@ -62,7 +60,7 @@ def render_widgets(st_obj, config):
     stores['annual_cost'] = np.where(stores['e_nom_opt'] != 0, stores['capital_cost'] * stores['e_nom_opt'], 0)
     stores.rename(columns={'e_nom_opt': 'p_nom_opt'}, inplace=True)
 
-    spacer1, col1, col2, col3, spacer2 = st_obj.columns([3,10,10,6,2], gap="small")
+    col1, col2, col3 = st_obj.columns([5,5,3], gap="small")
 
     render_gen_widget(col1, "Vindkraft (land)", ["Onwind park"], generators, "st")
     render_gen_widget(col2, "Vindkraft (hav)", ["Offwind park"], generators, "st")

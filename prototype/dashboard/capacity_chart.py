@@ -19,7 +19,8 @@ def render_capacity_chart(st_col1, config):
         main_series_keys,
         series_colors,
         labels,
-        colors
+        colors,
+        label_colors
     ] = get_plot_config(columns, True)
 
     #options = col1.multiselect(
@@ -83,7 +84,7 @@ def render_capacity_chart(st_col1, config):
     # Combine the charts
     combined_chart = alt.layer(area_chart, line_chart, line_chart_rolling).properties(
         width=800,
-        height=465,
+        height=400,
         title="Elproduktion/konsumption (MWh)"
     ).configure_title(
         anchor='middle',
@@ -97,8 +98,7 @@ def render_capacity_chart(st_col1, config):
 #        st_col1.write("Välj minst ett energislag")
 
 
-def render_monthly_capacity_chart(st_col1, config):
-
+def _get_compare_capacity_chart(config, pinned = False):
     DEMAND = demand_data_from_variables("../", config)
     NETWORK = network_data_from_variables("../", config)
     parameters = pd.read_csv("../../data/assumptions.csv")
@@ -107,8 +107,6 @@ def render_monthly_capacity_chart(st_col1, config):
     GEN = NETWORK.generators_t.p.resample('ME').sum()*3 / 1_000
     GEN['Biogas input'] = GEN['Biogas input'] * float(parameters.loc['biogas', 'efficiency'].value)
 
-    DEMAND = DEMAND['se3'].resample('ME').sum()*3 / 1_000
-    
     #Exclude if we have no data
     columns = [column for column in GEN.columns if GEN[column].sum() > 0]
     [
@@ -118,43 +116,95 @@ def render_monthly_capacity_chart(st_col1, config):
         main_series_keys,
         series_colors,
         labels,
-        colors
-    ] = get_plot_config(columns, True)
+        colors,
+        label_colors
+    ] = get_plot_config(columns, True, pinned)
 
     #if options:
     index_to_exclude = [] #[idx for idx, col in enumerate(columns) if not main_series_labels[main_series_keys.index(col)] in options]
     GEN = GEN[[col for idx, col in enumerate(columns) if idx not in index_to_exclude]]
 
-    data = {
-        "Date": GEN.index,
-        "Demand": DEMAND
-    }
+    data = {}
 
     for col in GEN.columns:
         data[labels[col]] = GEN[col].values
 
+    return [
+        GEN.index,
+        data,
+        main_series_labels,
+        label_colors
+    ]
+
+def render_compare_capacity_chart(st_col1, config, compare_config):
+
+    DEMAND = demand_data_from_variables("../", config)
+    parameters = pd.read_csv("../../data/assumptions.csv")
+    parameters.set_index(['technology', 'parameter'], inplace=True)
+
+    DEMAND = DEMAND['se3'].resample('ME').sum()*3 / 1_000
+
+    [index, GEN, main_series_labels, colors] = _get_compare_capacity_chart(config)
+    [index, COMPARE_GEN, compare_main_series_labels, compare_colors] = _get_compare_capacity_chart(compare_config, True)
+    
+    data = {
+        "Date": index.strftime('%b').tolist(),
+        "Demand": DEMAND,
+    }
+    data_compare = {
+        "Date": index.strftime('%b').tolist(),
+    }
+
+    for col in GEN:
+        data[col] = GEN[col]
+    for col in COMPARE_GEN:
+        data_compare[col] = COMPARE_GEN[col]
+
+
     data = pd.DataFrame(data)
     melted_data = data.melt(id_vars=['Date', 'Demand'], value_vars=main_series_labels, var_name='Category', value_name='Value')
+    melted_data['Color'] = melted_data['Category'].map(colors)
+
+    data_compare = pd.DataFrame(data_compare)
+    melted_data_compare = data_compare.melt(id_vars=['Date'], value_vars=compare_main_series_labels, var_name='Category', value_name='Value')
+    melted_data_compare['Color'] = melted_data_compare['Category'].map(compare_colors)
 
     base = alt.Chart(melted_data).encode(
-        x=alt.X('Date:T', title=''),
+        x=alt.X('Date:N', title=''),
+    )
+    base_compare = alt.Chart(melted_data_compare).encode(
+        x=alt.X('Date:N', title='', axis=alt.Axis(labelOffset=-15,labelAngle=0,labelAlign="center")),
     )
 
     # Stacked area chart for two categories
-    area_chart = base.mark_bar(size=30).encode(
+    bar_chart = base.mark_bar(size=30).encode(
         y=alt.Y('sum(Value):Q', stack='zero'),
-        color=alt.Color('Category:N', scale=alt.Scale(domain=main_series_labels, range=list(colors.values())), legend=None)
+        tooltip=[
+            alt.Tooltip('Category:N'),
+            alt.Tooltip('Value:Q', format='.0f')
+        ],
+        color=alt.Color('Color:N', scale=None),
+    )
+    bar_chart_compare = base_compare.mark_bar(size=30,binSpacing=1).encode(
+        y=alt.Y('sum(Value):Q', stack='zero'),
+        tooltip=[
+            alt.Tooltip('Category:N'),
+            alt.Tooltip('Value:Q', format='.0f')
+        ],
+        color=alt.Color('Color:N', scale=None),
+        xOffset=alt.value(12)
     )
 
     # Line chart for single line data
     line_chart = base.mark_line(color='black').encode(
         y=alt.Y('Demand:Q', title=''),
+        xOffset=alt.value(29)
     )
 
     # Combine the charts
-    combined_chart = alt.layer(area_chart, line_chart).properties(
+    combined_chart = alt.layer(bar_chart, bar_chart_compare, line_chart).properties(
         width=800,
-        height=465,
+        height=400,
         title="Elproduktion/konsumption (TWh)"
     ).configure_title(
         anchor='middle',

@@ -4,7 +4,7 @@ from visualizations import get_plot_config
 import seaborn as sns
 import altair as alt
 
-def render_legend(st_obj, config):
+def render_legend(st_obj, config, use_next_palette):
 
     NETWORK = network_data_from_variables("../", config)
 
@@ -19,13 +19,14 @@ def render_legend(st_obj, config):
         gen_main_series_keys,
         gen_series_colors,
         gen_labels,
-        gen_colors
-    ] = get_plot_config(gen_columns, False)
+        gen_colors,
+        label_colors
+    ] = get_plot_config(gen_columns, False, use_next_palette)
 
     gen_total = GEN[[col for col in gen_columns if col in gen_main_series_keys]].sum()
     GEN = GEN[[col for col in gen_columns if col in gen_main_series_keys]] / gen_total * 100
     GEN.index = [col for col in gen_main_series_labels]
-    gen_palette = sns.color_palette('pastel', len(GEN.values))
+   
 
     stor_columns = [col for idx, col in enumerate(STOR.index) if STOR.iloc[idx].sum() > 0]
     [
@@ -35,16 +36,18 @@ def render_legend(st_obj, config):
         stor_main_series_keys,
         stor_series_colors,
         stor_labels,
-        stor_colors
-    ] = get_plot_config(stor_columns, False)
+        stor_colors,
+        label_colors
+    ] = get_plot_config(stor_columns, False, use_next_palette)
 
     stor_total = STOR[[col for col in stor_columns if col in stor_main_series_keys]].sum()
     STOR = STOR[[col for col in stor_columns if col in stor_main_series_keys]] / stor_total * 100
     STOR.index = [col for col in stor_main_series_labels]
-    stor_palette = sns.color_palette('pastel', len(STOR.values))
 
-    GEN_DATA = pd.DataFrame({'Category': ["Produktion"] * len(GEN.index), 'Type':GEN.index, 'Value':GEN.values, 'Color': gen_palette })
-    STOR_DATA = pd.DataFrame({'Category': ["Lagring"] * len(STOR.index),  'Type':STOR.index, 'Value':STOR.values, 'Color': stor_palette })
+    series_length = len(GEN.values) + len(STOR.values)
+    
+    GEN_DATA = pd.DataFrame({'Category': ["Produktion"] * len(GEN.index), 'Type':GEN.index, 'Value':GEN.values })
+    STOR_DATA = pd.DataFrame({'Category': ["Lagring"] * len(STOR.index),  'Type':STOR.index, 'Value':STOR.values })
 
     data = pd.concat([GEN_DATA, STOR_DATA])
     colors = gen_colors | stor_colors

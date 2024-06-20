@@ -19,7 +19,8 @@ def render_energy_chart(st_obj, config):
         gen_main_series_keys,
         gen_series_colors,
         gen_labels,
-        gen_colors
+        gen_colors,
+        label_colors
     ] = get_plot_config(gen_columns, False)
 
     gen_total = GEN[[col for col in gen_columns if col in gen_main_series_keys]].sum()
@@ -35,7 +36,8 @@ def render_energy_chart(st_obj, config):
         stor_main_series_keys,
         stor_series_colors,
         stor_labels,
-        stor_colors
+        stor_colors,
+        label_colors
     ] = get_plot_config(stor_columns, False)
 
     stor_total = STOR[[col for col in stor_columns if col in stor_main_series_keys]].sum()
