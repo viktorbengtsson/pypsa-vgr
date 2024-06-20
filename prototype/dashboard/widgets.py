@@ -72,5 +72,3 @@ def render_widgets(st_obj, config):
 
     render_stor_widget(col3, "Vätgas", ["H2 storage"], stores)
     render_stor_widget(col3, "Batteri", ["Battery storage"], stores)
-
-    col3.image("./qr.png", use_column_width=False, width=165)

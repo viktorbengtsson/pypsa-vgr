@@ -88,7 +88,7 @@ def render_capacity_chart(st_col1, config):
     ).configure_title(
         anchor='middle',
         color='black'
-    )
+    ).interactive()
 
     # Display the chart in Streamlit
     st_col1.altair_chart(combined_chart, use_container_width=True)
@@ -97,3 +97,72 @@ def render_capacity_chart(st_col1, config):
 #        st_col1.write("Välj minst ett energislag")
 
 
+def render_monthly_capacity_chart(st_col1, config):
+
+    DEMAND = demand_data_from_variables("../", config)
+    NETWORK = network_data_from_variables("../", config)
+    parameters = pd.read_csv("../../data/assumptions.csv")
+    parameters.set_index(['technology', 'parameter'], inplace=True)
+
+    GEN = NETWORK.generators_t.p.resample('ME').sum()*3 / 1_000
+    GEN['Biogas input'] = GEN['Biogas input'] * float(parameters.loc['biogas', 'efficiency'].value)
+
+    DEMAND = DEMAND['se3'].resample('ME').sum()*3 / 1_000
+    
+    #Exclude if we have no data
+    columns = [column for column in GEN.columns if GEN[column].sum() > 0]
+    [
+        window_size,
+        legend_labels,
+        main_series_labels,
+        main_series_keys,
+        series_colors,
+        labels,
+        colors
+    ] = get_plot_config(columns, True)
+
+    #if options:
+    index_to_exclude = [] #[idx for idx, col in enumerate(columns) if not main_series_labels[main_series_keys.index(col)] in options]
+    GEN = GEN[[col for idx, col in enumerate(columns) if idx not in index_to_exclude]]
+
+    data = {
+        "Date": GEN.index,
+        "Demand": DEMAND
+    }
+
+    for col in GEN.columns:
+        data[labels[col]] = GEN[col].values
+
+    data = pd.DataFrame(data)
+    melted_data = data.melt(id_vars=['Date', 'Demand'], value_vars=main_series_labels, var_name='Category', value_name='Value')
+
+    base = alt.Chart(melted_data).encode(
+        x=alt.X('Date:T', title=''),
+    )
+
+    # Stacked area chart for two categories
+    area_chart = base.mark_bar(size=30).encode(
+        y=alt.Y('sum(Value):Q', stack='zero'),
+        color=alt.Color('Category:N', scale=alt.Scale(domain=main_series_labels, range=list(colors.values())), legend=None)
+    )
+
+    # Line chart for single line data
+    line_chart = base.mark_line(color='black').encode(
+        y=alt.Y('Demand:Q', title=''),
+    )
+
+    # Combine the charts
+    combined_chart = alt.layer(area_chart, line_chart).properties(
+        width=800,
+        height=465,
+        title="Elproduktion/konsumption (TWh)"
+    ).configure_title(
+        anchor='middle',
+        color='black'
+    )
+
+    # Display the chart in Streamlit
+    st_col1.altair_chart(combined_chart, use_container_width=True)
+
+#    else:
+#        st_col1.write("Välj minst ett energislag")
