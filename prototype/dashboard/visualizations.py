@@ -49,7 +49,7 @@ def get_plot_config(columns, include_demand, use_next_palette = False):
 
     #if not use_next_palette:
     palette = sns.color_palette("pastel6", labels_length)
-    stor_palette = sns.color_palette('Set3', 2)
+    stor_palette = sns.color_palette('Set3', 4)
 
     palette = _brighten_colors(palette, use_next_palette)
     stor_palette = _brighten_colors(stor_palette, use_next_palette)
@@ -64,6 +64,8 @@ def get_plot_config(columns, include_demand, use_next_palette = False):
         "Biogas input": palette[4],
         "H2 storage": stor_palette[0],
         "Battery storage": stor_palette[1],
+        "Combined Cycle Gas turbine": stor_palette[2],
+        "Simple Cycle Gas turbine": stor_palette[3],
     }
 
     sortorder = {

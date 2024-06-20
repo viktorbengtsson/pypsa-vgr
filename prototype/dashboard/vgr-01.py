@@ -3,7 +3,7 @@ import time
 from gen_table import render_generators_table
 from widgets import render_widgets
 from capacity_chart import render_capacity_chart, render_compare_capacity_chart
-from energy_chart import render_energy_chart
+from energy_chart import render_energy_chart, render_compare_energy_chart
 from legend import render_legend
 from lab import render_network, render_demand
 from data_loading import _config_from_variables, ensure_default_variables
@@ -138,10 +138,12 @@ if selected_lan_code:
             render_legend(col2A, COMPARE_CONFIG, True)
             render_legend(col2B, CONFIG, False)
 
-        #tab1, tab2 = col1.tabs(["Elproduktion/konsumption (MWh)", "Elpris"])
-        render_widgets(col1, CONFIG)
+        if COMPARE_CONFIG is not None:
+            render_compare_energy_chart(col1, CONFIG, COMPARE_CONFIG)
 
-        #render_energy_chart(col2, CONFIG)
+        #tab1, tab2 = col1.tabs(["Elproduktion/konsumption (MWh)", "Elpris"])
+        render_widgets(col1, CONFIG, COMPARE_CONFIG)
+
         #render_generators_table(colA, CONFIG)
         if COMPARE_CONFIG is None:
             render_capacity_chart(st, CONFIG)
