@@ -49,4 +49,4 @@ selected_kom_code = None if not "geography" in st.query_params or (st.query_para
 
 render_map(selected_lan_code, selected_kom_code, True)
 
-st.image("./qr.png", use_column_width=False, width=100)
+#st.image("./qr.png", use_column_width=False, width=100)

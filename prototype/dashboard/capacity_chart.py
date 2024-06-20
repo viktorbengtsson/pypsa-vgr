@@ -2,6 +2,10 @@ import pandas as pd
 from data_loading import network_data_from_variables, demand_data_from_variables
 from visualizations import get_plot_config
 import altair as alt
+import json
+from urllib import request
+
+chart_height = 350
 
 def render_capacity_chart(st_col1, config):
 
@@ -81,15 +85,27 @@ def render_capacity_chart(st_col1, config):
         y=alt.Y('Demand:Q', title=''),
     )
 
+    with request.urlopen('https://raw.githubusercontent.com/d3/d3-format/master/locale/sv-SE.json') as f:
+        sv_format = json.load(f)
+    with request.urlopen('https://raw.githubusercontent.com/d3/d3-time-format/master/locale/sv-SE.json') as f:
+        sv_time_format = json.load(f)
+
     # Combine the charts
     combined_chart = alt.layer(area_chart, line_chart, line_chart_rolling).properties(
         width=800,
-        height=400,
+        height=chart_height,
         title="Elproduktion/konsumption (MWh)"
     ).configure_title(
         anchor='middle',
         color='black'
     ).interactive()
+
+    combined_chart["usermeta"] = {
+        "embedOptions": {
+            "formatLocale": sv_format,
+            "timeFormatLocale": sv_time_format,
+        }
+    }
 
     # Display the chart in Streamlit
     st_col1.altair_chart(combined_chart, use_container_width=True)
@@ -204,7 +220,7 @@ def render_compare_capacity_chart(st_col1, config, compare_config):
     # Combine the charts
     combined_chart = alt.layer(bar_chart, bar_chart_compare, line_chart).properties(
         width=800,
-        height=400,
+        height=chart_height,
         title="Elproduktion/konsumption (TWh)"
     ).configure_title(
         anchor='middle',

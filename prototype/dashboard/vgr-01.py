@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 from gen_table import render_generators_table
-from widgets import render_widgets
+from widgets import render_widgets, render_total_widgets
 from capacity_chart import render_capacity_chart, render_compare_capacity_chart
 from energy_chart import render_energy_chart, render_compare_energy_chart
 from legend import render_legend
@@ -39,6 +39,18 @@ st.markdown(
         }
         .stException {
             margin-top: 2em;
+        }
+        label[data-baseweb="checkbox"] {
+            display: flex;
+            flex-direction: row-reverse;
+            float: left;
+            margin-left: -1.5rem;
+        }
+        label[data-baseweb="checkbox"] > div {
+            margin-left: 1rem;
+        }
+        label[data-baseweb="checkbox"] > div div[data-testid="stMarkdownContainer"] {
+            min-width: 5rem;
         }
         div[data-baseweb="select"] {
             font-size: 0.85rem;
@@ -120,11 +132,11 @@ if selected_lan_code:
         if "compare_config" in st.session_state:
             if COMPARE_CONFIG is None:
                 #col2.write("Change selection above")
-                text = ":x: Clear pinned selection"
+                text = ":x: Rensa val för jämförelse"
             else:
-                text = ":x: Clear"
+                text = ":x: Rensa"
         else:
-            text = ":pushpin: Pin selection to compare"
+            text = ":pushpin: Välj för jämförelse"
         if button_col.button(text, on_click=lambda: on_click(CONFIG), use_container_width=True):
             if "compare_config" in st.session_state:
                 del st.session_state.compare_config
@@ -139,7 +151,10 @@ if selected_lan_code:
             render_legend(col2B, CONFIG, False)
 
         if COMPARE_CONFIG is not None:
+            #colA, colB = col1.columns([2,1], gap="medium")
             render_compare_energy_chart(col1, CONFIG, COMPARE_CONFIG)
+            #render_total_widgets(colB, CONFIG, COMPARE_CONFIG)
+
 
         #tab1, tab2 = col1.tabs(["Elproduktion/konsumption (MWh)", "Elpris"])
         render_widgets(col1, CONFIG, COMPARE_CONFIG)

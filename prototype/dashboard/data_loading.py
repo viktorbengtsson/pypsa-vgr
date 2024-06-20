@@ -133,6 +133,15 @@ def demand_data_from_variables(ROOT, CONFIG):
     return pd.read_csv(f"{ROOT}../{DATA_PATH}/demand.csv", index_col=0, parse_dates=[0])
 
 @st.cache_data
+def statistics_data_from_variables(ROOT, CONFIG):
+    # Setting variables based on config
+    DATA_PATH=CONFIG["scenario"]["data-path"]
+
+    STATISTICS = pd.read_pickle(f"{ROOT}../{DATA_PATH}/statistics.pkl")
+
+    return STATISTICS
+
+@st.cache_data
 def network_data_from_variables(ROOT, CONFIG):
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]

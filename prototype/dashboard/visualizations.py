@@ -60,12 +60,13 @@ def get_plot_config(columns, include_demand, use_next_palette = False):
         "Offwind park" : palette[1],
         "Solar park" : palette[2],
         "SMR nuclear": palette[3],
+        "Conventional nuclear": palette[3],
         "Biogas market" : "red", # Are we showing it?
         "Biogas input": palette[4],
         "H2 storage": stor_palette[0],
         "Battery storage": stor_palette[1],
-        "Combined Cycle Gas turbine": stor_palette[2],
-        "Simple Cycle Gas turbine": stor_palette[3],
+        "Combined Cycle Gas turbine": palette[4],
+        "Simple Cycle Gas turbine": palette[4],
     }
 
     sortorder = {
