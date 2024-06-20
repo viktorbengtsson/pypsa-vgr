@@ -8,7 +8,7 @@ from lib.demand import create_and_store_demand
 def store_data(config):
 
     # Files: costs.csv
-    create_and_store_costs(config)
+    #create_and_store_costs(config)
 
     # Files: cutout.nc, time_index.csv, selection.shp (incl .cpg, .dbf, .prj, .shx), eez.shp (incl .cpg, .dbf, .prj, .shx)
     create_and_store_cutout(config)

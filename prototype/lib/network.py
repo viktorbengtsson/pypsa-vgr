@@ -7,7 +7,6 @@ import pickle
 def create_and_store_network(config):
     scenario_config=config["scenario"]
     DATA_PATH=scenario_config["data-path"]
-    ASSUMPTIONS = pd.read_pickle(f"../{DATA_PATH}/costs.pkl")
     
     SELECTION = gpd.read_file(f"../{DATA_PATH}/selection.shp")
     INDEX = pd.to_datetime(pd.read_csv(f"../{DATA_PATH}/time_index.csv")["0"])
