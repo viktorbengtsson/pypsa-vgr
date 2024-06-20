@@ -33,6 +33,12 @@ def create_and_store_optimize(config):
     #model.add_constraints(h2_flow_constraint >= 0, name="H2_flow_constraint")
     '''
 
+    ## Offwind constraint
+    offwind_percentage = 0.5
+
+    offwind_constraint = (1 - offwind_percentage) / offwind_percentage * generator_capacity.loc['Offwind park'] - generator_capacity.loc['Onwind park']
+    model.add_constraints(offwind_constraint == 0, name="Offwind_constraint")
+
     ## Battery charge/discharge ratio
     lhs = link_capacity.loc["Battery charge"] - NETWORK.links.at["Battery charge", "efficiency"] * link_capacity.loc["Battery discharge"]
     model.add_constraints(lhs == 0, name="Link-battery_fix_ratio")
