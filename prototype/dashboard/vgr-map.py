@@ -25,6 +25,12 @@ st.markdown(
             position: fixed;
             top: 0;
         }
+        div[data-testid="stImage"] {
+            position: fixed;
+            z-index: 100;
+            bottom: 1rem;
+            left: 1rem;
+        }
     </style>
     """,
     unsafe_allow_html=True,
@@ -42,3 +48,5 @@ selected_kom_code = None if not "geography" in st.query_params or (st.query_para
 ########## / Energy info from selection \ ##########
 
 render_map(selected_lan_code, selected_kom_code, True)
+
+#st.image("./qr.png", use_column_width=False, width=100)

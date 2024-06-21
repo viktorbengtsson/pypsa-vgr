@@ -18,6 +18,7 @@
         "network": {
             "nuclear": [true, false],
             "h2": [true, false],
+            "offwind": [true, false],
             "biogas": ["Ingen", "Liten", "Mellan", "Stor"],
             "onwind-limit": [],
             "offwind-limit": []

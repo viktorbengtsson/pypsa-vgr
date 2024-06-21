@@ -47,6 +47,7 @@ def _get_scenario_key(CONSTANTS, VARIABLES):
     load_target = VARIABLES.get("load_target") or 10
     network_nuclear = VARIABLES.get("network_nuclear") or False
     network_h2 = VARIABLES.get("network_h2") or False
+    network_offwind = VARIABLES.get("network_offwind") or False
     network_biogas = VARIABLES.get("network_biogas") or "Liten"
     network_onwind_limit = VARIABLES.get("network_onwind_limit")
     network_offwind_limit = VARIABLES.get("network_offwind_limit")
@@ -58,6 +59,7 @@ demand={demand_data_year},\
 load-target={load_target},\
 network-nuclear={network_nuclear},\
 network-h2={network_h2},\
+network-offwind={network_offwind},\
 network-biogas={network_biogas},\
 network-onwind-limit={network_onwind_limit},\
 network-offwind-limit={network_offwind_limit},\
@@ -133,6 +135,15 @@ def demand_data_from_variables(ROOT, CONFIG):
     return pd.read_csv(f"{ROOT}../{DATA_PATH}/demand.csv", index_col=0, parse_dates=[0])
 
 @st.cache_data
+def statistics_data_from_variables(ROOT, CONFIG):
+    # Setting variables based on config
+    DATA_PATH=CONFIG["scenario"]["data-path"]
+
+    STATISTICS = pd.read_pickle(f"{ROOT}../{DATA_PATH}/statistics.pkl")
+
+    return STATISTICS
+
+@st.cache_data
 def network_data_from_variables(ROOT, CONFIG):
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]
@@ -149,8 +160,10 @@ def ensure_default_variables(var_dict):
         var_dict.network_nuclear = False
     if "network_h2" not in var_dict:
         var_dict.network_h2 = True
+    if "network_offwind" not in var_dict:
+        var_dict.network_offwind = True
     if "network_biogas" not in var_dict:
-        var_dict.network_biogas = "Stor"
+        var_dict.network_biogas = "Ingen"
     if "network_onwind_limit" not in var_dict:
         var_dict.network_onwind_limit = None
     if "network_offwind_limit" not in var_dict:
@@ -163,6 +176,7 @@ def ensure_default_variables(var_dict):
         "load_target": int(var_dict.get("load_target")),
         "network_nuclear": var_dict.get("network_nuclear"),
         "network_h2": var_dict.get("network_h2"),
+        "network_offwind": var_dict.get("network_offwind"),
         "network_biogas": var_dict.get("network_biogas"),
         "network_onwind_limit": var_dict.get("network_onwind_limit"),
         "network_offwind_limit": var_dict.get("network_offwind_limit"),

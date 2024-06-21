@@ -23,12 +23,13 @@ def create_and_store_network(config):
     parameters.set_index(['technology', 'parameter'], inplace=True)
 
     use_nuclear = bool(scenario_config["network-nuclear"])
+    use_offwind = bool(scenario_config["network-offwind"])
     use_h2 = bool(scenario_config["network-h2"])
     biogas_profile = str(scenario_config["network-biogas"]) # Ingen, Liten, Mellan, Stor
 
     biogas_production_max_nominal = config["profiles"]["biogas"][biogas_profile]
 
-    print(f"Using config:\n\th2:{use_h2}\n\tnuclear:{use_nuclear}\n\tbiogas:{biogas_profile}")
+    print(f"Using config:\n\th2:{use_h2}\n\tnuclear:{use_nuclear}\n\toffwind:{use_offwind}\n\tbiogas:{biogas_profile}")
 
     def annuity(r, n):
         return r / (1.0 - 1.0 / (1.0 + r) ** n)
@@ -144,8 +145,8 @@ def create_and_store_network(config):
 
     ### Offwind
     network.add('Generator', 'Offwind park', carrier='offwind', bus='Offwind',
-                p_nom_extendable=True, 
-                p_max_pu=AVAIL_CAPACITY_OFFWIND.values.flatten(),
+                p_nom_extendable=use_offwind,
+                p_max_pu=(AVAIL_CAPACITY_OFFWIND.values.flatten() if use_offwind else [0] * len(AVAIL_CAPACITY_OFFWIND.values.flatten())),
                 p_nom_mod=parameters.loc['offwind','unit_size'].value,
                 capital_cost= annualized_capex('offwind'),
                 marginal_cost=parameters.loc[('offwind', 'VOM'), 'value'],
@@ -153,15 +154,15 @@ def create_and_store_network(config):
                 )
 
     network.add('Link', 'Offwind load link', carrier='offwind', bus0='Offwind', bus1='Load bus',
-                p_nom_extendable=True,
+                p_nom_extendable=use_offwind,
                 )
 
     network.add('Link', 'Offwind battery link', carrier='offwind', bus0='Offwind', bus1='Battery bus',
-                p_nom_extendable=True,
+                p_nom_extendable=use_offwind,
                 )
 
     network.add('Link', 'Offwind H2 link', carrier='offwind', bus0='Offwind', bus1='H2 bus',
-                p_nom_extendable=True,
+                p_nom_extendable=use_offwind,
                 )
 
     ## Add H2 electrolysis, storage, pipline to gas turbine
@@ -255,31 +256,30 @@ def create_and_store_network(config):
                 )
 
     ## Nuclear
-    num_nuclear_conv = 0
-    num_nuclear_smr = 2
+    num_nuclear_conv = 0 if use_nuclear else 0
+    num_nuclear_smr = 2 if use_nuclear else 0
 
-    if use_nuclear:
- #       for i in range(num_nuclear_conv):
-        network.add('Generator', f"{'Conventional nuclear'}", carrier='nuclear', bus='Nuclear',
-                p_nom_extendable=True,
-                p_nom_mod=parameters.loc['nuclear_conv','p_nom'].value,
-                p_nom_max=num_nuclear_conv * float(parameters.loc['nuclear_conv','p_nom'].value),
+#       for i in range(num_nuclear_conv):
+    network.add('Generator', f"{'Conventional nuclear'}", carrier='nuclear', bus='Nuclear',
+            p_nom_extendable=True,
+            p_nom_mod=parameters.loc['nuclear_conv','p_nom'].value,
+            p_nom_max=num_nuclear_conv * float(parameters.loc['nuclear_conv','p_nom'].value),
 #                p_nom=parameters.loc['nuclear_conv','p_nom'].value,
-                capital_cost= annualized_capex('nuclear_conv'),
-                marginal_cost=float(parameters.loc['nuclear_conv','VOM'].value) + float(parameters.loc['nuclear_conv','fuel'].value),
-                lifetime=parameters.loc['nuclear_conv','lifetime'].value,
-                )
+            capital_cost= annualized_capex('nuclear_conv'),
+            marginal_cost=float(parameters.loc['nuclear_conv','VOM'].value) + float(parameters.loc['nuclear_conv','fuel'].value),
+            lifetime=parameters.loc['nuclear_conv','lifetime'].value,
+            )
 
 #        for j in range(num_nuclear_smr):
-        network.add('Generator', f"{'SMR nuclear'}", carrier='nuclear', bus='Nuclear',
-                p_nom_extendable=True,
-                p_nom_mod=parameters.loc['nuclear_smr','p_nom'].value,
-                p_nom_max=num_nuclear_smr * float(parameters.loc['nuclear_smr','p_nom'].value),
+    network.add('Generator', f"{'SMR nuclear'}", carrier='nuclear', bus='Nuclear',
+            p_nom_extendable=True,
+            p_nom_mod=parameters.loc['nuclear_smr','p_nom'].value,
+            p_nom_max=num_nuclear_smr * float(parameters.loc['nuclear_smr','p_nom'].value),
 #                p_nom=parameters.loc['nuclear_smr','p_nom'].value,
-                capital_cost= annualized_capex('nuclear_smr'),
-                marginal_cost=float(parameters.loc['nuclear_smr','VOM'].value) + float(parameters.loc['nuclear_smr','fuel'].value),
-                lifetime=parameters.loc['nuclear_smr','lifetime'].value,
-                )
+            capital_cost= annualized_capex('nuclear_smr'),
+            marginal_cost=float(parameters.loc['nuclear_smr','VOM'].value) + float(parameters.loc['nuclear_smr','fuel'].value),
+            lifetime=parameters.loc['nuclear_smr','lifetime'].value,
+            )
 
     network.add('Link', 'Nuclear to load', carrier='nuclear', bus0='Nuclear', bus1='Load bus',
             p_nom_extendable=True,

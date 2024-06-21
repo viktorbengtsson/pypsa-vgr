@@ -30,89 +30,57 @@ def render_generators_table(st_obj, config):
 
     labels = get_labels()
 
-    generator_column_names = {
+    column_names = {
         'total_cost': 'Totalkostnad',
         'annual_cost': 'Årskostnad',
         'lifetime': 'Livslängd',
         'p_nom_opt': 'Kapacitet',
+        'generators': 'Kraftverk',
         'energy_produced': 'Producerad energi',
-        'shadow_price': 'Skuggpris'
     }
 
-    store_column_names = {
-        'total_cost': 'Totalkostnad',
-        'annual_cost': 'Årskostnad',
-        'lifetime': 'Livslängd',
-        'e_nom_opt': 'Kapacitet'
-    }
+    generator_index = NETWORK.generators.index.difference(['Backstop', 'Biogas input'])
 
     generators = pd.concat([
-        NETWORK.generators.loc[['Solar park', 'Onwind park', 'Offwind park']][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt']],
-        NETWORK.links.loc[['Gas turbine']][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt']]
+        NETWORK.generators.loc[NETWORK.generators.index.isin(generator_index)][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt', 'p_nom_mod']],
+        NETWORK.links.loc[['Combined Cycle Gas turbine', 'Simple Cycle Gas turbine']][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt', 'p_nom_mod']]
     ])
 
-    generators['total_cost'] = np.where(generators['p_nom_opt'] != 0, generators['capital_cost'] * generators['p_nom_opt'], 0)
-    generators['annual_cost'] = np.where(generators['p_nom_opt'] != 0, generators['total_cost'] / generators['lifetime'], 0)
-    generators['energy_produced'] = NETWORK.generators_t.p[['Solar park', 'Onwind park', 'Offwind park']].sum() * 3
-    generators.loc['Gas turbine', 'energy_produced'] = 0
-    generators['shadow_price'] = np.where(generators['energy_produced'] != 0, generators['annual_cost'] / generators['energy_produced'], 0)
-    generators.drop(columns=['capital_cost', 'marginal_cost'], inplace=True)
-
-    generators['total_cost'] = generators['total_cost'].apply(lambda x: int(f"{int(x/1_000_000):,}".replace(',', '')))
-    generators['annual_cost'] = generators['annual_cost'].apply(lambda x: f"{int(x/1_000_000):,}".replace(',', ' ') + " MSEK/year")
-    generators['energy_produced'] = generators['energy_produced'].apply(lambda x: f"{int(x/1_000):,}".replace(',', ' ') + " GWh/year")
-    generators['shadow_price'] = generators['shadow_price'].apply(lambda x: f"{int(x):,}".replace(',', ' ') + " SEK/MWh")
-    generators['lifetime'] = generators['lifetime'].apply(lambda x: f"{int(x)} years")
-    generators['p_nom_opt'] = generators['p_nom_opt'].apply(lambda x: f"{int(x):,}".replace(',', ' ') + " MW")
-    generators = generators[['p_nom_opt', 'lifetime', 'energy_produced', 'annual_cost', 'shadow_price', 'total_cost']]
-    generators.rename(columns=generator_column_names, inplace=True)
-
-    biogas = NETWORK.generators.loc[['Biogas market']][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt']]
-    biogas['energy_produced'] = NETWORK.generators_t.p[['Biogas market']].sum() * 3 * float(parameters.loc['biogas', 'efficiency'].value)
-    biogas['annual_cost'] = np.where(biogas['p_nom_opt'] != 0, biogas['marginal_cost'] * biogas['energy_produced'] / float(parameters.loc['biogas', 'efficiency'].value), 0)
-    biogas['shadow_price'] = np.where(biogas['p_nom_opt'] != 0, biogas['annual_cost'] / biogas['energy_produced'], 0)
-    biogas['lifetime'] = 0
-    biogas['p_nom_opt'] = 0
-    biogas['total_cost'] = 0
-    biogas.drop(columns=['capital_cost', 'marginal_cost'], inplace=True)
-
-    biogas['annual_cost'] = biogas['annual_cost'].apply(lambda x: f"{int(x/1_000_000):,}".replace(',', ' ') + " MSEK/year")
-    biogas['energy_produced'] = biogas['energy_produced'].apply(lambda x: f"{int(x/1_000):,}".replace(',', ' ') + " GWh/year")
-    biogas['shadow_price'] = biogas['shadow_price'].apply(lambda x: f"{int(x):,}".replace(',', ' ') + " SEK/MWh")
-    biogas = biogas[['p_nom_opt', 'lifetime', 'energy_produced', 'annual_cost', 'shadow_price', 'total_cost']]
-    biogas.rename(columns=generator_column_names, inplace=True)
+    generators['annual_cost'] = np.where(generators['p_nom_opt'] != 0, generators['capital_cost'] * generators['p_nom_opt'], 0)
+    generators['energy_produced'] = NETWORK.generators_t.p.loc[:, generator_index].sum() * 3
+    generators['generators'] = generators['p_nom_opt'] / generators['p_nom_mod']
 
     other = NETWORK.links.loc[['H2 electrolysis', 'Battery charge']][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt']]
+    other['annual_cost'] = np.where(other['p_nom_opt'] != 0, other['capital_cost'] * other['p_nom_opt'], 0)
 
-    other['total_cost'] = np.where(other['p_nom_opt'] != 0, other['capital_cost'] * other['p_nom_opt'], 0)
-    other['annual_cost'] = np.where(other['p_nom_opt'] != 0, other['total_cost'] / other['lifetime'], 0)
-    other.drop(columns=['capital_cost', 'marginal_cost'], inplace=True)
+    stores = NETWORK.stores.loc[["H2 storage", "Battery storage"]][['capital_cost', 'marginal_cost', 'lifetime', 'e_nom_opt']]
+    stores['annual_cost'] = np.where(stores['e_nom_opt'] != 0, stores['capital_cost'] * stores['e_nom_opt'], 0)
+    stores.rename(columns={'e_nom_opt': 'p_nom_opt'}, inplace=True)
 
-    other['total_cost'] = other['total_cost'].apply(lambda x: int(f"{int(x/1_000_000):,}".replace(',', '')))
-    other['annual_cost'] = other['annual_cost'].apply(lambda x: f"{int(x/1_000_000):,}".replace(',', ' ') + " MSEK/year")
-    other['lifetime'] = other['lifetime'].apply(lambda x: f"{int(x)} years")
-    other['p_nom_opt'] = other['p_nom_opt'].apply(lambda x: f"{int(x):,}".replace(',', ' ') + " MW")
-    other = other[['p_nom_opt', 'lifetime', 'annual_cost', 'total_cost']]
-    other.rename(columns=generator_column_names, inplace=True)
+    biogas = NETWORK.generators.loc[['Biogas input']][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt']]
+    biogas['energy_produced'] = NETWORK.generators_t.p[['Biogas input']].sum() * 3 * float(parameters.loc['biogas', 'efficiency'].value)
+    biogas['annual_cost'] = np.where(biogas['p_nom_opt'] != 0, biogas['marginal_cost'] * biogas['energy_produced'] / float(parameters.loc['biogas', 'efficiency'].value), 0)
+    biogas[['lifetime', 'p_nom_opt', 'total_cost']] = 0
 
-    stores = NETWORK.stores.loc[["H2 storage", "Battery"]][['capital_cost', 'marginal_cost', 'lifetime', 'e_nom_opt']]
+    system = pd.concat([generators, other, stores, biogas]).drop(columns=['capital_cost', 'marginal_cost'])[['p_nom_opt', 'generators', 'lifetime', 'energy_produced', 'annual_cost']]
 
-    stores['total_cost'] = np.where(stores['e_nom_opt'] != 0, stores['capital_cost'] * stores['e_nom_opt'], 0)
-    stores['annual_cost'] = np.where(stores['e_nom_opt'] != 0, stores['total_cost'] / stores['lifetime'], 0)
-    stores.drop(columns=['capital_cost', 'marginal_cost'], inplace=True)
+    totals = pd.DataFrame(columns=system.columns, index=['Total'])
+    totals['energy_produced'] = system['energy_produced'].sum()
+    totals['annual_cost'] = system['annual_cost'].sum()
 
-    stores['total_cost'] = stores['total_cost'].apply(lambda x: int(f"{int(x/1_000_000):,}".replace(',', '')))
-    stores['annual_cost'] = stores['annual_cost'].apply(lambda x: f"{int(x/1_000_000):,}".replace(',', ' ') + " MSEK/year")
-    stores['lifetime'] = stores['lifetime'].apply(lambda x: f"{int(x):,} years")
-    stores['e_nom_opt'] = stores['e_nom_opt'].apply(lambda x: f"{int(x):,}".replace(',', ' ') + " MWh")
-    stores = stores[['e_nom_opt', 'lifetime', 'annual_cost', 'total_cost']]
-    stores.rename(columns=store_column_names, inplace=True)
+    system = pd.concat([system, totals]).rename(columns=column_names)
 
-    data = pd.concat([generators, biogas, other, stores])
+    years = lambda s: f'{s:,.0f} år'.replace(',', ' ')
+    million_cost = lambda s: f'{s/1_000_000:,.0f} MSEK'.replace(',', ' ')
+    energy = lambda s: f'{s/1_000:,.0f} GWh'.replace(',', ' ')
+    price = lambda s: f'{s:,.0f} SEK'.replace(',', ' ')
+    system.abs().style.format({'Livslängd': years, 'Producerad energi': energy, 'Pris': price, 'Årskostnad': million_cost, 'Totalkostnad': million_cost}, precision=0, na_rep='-')
+    
+    data = system
     data.index = [labels[col] for col in data.index]
-    data = data.fillna("")
+    data = data.fillna("-")
 
-    total_total_cost = int(data["Totalkostnad"].sum())
+    sum_total_cost = int(totals["annual_cost"].sum())
 
     st_obj.dataframe(data, column_config={
         "Totalkostnad": st.column_config.ProgressColumn(
@@ -120,6 +88,6 @@ def render_generators_table(st_obj, config):
             help="Total kostnad med procent-andel av total",
             format="%f MSEK",
             min_value=0,
-            max_value=total_total_cost,
+            max_value=sum_total_cost,
         )
     })

@@ -13,19 +13,18 @@
             2023
         ],
         "load-target": [
-            10, 20, 30
+            10, 19
         ],
         "network": {
             "nuclear": [true, false],
-            "h2": [true, false],
+            "h2": [true],
             "offwind": [true, false],
-            "biogas": ["Ingen", "Liten", "Mellan", "Stor"],
+            "biogas": ["Ingen"],
             "onwind-limit": [],
             "offwind-limit": []
         },
         "geography": [
-            "14", "14:1480",
-            "12"
+            "14"
         ]
     },
     "profiles": {

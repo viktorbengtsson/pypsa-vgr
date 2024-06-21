@@ -31,6 +31,19 @@
             }
         </style>
         <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                if (window.location.search) {
+                    const p = new URLSearchParams(window.location.search);
+                    const geo = p.get("geography")
+                    if (geo && geo !== "None") {
+                        document.getElementById("map-frame").className = "frame";
+                        document.getElementById("data-frame").className = "frame";
+                        document.getElementById("map-frame").src = "http://localhost:8501/?embedded=true&geography=" + geo;
+                        document.getElementById("data-frame").src = "http://localhost:8502/?embedded=true&geography=" + geo;
+                    }
+
+                }
+            })
             window.addEventListener("message", function(event) {
                 if (event.data.type === "SET_QUERY_PARAM") {
                     if (event.origin.indexOf("8501")) {
@@ -57,7 +70,7 @@
     <body>
         <div id="container">
             <iframe id="map-frame" class="frame fullsize" src="http://localhost:8501?embedded=true" ></iframe>
-            <iframe id="data-frame" class="frame hidden" src="http://localhost:8502?embedded=true&geography=None" ></iframe>
+            <iframe id="data-frame" class="frame hidden" src="http://localhost:8502?embedded=true&clear-cache=true&geography=None" ></iframe>
         </div>
     </body>
 </html>
