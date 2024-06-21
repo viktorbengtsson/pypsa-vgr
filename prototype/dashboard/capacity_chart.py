@@ -39,16 +39,19 @@ def render_capacity_chart(st_col1, config):
     index_to_exclude = [] #[idx for idx, col in enumerate(columns) if not main_series_labels[main_series_keys.index(col)] in options]
     GEN = GEN[[col for idx, col in enumerate(columns) if idx not in index_to_exclude]]
 
-    DEMAND_rolling = DEMAND.rolling(window=window_size, center=True).mean()
-    GEN_rolling = GEN.rolling(window=window_size, center=True).mean()
-    for col in DEMAND.columns:
-        DEMAND_rolling.loc[DEMAND_rolling.index[0], col] = DEMAND[col].iloc[0::7].mean()
-        DEMAND_rolling.loc[DEMAND_rolling.index[-1], col] = DEMAND[col].iloc[-1::-9].mean()
-    for col in GEN.columns:
-        GEN_rolling.loc[GEN_rolling.index[0], col]= GEN[col].iloc[0::7].mean()
-        GEN_rolling.loc[GEN_rolling.index[-1], col] = GEN[col].iloc[-1::-9].mean()
-    DEMAND_rolling = DEMAND_rolling.interpolate()
-    GEN_rolling = GEN_rolling.interpolate()
+    DO_ROLLING = True
+
+    DEMAND_rolling = DEMAND.rolling(window=window_size, center=True).mean() if DO_ROLLING else DEMAND
+    GEN_rolling = GEN.rolling(window=window_size, center=True).mean() if DO_ROLLING else GEN
+    if DO_ROLLING:
+        for col in DEMAND.columns:
+            DEMAND_rolling.loc[DEMAND_rolling.index[0], col] = DEMAND[col].iloc[0::7].mean()
+            DEMAND_rolling.loc[DEMAND_rolling.index[-1], col] = DEMAND[col].iloc[-1::-9].mean()
+        for col in GEN.columns:
+            GEN_rolling.loc[GEN_rolling.index[0], col]= GEN[col].iloc[0::7].mean()
+            GEN_rolling.loc[GEN_rolling.index[-1], col] = GEN[col].iloc[-1::-9].mean()
+        DEMAND_rolling = DEMAND_rolling.interpolate()
+        GEN_rolling = GEN_rolling.interpolate()
 
     data = {
         "Date": GEN.index,
@@ -91,7 +94,8 @@ def render_capacity_chart(st_col1, config):
         sv_time_format = json.load(f)
 
     # Combine the charts
-    combined_chart = alt.layer(area_chart, line_chart, line_chart_rolling).properties(
+    layer = alt.layer(area_chart, line_chart, line_chart_rolling) if DO_ROLLING else alt.layer(area_chart, line_chart)
+    combined_chart = layer.properties(
         width=800,
         height=chart_height,
         title="Elproduktion/konsumption (MWh)"

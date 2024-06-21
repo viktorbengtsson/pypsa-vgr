@@ -6,7 +6,7 @@ from capacity_chart import render_capacity_chart, render_compare_capacity_chart
 from energy_chart import render_energy_chart, render_compare_energy_chart
 from legend import render_legend
 from lab import render_network, render_demand
-from data_loading import _config_from_variables, ensure_default_variables
+from data_loading import _config_from_variables, ensure_default_variables, demand_data_from_variables, statistics_data_from_variables, network_data_from_variables
 from tab_settings import render_settings
 from advanced import render_advanced
 from filters import render_filters
@@ -67,7 +67,7 @@ st.markdown(
         .stDeployButton {
             display: none;
         }
-        svg[data-testid="stMetricDeltaIcon-Up"] {
+        svg[data-testid="stMetricDeltaIcon-Up-OFF"] {
             display: none;
         }
         button[data-testid="baseButton-secondary"] {
@@ -83,6 +83,14 @@ st.markdown(
 ########## / State \ ##########
 
 DEBUG = ("debug" in st.query_params and st.query_params.debug == "True")
+
+if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
+    print("Clearing cache")
+    st.query_params["clear-cache"] = "false"
+    st.rerun()
+    demand_data_from_variables.clear()
+    statistics_data_from_variables.clear()
+    network_data_from_variables.clear()
 
 selected_lan_code = None if not "geography" in st.query_params or st.query_params.geography == "None" else st.query_params.geography.split(":")[0]
 selected_kom_code = None if not "geography" in st.query_params or (st.query_params.geography == "None" or len(st.query_params.geography.split(":")) != 2) else st.query_params.geography.split(":")[1]
@@ -115,14 +123,14 @@ if selected_lan_code:
 
     CONFIG = _config_from_variables(CONFIG_NAME, VARIABLES)
     COMPARE_CONFIG = None
-    if "compare_config" in st.session_state:
-        COMPARE_CONFIG = st.session_state.compare_config
-        if CONFIG["scenario"]["data-path"] == COMPARE_CONFIG["scenario"]["data-path"]:
-            COMPARE_CONFIG = None
 
     if CONFIG is None:
         col1.write("Inget scenario har genererats för detta län med dina filter val")
     else:
+        if "compare_config" in st.session_state:
+            COMPARE_CONFIG = st.session_state.compare_config
+            if CONFIG["scenario"]["data-path"] == COMPARE_CONFIG["scenario"]["data-path"]:
+                COMPARE_CONFIG = None
 
         button_col = col2
         if COMPARE_CONFIG is not None:
@@ -175,4 +183,3 @@ if selected_lan_code:
             render_advanced(tab2, CONFIG)
 
 ########## \ Energy info from selection / ##########
-

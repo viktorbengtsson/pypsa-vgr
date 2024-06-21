@@ -58,7 +58,7 @@ def render_gen_widget(st_obj, header, key, data, countSuffix, compare_data, pie_
             count = data.loc[key, "generators"].sum()
             compare_count = compare_data.loc[key, "generators"].sum()
             delta = count - compare_count
-            st.metric("", f"{count:.0f} {countSuffix}", delta=f"{delta:.0f} {countSuffix}", label_visibility="collapsed")
+            st.metric("", f"{count:.0f} {countSuffix}", delta=f"{delta:.0f} {countSuffix}", label_visibility="collapsed", delta_color=("off" if delta == 0 else "normal"))
 
 def render_stor_widget(st_obj, header, key, data, compare_data, pie_data = None):
     with st_obj.container(border=True):
@@ -74,7 +74,7 @@ def render_stor_widget(st_obj, header, key, data, compare_data, pie_data = None)
             capacity = data.loc[key, "p_nom_opt"].sum() / 1_000
             compare_capacity = compare_data.loc[key, "p_nom_opt"].sum() / 1_000
             delta = capacity - compare_capacity
-            st.metric("", f"{capacity:.1f} GWh", delta=f"{delta:.1f} GWh", label_visibility="collapsed")
+            st.metric("", f"{capacity:.1f} GWh", delta=f"{delta:.1f} GWh", label_visibility="collapsed", delta_color=("off" if delta == 0 else "normal"))
 
 def render_other_widget(st_obj, header, value, fraction):
     with st_obj.container(border=True):

@@ -18,6 +18,7 @@
         "network": {
             "nuclear": [true],
             "h2": [true],
+            "offwind": [true],
             "biogas": ["Stor"],
             "onwind-limit": [],
             "offwind-limit": []

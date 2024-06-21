@@ -7,6 +7,8 @@ def create_and_store_optimize(config):
     NETWORK = pypsa.Network()
     NETWORK.import_from_netcdf(f"../{DATA_PATH}/network.nc")
 
+    use_offwind = bool(scenario_config["network-offwind"])
+
     model = NETWORK.optimize.create_model()
     
     generator_capacity = model.variables["Generator-p_nom"]
@@ -34,10 +36,11 @@ def create_and_store_optimize(config):
     '''
 
     ## Offwind constraint
-    offwind_percentage = 0.5
+    if use_offwind:
+        offwind_percentage = 0.5
 
-    offwind_constraint = (1 - offwind_percentage) / offwind_percentage * generator_capacity.loc['Offwind park'] - generator_capacity.loc['Onwind park']
-    model.add_constraints(offwind_constraint == 0, name="Offwind_constraint")
+        offwind_constraint = (1 - offwind_percentage) / offwind_percentage * generator_capacity.loc['Offwind park'] - generator_capacity.loc['Onwind park']
+        model.add_constraints(offwind_constraint == 0, name="Offwind_constraint")
 
     ## Battery charge/discharge ratio
     lhs = link_capacity.loc["Battery charge"] - NETWORK.links.at["Battery charge", "efficiency"] * link_capacity.loc["Battery discharge"]
