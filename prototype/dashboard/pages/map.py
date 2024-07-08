@@ -3,12 +3,18 @@ from map_selector import render_map
 
 ########## / Streamlit init \ ##########
 
+# Set in Community Cloud Secrets
+DATA_ROOT = st.secrets["DATA_ROOT"] if "DATA_ROOT" in st.secrets else "../../data"
+
 st.set_page_config(layout="centered", initial_sidebar_state="collapsed")
+
+HEIGHT = int(st.query_params.height if "height" in st.query_params else 1080)
+WIDTH = int(st.query_params.width if "width" in st.query_params else 1920)
 
 st.markdown(
     """
     <style>
-        [data-testid="collapsedControl"] {
+        [data-testid="stSidebar"], [data-testid="collapsedControl"] {
             display: none;
         }
         header[data-testid="stHeader"] {
@@ -47,6 +53,6 @@ selected_kom_code = None if not "geography" in st.query_params or (st.query_para
 
 ########## / Energy info from selection \ ##########
 
-render_map(selected_lan_code, selected_kom_code, True)
+render_map(DATA_ROOT, selected_lan_code, selected_kom_code, True, HEIGHT, WIDTH)
 
 #st.image("./qr.png", use_column_width=False, width=100)

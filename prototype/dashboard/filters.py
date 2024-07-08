@@ -1,7 +1,7 @@
 from data_loading import read_dashboard_available_variables
 
-def render_filters(st_obj, CONFIG_NAME, VARIABLES, var_dict):
-    SCENARIOS = read_dashboard_available_variables(CONFIG_NAME)
+def render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, var_dict):
+    SCENARIOS = read_dashboard_available_variables(CONFIG_DATA_ROOT, CONFIG_NAME)
 
     if len(SCENARIOS["load-target"]) > 1:
         load_target = st_obj.select_slider("Elproduktionsmål [TWh]", options=SCENARIOS["load-target"], value=VARIABLES["load_target"])

@@ -1,5 +1,4 @@
 import streamlit as st
-import time
 from gen_table import render_generators_table
 from widgets import render_widgets, render_total_widgets
 from capacity_chart import render_capacity_chart, render_compare_capacity_chart
@@ -7,7 +6,7 @@ from energy_chart import render_energy_chart, render_compare_energy_chart
 from legend import render_legend
 from lab import render_network, render_demand
 from data_loading import _config_from_variables, ensure_default_variables, demand_data_from_variables, statistics_data_from_variables, network_data_from_variables
-from tab_settings import render_settings
+#from tab_settings import render_settings
 from advanced import render_advanced
 from filters import render_filters
 
@@ -20,7 +19,7 @@ st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 st.markdown(
     """
     <style>
-        [data-testid="collapsedControl"] {
+        [data-testid="stSidebar"], [data-testid="collapsedControl"] {
             display: none;
         }
         div[class^='block-container'] {
@@ -83,6 +82,13 @@ st.markdown(
 ########## / State \ ##########
 
 DEBUG = ("debug" in st.query_params and st.query_params.debug == "True")
+if "DATA_ROOT" in st.secrets:
+    # Manually set in Community Cloud Secrets to "./data"
+    DATA_ROOT = st.secrets["DATA_ROOT"]
+    CONFIG_DATA_ROOT = st.secrets["CONFIG_DATA_ROOT"]
+else:
+    DATA_ROOT = "../../data"
+    CONFIG_DATA_ROOT = "../configs"
 
 if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
     print("Clearing cache")
@@ -110,8 +116,8 @@ if DEBUG:
 else:
     col2, col1 = st.columns([4, 13], gap="large")
 
-if DEBUG:
-    render_settings(tab4, CONFIG_NAME)
+#if DEBUG:
+#    render_settings(CONFIG_DATA_ROOT, tab4, CONFIG_NAME)
 
 ########## / Energy info from selection \ ##########
 
@@ -119,9 +125,9 @@ if selected_lan_code:
     selected_year = 2011
 
     VARIABLES = ensure_default_variables(st.query_params)
-    VARIABLES = render_filters(col2, CONFIG_NAME, VARIABLES, st.query_params)
+    VARIABLES = render_filters(CONFIG_DATA_ROOT, col2, CONFIG_NAME, VARIABLES, st.query_params)
 
-    CONFIG = _config_from_variables(CONFIG_NAME, VARIABLES)
+    CONFIG = _config_from_variables(DATA_ROOT, CONFIG_NAME, VARIABLES)
     COMPARE_CONFIG = None
 
     if CONFIG is None:
@@ -152,34 +158,36 @@ if selected_lan_code:
                 st.session_state.compare_config = CONFIG
 
         if COMPARE_CONFIG is None:
-            render_legend(col2, CONFIG, False)
+            render_legend(DATA_ROOT, col2, CONFIG, False)
         else:
             col2A, col2B = col2.columns([1,1])
-            render_legend(col2A, COMPARE_CONFIG, True)
-            render_legend(col2B, CONFIG, False)
+            render_legend(DATA_ROOT, col2A, COMPARE_CONFIG, True)
+            render_legend(DATA_ROOT, col2B, CONFIG, False)
 
         if COMPARE_CONFIG is not None:
             #colA, colB = col1.columns([2,1], gap="medium")
-            render_compare_energy_chart(col1, CONFIG, COMPARE_CONFIG)
+            render_compare_energy_chart(DATA_ROOT, col1, CONFIG, COMPARE_CONFIG)
             #render_total_widgets(colB, CONFIG, COMPARE_CONFIG)
 
 
         #tab1, tab2 = col1.tabs(["Elproduktion/konsumption (MWh)", "Elpris"])
-        render_widgets(col1, CONFIG, COMPARE_CONFIG)
+        render_widgets(DATA_ROOT, col1, CONFIG, COMPARE_CONFIG)
 
-        #render_generators_table(colA, CONFIG)
+        #render_generators_table(DATA_ROOT, colA, CONFIG)
         if COMPARE_CONFIG is None:
-            render_capacity_chart(st, CONFIG)
+            render_capacity_chart(DATA_ROOT, st, CONFIG)
         else:
-            render_compare_capacity_chart(st, CONFIG, COMPARE_CONFIG)
+            render_compare_capacity_chart(DATA_ROOT, st, CONFIG, COMPARE_CONFIG)
 
         #colFoot01, colFoot02, colFoot03, colFoot04, colFoot05, colFoot06 = st.columns([3, 3, 3, 3, 3, 2])
         #colFoot06.image("./qr.png", use_column_width=True)
 
-        if DEBUG:
-            render_network(tab3, CONFIG)
-            render_demand(tab3, CONFIG)
+        #if DEBUG:
+        #    render_network(tab3, CONFIG)
+        #    render_demand(tab3, CONFIG)
 
-            render_advanced(tab2, CONFIG)
+        #    render_advanced(tab2, CONFIG)
+else:
+    st.write("No selection")
 
 ########## \ Energy info from selection / ##########

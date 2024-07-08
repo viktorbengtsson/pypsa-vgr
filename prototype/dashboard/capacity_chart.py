@@ -7,10 +7,10 @@ from urllib import request
 
 chart_height = 350
 
-def render_capacity_chart(st_col1, config):
+def render_capacity_chart(DATA_ROOT, st_col1, config):
 
-    DEMAND = demand_data_from_variables("../", config)
-    NETWORK = network_data_from_variables("../", config)
+    DEMAND = demand_data_from_variables(DATA_ROOT, config)
+    NETWORK = network_data_from_variables(DATA_ROOT, config)
 
     GEN = NETWORK.generators_t.p.abs()
     
@@ -118,10 +118,10 @@ def render_capacity_chart(st_col1, config):
 #        st_col1.write("Välj minst ett energislag")
 
 
-def _get_compare_capacity_chart(config, pinned = False):
-    DEMAND = demand_data_from_variables("../", config)
-    NETWORK = network_data_from_variables("../", config)
-    parameters = pd.read_csv("../../data/assumptions.csv")
+def _get_compare_capacity_chart(DATA_ROOT, config, pinned = False):
+    DEMAND = demand_data_from_variables(DATA_ROOT, config)
+    NETWORK = network_data_from_variables(DATA_ROOT, config)
+    parameters = pd.read_csv(f"{DATA_ROOT}/assumptions.csv")
     parameters.set_index(['technology', 'parameter'], inplace=True)
 
     GEN = NETWORK.generators_t.p.resample('ME').sum()*3 / 1_000
@@ -156,16 +156,16 @@ def _get_compare_capacity_chart(config, pinned = False):
         label_colors
     ]
 
-def render_compare_capacity_chart(st_col1, config, compare_config):
+def render_compare_capacity_chart(DATA_ROOT, st_col1, config, compare_config):
 
-    DEMAND = demand_data_from_variables("../", config)
-    parameters = pd.read_csv("../../data/assumptions.csv")
+    DEMAND = demand_data_from_variables(DATA_ROOT, config)
+    parameters = pd.read_csv(f"{DATA_ROOT}/assumptions.csv")
     parameters.set_index(['technology', 'parameter'], inplace=True)
 
     DEMAND = DEMAND['se3'].resample('ME').sum()*3 / 1_000
 
-    [index, GEN, main_series_labels, colors] = _get_compare_capacity_chart(config)
-    [index, COMPARE_GEN, compare_main_series_labels, compare_colors] = _get_compare_capacity_chart(compare_config, True)
+    [index, GEN, main_series_labels, colors] = _get_compare_capacity_chart(DATA_ROOT, config)
+    [index, COMPARE_GEN, compare_main_series_labels, compare_colors] = _get_compare_capacity_chart(DATA_ROOT, compare_config, True)
     
     data = {
         "Date": index.strftime('%b').tolist(),

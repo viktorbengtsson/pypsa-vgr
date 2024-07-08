@@ -6,10 +6,8 @@ import matplotlib.pyplot as plt
 import folium
 from shapely.geometry import Point
 from streamlit_folium import st_folium, folium_static
-from streamlit_js_eval import streamlit_js_eval
 import geopandas as gpd
 from shapely.ops import unary_union
-from streamlit.components.v1 import html
 
 ########## / Functions etc \ ##########
 
@@ -25,18 +23,15 @@ def reset_geo(**kwargs):
 
 ########## \ Functions / ##########
 
-def render_map(selected_lan_code, selected_kom_code, interactive):
+def render_map(DATA_ROOT, selected_lan_code, selected_kom_code, interactive, HEIGHT, WIDTH):
     ########## / Collection of data \ ##########
 
     # Select region, then municipal (start with Sweden)
-    sweden = gpd.read_file(f"../../data/geo/georef-sweden-kommun@public.geojson") #Source Lantmäteriverket, data maintained by opendatasoft.com
+    sweden = gpd.read_file(f"{DATA_ROOT}/geo/georef-sweden-kommun@public.geojson") #Source Lantmäteriverket, data maintained by opendatasoft.com
     selection = sweden
 
-    width = 1920 if selected_lan_code is None else 600
-    height = 1080
-    #height = streamlit_js_eval(js_expressions='screen.height', key = 'SCR')
-    #if height is None:
-    #    height = 1080
+    if selected_lan_code:
+        WIDTH = 600
 
     selection = sweden
     if selected_lan_code is not None:
@@ -127,24 +122,20 @@ def render_map(selected_lan_code, selected_kom_code, interactive):
 
     # This is the command that causes multiple renders
     if interactive:
-        map_output = st_folium(m, width=width, height=height)
+        map_output = st_folium(m, width=WIDTH, height=HEIGHT)
     else:
-        map_output = folium_static(m, width=width, height=height)
+        map_output = folium_static(m, width=WIDTH, height=HEIGHT)
 
     # Inject custom CSS to set the width of the sidebar
     st.markdown(
         f"""
         <style>
-            section[data-testid="stSidebar"] {{
-                width: {width}px !important;
-            }}
             iframe {{
                 position: fixed;
-                top: 2px;
+                top: 0;
                 left: 0;
-                width: {width}px;
-                height: {height-2}px;
-                z-index: 10;
+                width: {WIDTH}px;
+                height: {HEIGHT}px;
             }}
             div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlock"] {{
                 margin-top: -0.25em;

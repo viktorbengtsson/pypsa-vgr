@@ -1,0 +1,14 @@
+altair
+pandas
+numpy==1.26.4
+streamlit
+streamlit_js_eval
+matplotlib
+folium
+shapely
+streamlit_folium
+geopandas==0.14.4
+pypsa
+atlite
+xarray
+seaborn

@@ -4,9 +4,9 @@ from visualizations import get_plot_config
 import seaborn as sns
 import altair as alt
 
-def render_legend(st_obj, config, use_next_palette):
+def render_legend(DATA_ROOT, st_obj, config, use_next_palette):
 
-    NETWORK = network_data_from_variables("../", config)
+    NETWORK = network_data_from_variables(DATA_ROOT, config)
 
     GEN = NETWORK.generators_t.p.sum()
     STOR = NETWORK.stores.loc[["H2 storage", "Battery storage"]]['e_nom_opt']

@@ -4,3 +4,10 @@ backgroundColor="#FFFFFF"
 secondaryBackgroundColor="#D4DADC"
 textColor="#000000"
 font="sans serif"
+
+[client]
+showSidebarNavigation = false
+showErrorDetails = true
+
+[logger]
+level = "debug"

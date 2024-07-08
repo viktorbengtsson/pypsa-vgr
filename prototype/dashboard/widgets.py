@@ -82,10 +82,10 @@ def render_other_widget(st_obj, header, value, fraction):
         percentage = fraction * 100
         st.metric(f"{value:.3f} TWh", f"{percentage:.2f} %", delta="", delta_color="off")
 
-def _get_data(config):
-    NETWORK = network_data_from_variables("../", config)
-    STATISTICS = statistics_data_from_variables("../", config)
-    parameters = pd.read_csv("../../data/assumptions.csv")
+def _get_data(DATA_ROOT, config):
+    NETWORK = network_data_from_variables(DATA_ROOT, config)
+    STATISTICS = statistics_data_from_variables(DATA_ROOT, config)
+    parameters = pd.read_csv(f"{DATA_ROOT}/assumptions.csv")
     parameters.set_index(['technology', 'parameter'], inplace=True)
 
     generator_index = NETWORK.generators.index.difference(['Backstop', 'Biogas input'])
@@ -144,7 +144,7 @@ def _get_data(config):
 
     return [generators, stores, gen_colors, stor_colors, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction]
 
-def render_widgets(st_obj, config, compare_config):
+def render_widgets(DATA_ROOT, st_obj, config, compare_config):
     st.markdown(
         f"""
         <style>
@@ -172,8 +172,8 @@ def render_widgets(st_obj, config, compare_config):
         unsafe_allow_html=True,
     )
     
-    [generators_compare, stores_compare, gen_colors, store_colors, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction] = _get_data(compare_config) if compare_config is not None else [None, None, None, None, None, None, None, None, None]
-    [generators, stores, gen_colors, store_colors, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction] = _get_data(config)
+    [generators_compare, stores_compare, gen_colors, store_colors, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction] = _get_data(DATA_ROOT, compare_config) if compare_config is not None else [None, None, None, None, None, None, None, None, None]
+    [generators, stores, gen_colors, store_colors, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction] = _get_data(DATA_ROOT, config)
 
     if compare_config is None:
         col1, col2, col3 = st_obj.columns([1,1,1], gap="small")
