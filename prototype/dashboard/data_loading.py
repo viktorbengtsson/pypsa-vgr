@@ -1,6 +1,8 @@
 import streamlit as st
 import json
 import pickle
+import os
+from os import walk
 import os.path
 import pandas as pd
 import geopandas as gpd
@@ -10,8 +12,8 @@ import geopandas as gpd
 import pandas as pd
 import xarray as xr
 
-def _read_config_definition(CONFIG_NAME):
-    fname=f"../configs/{CONFIG_NAME}.json"
+def _read_config_definition(CONFIG_DATA_ROOT, CONFIG_NAME):
+    fname=f"{CONFIG_DATA_ROOT}/{CONFIG_NAME}.json"
     with open(fname, "r") as f:
         CONFIG_DEFINITION = json.load(f)
     
@@ -23,8 +25,8 @@ def _read_constants(CONFIG_NAME):
         with open(fname, "wb") as f:
             pickle.dump({
                 "weather": 2023,
-                "costs": 2050,
-                "demand": 2025
+                "costs": 2030,
+                "demand": 2023
             }, f)
     
     with open(fname, "rb") as f:
@@ -65,12 +67,12 @@ network-onwind-limit={network_onwind_limit},\
 network-offwind-limit={network_offwind_limit},\
 geography={geography}"
 
-def _config_from_variables(CONFIG_NAME, VARIABLES):
+def _config_from_variables(DATA_ROOT, CONFIG_NAME, VARIABLES):
 
     CONSTANTS = _read_constants(CONFIG_NAME)
     SCENARIO = _get_scenario_key(CONSTANTS, VARIABLES)
 
-    fname = f"../../data/result/{SCENARIO}/config.json"
+    fname = f"{DATA_ROOT}/result/{SCENARIO}/config.json"
     if not os.path.isfile(fname):
         print(f"Could not find file: {fname}")
         return None
@@ -80,8 +82,8 @@ def _config_from_variables(CONFIG_NAME, VARIABLES):
 
     return CONFIG
 
-def read_dashboard_available_variables(CONFIG_NAME):
-    CONFIG_DEFINITION = _read_config_definition(CONFIG_NAME)
+def read_dashboard_available_variables(CONFIG_DATA_ROOT, CONFIG_NAME):
+    CONFIG_DEFINITION = _read_config_definition(CONFIG_DATA_ROOT, CONFIG_NAME)
     
     return CONFIG_DEFINITION["scenarios"]
 
@@ -128,28 +130,28 @@ def all_data_from_variables(ROOT, CONFIG):
     ]
 
 @st.cache_data
-def demand_data_from_variables(ROOT, CONFIG):
+def demand_data_from_variables(DATA_ROOT, CONFIG):
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]
 
-    return pd.read_csv(f"{ROOT}../{DATA_PATH}/demand.csv", index_col=0, parse_dates=[0])
+    return pd.read_csv(f"{DATA_ROOT}/{DATA_PATH}/demand.csv", index_col=0, parse_dates=[0])
 
 @st.cache_data
-def statistics_data_from_variables(ROOT, CONFIG):
+def statistics_data_from_variables(DATA_ROOT, CONFIG):
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]
 
-    STATISTICS = pd.read_pickle(f"{ROOT}../{DATA_PATH}/statistics.pkl")
+    STATISTICS = pd.read_pickle(f"{DATA_ROOT}/{DATA_PATH}/statistics.pkl")
 
     return STATISTICS
 
 @st.cache_data
-def network_data_from_variables(ROOT, CONFIG):
+def network_data_from_variables(DATA_ROOT, CONFIG):
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]
 
     NETWORK = pypsa.Network()
-    NETWORK.import_from_netcdf(f"{ROOT}../{DATA_PATH}/network.nc")
+    NETWORK.import_from_netcdf(f"{DATA_ROOT}/{DATA_PATH}/network.nc")
 
     return NETWORK
 

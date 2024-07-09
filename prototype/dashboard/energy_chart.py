@@ -5,8 +5,8 @@ from visualizations import get_plot_config
 import seaborn as sns
 import altair as alt
 
-def _get_data(config, pinned):
-    NETWORK = network_data_from_variables("../", config)
+def _get_data(DATA_ROOT, config, pinned):
+    NETWORK = network_data_from_variables(DATA_ROOT, config)
 
     generator_index = NETWORK.generators.index.difference(['Backstop', 'Biogas input'])
 
@@ -59,10 +59,10 @@ def _get_data(config, pinned):
 
     return data
 
-def render_compare_energy_chart(st_obj, config, compare_config):
+def render_compare_energy_chart(DATA_ROOT, st_obj, config, compare_config):
 
-    data = _get_data(config, False)
-    compare_data = _get_data(compare_config, True)
+    data = _get_data(DATA_ROOT, config, False)
+    compare_data = _get_data(DATA_ROOT, compare_config, True)
 
     chart = alt.Chart(data).mark_bar(size=50).encode(
         y=alt.Y('Category:N', title='', sort=[0,1], axis=alt.Axis(labelAngle=0)),
@@ -93,9 +93,9 @@ def render_compare_energy_chart(st_obj, config, compare_config):
 
     st_obj.altair_chart(combined_chart, use_container_width=True)
 
-def render_energy_chart(st_obj, config):
+def render_energy_chart(DATA_ROOT, st_obj, config):
 
-    NETWORK = network_data_from_variables("../", config)
+    NETWORK = network_data_from_variables(DATA_ROOT, config)
 
     GEN = NETWORK.generators_t.p.sum()
     STOR = NETWORK.stores.loc[["H2 storage", "Battery storage"]]['e_nom_opt']

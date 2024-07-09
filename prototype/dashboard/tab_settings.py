@@ -10,10 +10,10 @@ from scenarios import load_config_scenarios
 def _option_changed(CONFIG_NAME, code, value):
     _update_constants(CONFIG_NAME, code, value)
 
-def render_settings(st_obj, CONFIG_NAME):
+def render_settings(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME):
     st_obj.write(f"Config file used: {CONFIG_NAME}.json")
 
-    CONFIG_DEFINITION = _read_config_definition(CONFIG_NAME)
+    CONFIG_DEFINITION = _read_config_definition(CONFIG_DATA_ROOT, CONFIG_NAME)
     CONSTANTS = _read_constants(CONFIG_NAME)
     
     [combinations, keys] = load_config_scenarios(CONFIG_DEFINITION.pop("scenarios", None))

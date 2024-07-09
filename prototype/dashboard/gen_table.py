@@ -22,10 +22,10 @@ def size_text(index):
     else:
         return ""
 
-def render_generators_table(st_obj, config):
+def render_generators_table(DATA_ROOT, st_obj, config):
     
-    NETWORK = network_data_from_variables("../", config)
-    parameters = pd.read_csv("../../data/assumptions.csv")
+    NETWORK = network_data_from_variables(DATA_ROOT, config)
+    parameters = pd.read_csv(f"{DATA_ROOT}/assumptions.csv")
     parameters.set_index(['technology', 'parameter'], inplace=True)
 
     labels = get_labels()
