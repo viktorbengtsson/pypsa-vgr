@@ -8,7 +8,7 @@ from data_loading import _config_from_variables, ensure_default_variables, deman
 #from tab_settings import render_settings
 from filters import render_filters
 
-CONFIG_NAME = "small"
+CONFIG_NAME = "full"
 
 ########## / Streamlit init \ ##########
 

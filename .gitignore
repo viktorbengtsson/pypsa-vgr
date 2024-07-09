@@ -165,7 +165,7 @@ cython_debug/
 *.nc
 
 # Generated result files
-data/result
+#data/result
 
 # Too large
 corine.tif
