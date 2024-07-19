@@ -1,10 +1,20 @@
 import pandas as pd
+import os.path
 
 def create_and_store_demand(config):
     scenario_config=config["scenario"]
-    DATA_PATH=scenario_config["data-path"]
     YEAR=scenario_config["demand"]
     TARGET=scenario_config["load-target"]
+
+    DATA_ROOT_PATH="data/result"
+    DEMAND_KEY = f"{YEAR}/{TARGET}"
+    DATA_PATH = f"{DATA_ROOT_PATH}/{DEMAND_KEY}"
+
+    if os.path.isfile(f"../{DATA_PATH}/demand.csv"):
+        print("Demand: Files already exists, continue")
+        return
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
 
     ## Load the data, use only the timestamp column and the total consumption for SE3 (in column 4) and skip the first 5 rows that consist of header data. Create a new header.
     timvarden = pd.read_csv(f"../data/demand/timvarden-{YEAR}-01-12.csv", delimiter=',', skiprows=5, usecols=[0,3], header=None)

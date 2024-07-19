@@ -6,6 +6,7 @@ import shutil
 import itertools
 from pathlib import Path
 from store_data import store_data
+from lib.tools import clear_files_not_needed_for_dashboard
 
 def load_config_scenarios(scenarios, category=None):
     combinations = []
@@ -62,13 +63,14 @@ def create_scenario_key(config, scenario, keys):
     scenario = dict((existing_keys[i]["code"], x) for i, x in enumerate(scenario))
     return [unique_key.format(**scenario), scenario]
 
-def create_scenario(config, scenario, keys):
+def create_scenario(config, scenario, keys, for_dashboard):
     [unique_key, scenario] = create_scenario_key(config, scenario, keys)
     
     folder = f"data/result/{unique_key}"
+    result_folder = f"result/{unique_key}"
 
     config["scenario"] = scenario
-    config["scenario"]["data-path"] = folder
+    config["scenario"]["data-path"] = result_folder
 
     config["scenario"]["geography_lan_code"] = config["scenario"]["geography"].split(":")[0]
     config["scenario"]["geography_kom_code"] = config["scenario"]["geography"].split(":")[1] if ":" in config["scenario"]["geography"] else None
@@ -81,19 +83,19 @@ def create_scenario(config, scenario, keys):
     with open(f"../{folder}/config.json", "w") as fp:
         json.dump(config, fp, indent=4)
 
-    store_data(config)
+    store_data(config, for_dashboard)
 
 if __name__ == "__main__":
     action = str(sys.argv[1])
     config_name = str(sys.argv[2])
-    clear = (str(sys.argv[3]) == "True")
+    run_mode = str(sys.argv[3])
     selected_unique_key = None if len(sys.argv) < 5 else str(sys.argv[4])
     [config, scenarios, keys] = load_config(".", config_name, action)
 
     if len(scenarios) > 10000:
         raise Exception(f"Exceeded maximum number for scenarios (1000): {len(scenarios)}")
 
-    if clear:
+    if run_mode == "True" or run_mode == "dashboard":
         print("Clear result folder")
         folder = "../data/result/"
         for filename in os.listdir(folder):
@@ -110,7 +112,7 @@ if __name__ == "__main__":
     found = False
     for idx, scenario in enumerate(scenarios):
         if action == "create":
-            create_scenario(config, scenario, keys)
+            create_scenario(config, scenario, keys, run_mode == "dashboard")
             print(f"{idx+1} out of {len(scenarios)}: {scenario}")
         if action == "list":
             [unique_key, _] = create_scenario_key(config, scenario, keys)
@@ -120,7 +122,11 @@ if __name__ == "__main__":
             if selected_unique_key == unique_key:
                 found = True
                 break
-    
+
+    if action == "create" and run_mode == "dashboard":
+        print("Clear data shared by all scenarios")
+        clear_files_not_needed_for_dashboard()
+
     if action == "create":
         print("Execution time: %.4f minutes" % ((time.time() - start_time) / 60))
 

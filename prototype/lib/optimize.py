@@ -1,9 +1,20 @@
 import pypsa
 import pickle
+import os.path
+import pandas as pd
 
 def create_and_store_optimize(config):
     scenario_config=config["scenario"]
-    DATA_PATH=scenario_config["data-path"]
+
+    DATA_PATH =scenario_config["data-path"]    
+    DATA_PATH = f"data/{DATA_PATH}"
+
+    if os.path.isfile(f"../{DATA_PATH}/statistics.pkl"):
+        print("Optimize: Files already exists, continue")
+        return
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
+    
     NETWORK = pypsa.Network()
     NETWORK.import_from_netcdf(f"../{DATA_PATH}/network.nc")
 

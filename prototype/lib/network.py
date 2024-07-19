@@ -3,19 +3,39 @@ import geopandas as gpd
 import xarray as xr
 import pypsa
 import pickle
+import os.path
 
 def create_and_store_network(config):
     scenario_config=config["scenario"]
-    DATA_PATH=scenario_config["data-path"]
-    
-    SELECTION = gpd.read_file(f"../{DATA_PATH}/selection.shp")
-    INDEX = pd.to_datetime(pd.read_csv(f"../{DATA_PATH}/time_index.csv")["0"])
-    
-    AVAIL_CAPACITY_SOLAR = xr.open_dataarray(f"../{DATA_PATH}/avail_capacity_solar.nc")
-    AVAIL_CAPACITY_ONWIND = xr.open_dataarray(f"../{DATA_PATH}/avail_capacity_onwind.nc")
-    AVAIL_CAPACITY_OFFWIND = xr.open_dataarray(f"../{DATA_PATH}/avail_capacity_offwind.nc")
+    LAN_CODE = scenario_config["geography_lan_code"]
+    START=scenario_config["weather_start"]
+    END=scenario_config["weather_end"]
+    YEAR=scenario_config["demand"]
+    TARGET=scenario_config["load-target"]
 
-    LOAD = pd.read_csv(f"../{DATA_PATH}/demand.csv")["se3"].values.flatten()
+    DATA_ROOT_PATH="data/result"
+    GEO_KEY = f"{LAN_CODE}-{START}-{END}"
+    DEMAND_KEY = f"{YEAR}/{TARGET}"
+
+    DATA_PATH =scenario_config["data-path"]    
+    DATA_PATH = f"data/{DATA_PATH}"
+    GEO_DATA_PATH = f"{DATA_ROOT_PATH}/geo/{GEO_KEY}"
+    DEMAND_DATA_PATH = f"{DATA_ROOT_PATH}/{DEMAND_KEY}"
+
+    if os.path.isfile(f"../{DATA_PATH}/network.nc"):
+        print("Network: Files already exists, continue")
+        return
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
+    
+    SELECTION = gpd.read_file(f"../{GEO_DATA_PATH}/selection.shp")
+    INDEX = pd.to_datetime(pd.read_csv(f"../{GEO_DATA_PATH}/time_index.csv")["0"])
+    
+    AVAIL_CAPACITY_SOLAR = xr.open_dataarray(f"../{GEO_DATA_PATH}/avail_capacity_solar.nc")
+    AVAIL_CAPACITY_ONWIND = xr.open_dataarray(f"../{GEO_DATA_PATH}/avail_capacity_onwind.nc")
+    AVAIL_CAPACITY_OFFWIND = xr.open_dataarray(f"../{GEO_DATA_PATH}/avail_capacity_offwind.nc")
+
+    LOAD = pd.read_csv(f"../{DEMAND_DATA_PATH}/demand.csv")["se3"].values.flatten()
 
     NULL_CAPACITY = [0] * len(INDEX)
     RESOLUTION = 3 #3h window for weather data and pypsa model optimization

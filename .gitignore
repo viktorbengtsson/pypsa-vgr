@@ -173,3 +173,4 @@ corine.tif
 # Other
 vgr-celin-lab.ipynb
 !prototype/lib
+.streamlit/secrets.toml

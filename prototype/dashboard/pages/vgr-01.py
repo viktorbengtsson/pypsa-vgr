@@ -2,15 +2,13 @@ import streamlit as st
 from gen_table import render_generators_table
 from widgets import render_widgets, render_total_widgets
 from capacity_chart import render_capacity_chart, render_compare_capacity_chart
-from energy_chart import render_energy_chart, render_compare_energy_chart
+from energy_chart import render_compare_energy_chart
 from legend import render_legend
-from lab import render_network, render_demand
-from data_loading import _config_from_variables, ensure_default_variables, demand_data_from_variables, statistics_data_from_variables, network_data_from_variables
+from data_loading import _config_from_variables, ensure_default_variables, demand_data_from_variables, network_data
 #from tab_settings import render_settings
-from advanced import render_advanced
 from filters import render_filters
 
-CONFIG_NAME = "default"
+CONFIG_NAME = "small"
 
 ########## / Streamlit init \ ##########
 
@@ -95,8 +93,7 @@ if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true"
     st.query_params["clear-cache"] = "false"
     st.rerun()
     demand_data_from_variables.clear()
-    statistics_data_from_variables.clear()
-    network_data_from_variables.clear()
+    network_data.clear()
 
 selected_lan_code = None if not "geography" in st.query_params or st.query_params.geography == "None" else st.query_params.geography.split(":")[0]
 selected_kom_code = None if not "geography" in st.query_params or (st.query_params.geography == "None" or len(st.query_params.geography.split(":")) != 2) else st.query_params.geography.split(":")[1]
@@ -186,7 +183,6 @@ if selected_lan_code:
         #    render_network(tab3, CONFIG)
         #    render_demand(tab3, CONFIG)
 
-        #    render_advanced(tab2, CONFIG)
 else:
     st.write("No selection")
 

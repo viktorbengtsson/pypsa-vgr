@@ -1,8 +1,5 @@
-import numpy as np
-import pandas as pd
 import time
 import streamlit as st
-import matplotlib.pyplot as plt
 import folium
 from shapely.geometry import Point
 from streamlit_folium import st_folium, folium_static
@@ -98,7 +95,7 @@ def render_map(DATA_ROOT, selected_lan_code, selected_kom_code, interactive, HEI
     zoom = 5 if selected_lan_code is None or selected_lan_code == "None" else 7
     padding = 0.975 if selected_lan_code is None or selected_lan_code == "None" else 0.985
     m = folium.Map(location=[((min_y+max_y)/2) * padding,(min_x+max_x)/2], zoom_start=zoom, tiles="cartodb positron", bounds=[[min_y,min_x],[max_y,max_x]])
-    m.fit_bounds([[min_y,min_x],[max_y,max_x]])
+    #m.fit_bounds([[min_y,min_x],[max_y,max_x]])
 
     color = "#000000"
     for code, item in area_polygons.items():
@@ -147,9 +144,6 @@ def render_map(DATA_ROOT, selected_lan_code, selected_kom_code, interactive, HEI
         """,
         unsafe_allow_html=True,
     )
-
-    # Movie trick, use following to "start from scratch" and select VG
-    #document.querySelector('iframe').contentWindow.document.onclick = () => window.location = "?geography=14"
 
     if interactive:
         if map_output and map_output['last_clicked']:
