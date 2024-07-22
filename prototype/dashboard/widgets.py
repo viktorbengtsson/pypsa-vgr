@@ -1,10 +1,8 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
-from data_loading import network_data_from_variables, statistics_data_from_variables
-from visualizations import get_plot_config
+from data_loading import network_data
+from visualizations import get_plot_colors
 import altair as alt
-
 
 
 def _create_pie(pie_data, highlighted_category):
@@ -83,66 +81,15 @@ def render_other_widget(st_obj, header, value, fraction):
         st.metric(f"{value:.3f} TWh", f"{percentage:.2f} %", delta="", delta_color="off")
 
 def _get_data(DATA_ROOT, config):
-    NETWORK = network_data_from_variables(DATA_ROOT, config)
-    STATISTICS = statistics_data_from_variables(DATA_ROOT, config)
-    parameters = pd.read_csv(f"{DATA_ROOT}/assumptions.csv")
-    parameters.set_index(['technology', 'parameter'], inplace=True)
+    WIDGETS = network_data(DATA_ROOT, config, "widgets")
 
-    generator_index = NETWORK.generators.index.difference(['Backstop', 'Biogas input'])
-
-    if NETWORK.generators["p_nom_opt"].sum() == 0:
+    if WIDGETS is None:
         return
 
-    generators = pd.concat([
-        NETWORK.generators.loc[NETWORK.generators.index.isin(generator_index)][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt', 'p_nom_mod']],
-        NETWORK.links.loc[['Combined Cycle Gas turbine', 'Simple Cycle Gas turbine']][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt', 'p_nom_mod']]
-    ])
+    gen_colors = get_plot_colors(["Onwind park", "Offwind park", "Solar park", "Combined Cycle Gas turbine", "Simple Cycle Gas turbine", "Conventional nuclear", "SMR nuclear"], False)
+    stor_colors = get_plot_colors(["H2 storage", "Battery storage"], False)
 
-    generators['annual_cost'] = np.where(generators['p_nom_opt'] != 0, generators['capital_cost'] * generators['p_nom_opt'], 0)
-    generators['energy_produced'] = NETWORK.generators_t.p.loc[:, generator_index].sum() * 3
-    generators['generators'] = generators['p_nom_opt'] / generators['p_nom_mod']
-
-    stores = NETWORK.stores.loc[["H2 storage", "Battery storage"]][['capital_cost', 'marginal_cost', 'lifetime', 'e_nom_opt']]
-    stores['annual_cost'] = np.where(stores['e_nom_opt'] != 0, stores['capital_cost'] * stores['e_nom_opt'], 0)
-    stores.rename(columns={'e_nom_opt': 'p_nom_opt'}, inplace=True)
-
-    backstop_total = NETWORK.generators_t.p.loc[:, 'Backstop'].sum()*3 / 1_000_000
-    #backstop_fraction = backstop_total / (NETWORK.loads_t.p['Desired load'].sum() * 3 / 1_000_000)
-    backstop_fraction = NETWORK.generators_t.p[['Backstop']].sum().sum() / NETWORK.loads_t.p.sum().sum()
-
-    curtailment_total = STATISTICS[['Curtailment']].sum() / 1_000_000
-    curtailment_fraction = STATISTICS[['Curtailment']].sum() / (STATISTICS[['Curtailment']].sum() + NETWORK.generators_t.p[['Offwind park', 'Onwind park', 'Solar park', 'Conventional nuclear', 'SMR nuclear', 'Biogas input']].sum().sum()*3)
-    curtailment_total = curtailment_total['Curtailment']
-    curtailment_fraction = curtailment_fraction['Curtailment']
-
-    biogas = NETWORK.generators.loc[['Biogas input']][['capital_cost', 'marginal_cost', 'lifetime', 'p_nom_opt']]
-    biogas['energy_produced'] = NETWORK.generators_t.p[['Biogas input']].sum() * 3 * float(parameters.loc['biogas', 'efficiency'].value)
-    biogas['annual_cost'] = np.where(biogas['p_nom_opt'] != 0, biogas['marginal_cost'] * biogas['energy_produced'] / float(parameters.loc['biogas', 'efficiency'].value), 0)
-    #biogas_key = ["Combined Cycle Gas turbine", "Simple Cycle Gas turbine"]
-    biogas_price = biogas['annual_cost'].sum() / biogas['energy_produced'].sum() / 1000 if biogas['energy_produced'].sum() > 0 else 0
-      
-    [
-        gen_window_size,
-        gen_legend_labels,
-        gen_main_series_labels,
-        gen_main_series_keys,
-        gen_series_colors,
-        gen_labels,
-        gen_colors,
-        gen_label_colors
-    ] = get_plot_config(["Onwind park", "Offwind park", "Solar park", "Combined Cycle Gas turbine", "Simple Cycle Gas turbine", "Conventional nuclear", "SMR nuclear"], False)
-    [
-        stor_window_size,
-        stor_legend_labels,
-        stor_main_series_labels,
-        stor_main_series_keys,
-        stor_series_colors,
-        stor_labels,
-        stor_colors,
-        stor_label_colors
-    ] = get_plot_config(["H2 storage", "Battery storage"], False)
-
-    return [generators, stores, gen_colors, stor_colors, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction]
+    return WIDGETS + [gen_colors, stor_colors]
 
 def render_widgets(DATA_ROOT, st_obj, config, compare_config):
     st.markdown(
@@ -172,8 +119,8 @@ def render_widgets(DATA_ROOT, st_obj, config, compare_config):
         unsafe_allow_html=True,
     )
     
-    [generators_compare, stores_compare, gen_colors, store_colors, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction] = _get_data(DATA_ROOT, compare_config) if compare_config is not None else [None, None, None, None, None, None, None, None, None]
-    [generators, stores, gen_colors, store_colors, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction] = _get_data(DATA_ROOT, config)
+    [generators_compare, stores_compare, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction, gen_colors, store_colors] = _get_data(DATA_ROOT, compare_config) if compare_config is not None else [None, None, None, None, None, None, None, None, None]
+    [generators, stores, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction, gen_colors, store_colors] = _get_data(DATA_ROOT, config)
 
     if compare_config is None:
         col1, col2, col3 = st_obj.columns([1,1,1], gap="small")

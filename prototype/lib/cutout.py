@@ -2,16 +2,26 @@ import pandas as pd
 import geopandas as gpd
 import atlite
 import shutil
+import os.path
 from shapely.ops import unary_union
 from shapely.geometry import Polygon
 
 def create_and_store_cutout(config):
     scenario_config=config["scenario"]
-    DATA_PATH=scenario_config["data-path"]
     LAN_CODE = scenario_config["geography_lan_code"]
     KOM_CODE = scenario_config["geography_kom_code"]
     START=scenario_config["weather_start"]
     END=scenario_config["weather_end"]
+
+    DATA_ROOT_PATH="data/result"
+    GEO_KEY = f"{LAN_CODE}-{START}-{END}"
+    DATA_PATH = f"{DATA_ROOT_PATH}/geo/{GEO_KEY}"
+
+    if os.path.isfile(f"../{DATA_PATH}/cutout.nc"):
+        print("Cutout: Files already exists, continue")
+        return
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
 
     #Source Lantmäteriverket, data maintained by opendatasoft.com
     sweden = gpd.read_file("../data/geo/georef-sweden-kommun@public.geojson")

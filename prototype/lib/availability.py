@@ -1,11 +1,26 @@
 import geopandas as gpd
 import atlite
 import pathlib
+import os.path
 from atlite.gis import ExclusionContainer
 
 def create_and_store_availability(config):
     scenario_config=config["scenario"]
-    DATA_PATH=scenario_config["data-path"]
+    LAN_CODE = scenario_config["geography_lan_code"]
+    KOM_CODE = scenario_config["geography_kom_code"]
+    START=scenario_config["weather_start"]
+    END=scenario_config["weather_end"]
+
+    DATA_ROOT_PATH="data/result"
+    GEO_KEY = f"{LAN_CODE}-{START}-{END}"
+    DATA_PATH = f"{DATA_ROOT_PATH}/geo/{GEO_KEY}"
+
+    if os.path.isfile(f"../{DATA_PATH}/avail_solar.nc"):
+        print("Availability: Files already exists, continue")
+        return
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
+
     WIND_TURBINE = config["onwind_turbine"]
     WIND_TURBINE_OFFSHORE = config["offwind_turbine"]
     CUTOUT = atlite.Cutout(f"../{DATA_PATH}/cutout.nc")

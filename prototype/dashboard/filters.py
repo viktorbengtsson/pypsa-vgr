@@ -6,7 +6,12 @@ def render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, var_dict):
     if len(SCENARIOS["load-target"]) > 1:
         load_target = st_obj.select_slider("Elproduktionsmål [TWh]", options=SCENARIOS["load-target"], value=VARIABLES["load_target"])
     else:
-        load_target = SCENARIOS["load-target"][0]
+        if SCENARIOS["load-target"][0] != VARIABLES["load_target"]:
+            st_obj.write("")
+            st_obj.write("You have probably forgot to specify correct CONFIG_NAME in vgr-01.py")
+            return
+        
+        load_target = st_obj.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], value=SCENARIOS["load-target"][0])
 
     nuclear = st_obj.toggle("Kärnkraft", value=(VARIABLES["network_nuclear"] == "True"))
     h2 = st_obj.toggle("Vätgas", value=(VARIABLES["network_h2"] == "True"))

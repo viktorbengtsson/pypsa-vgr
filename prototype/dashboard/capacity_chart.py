@@ -1,6 +1,6 @@
 import pandas as pd
-from data_loading import network_data_from_variables, demand_data_from_variables
-from visualizations import get_plot_config
+from data_loading import demand_data_from_variables, network_data
+from visualizations import get_labels, get_plot_colors, get_plot_label_colors, get_plot_keys
 import altair as alt
 import json
 from urllib import request
@@ -10,34 +10,19 @@ chart_height = 350
 def render_capacity_chart(DATA_ROOT, st_col1, config):
 
     DEMAND = demand_data_from_variables(DATA_ROOT, config)
-    NETWORK = network_data_from_variables(DATA_ROOT, config)
+    GEN = network_data(DATA_ROOT, config, "capacity")
 
-    GEN = NETWORK.generators_t.p.abs()
-    
+    # Rolling average window size for charts (two weeks)
+    window_size=112
+
     #Exclude if we have no data
     columns = [column for column in GEN.columns if GEN[column].sum() > 0]
+    labels = get_labels()
     [
-        window_size,
-        legend_labels,
         main_series_labels,
         main_series_keys,
-        series_colors,
-        labels,
-        colors,
-        label_colors
-    ] = get_plot_config(columns, True)
-
-    #options = col1.multiselect(
-    #    'Category',
-    #    main_series_labels,
-    #    default=main_series_labels
-    #)
-
-    #col2.selectbox("", ("Behov (MW)", "Kostnad (MSEK)"))
-
-    #if options:
-    index_to_exclude = [] #[idx for idx, col in enumerate(columns) if not main_series_labels[main_series_keys.index(col)] in options]
-    GEN = GEN[[col for idx, col in enumerate(columns) if idx not in index_to_exclude]]
+    ] = get_plot_keys(columns)
+    colors = get_plot_colors(main_series_keys)
 
     DO_ROLLING = True
 
@@ -111,38 +96,19 @@ def render_capacity_chart(DATA_ROOT, st_col1, config):
         }
     }
 
-    # Display the chart in Streamlit
     st_col1.altair_chart(combined_chart, use_container_width=True)
 
-#    else:
-#        st_col1.write("Välj minst ett energislag")
-
-
 def _get_compare_capacity_chart(DATA_ROOT, config, pinned = False):
-    DEMAND = demand_data_from_variables(DATA_ROOT, config)
-    NETWORK = network_data_from_variables(DATA_ROOT, config)
-    parameters = pd.read_csv(f"{DATA_ROOT}/assumptions.csv")
-    parameters.set_index(['technology', 'parameter'], inplace=True)
-
-    GEN = NETWORK.generators_t.p.resample('ME').sum()*3 / 1_000
-    GEN['Biogas input'] = GEN['Biogas input'] * float(parameters.loc['biogas', 'efficiency'].value)
+    GEN = network_data(DATA_ROOT, config, "capacity_monthly")
 
     #Exclude if we have no data
     columns = [column for column in GEN.columns if GEN[column].sum() > 0]
+    labels = get_labels()
     [
-        window_size,
-        legend_labels,
         main_series_labels,
         main_series_keys,
-        series_colors,
-        labels,
-        colors,
-        label_colors
-    ] = get_plot_config(columns, True, pinned)
-
-    #if options:
-    index_to_exclude = [] #[idx for idx, col in enumerate(columns) if not main_series_labels[main_series_keys.index(col)] in options]
-    GEN = GEN[[col for idx, col in enumerate(columns) if idx not in index_to_exclude]]
+    ] = get_plot_keys(columns)
+    label_colors = get_plot_label_colors(main_series_keys, pinned)
 
     data = {}
 

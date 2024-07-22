@@ -1,16 +1,9 @@
-import streamlit as st
 import json
 import pickle
 import os
-from os import walk
 import os.path
 import pandas as pd
-import geopandas as gpd
-import pypsa
-import atlite
-import geopandas as gpd
-import pandas as pd
-import xarray as xr
+import streamlit as st
 
 def _read_config_definition(CONFIG_DATA_ROOT, CONFIG_NAME):
     fname=f"{CONFIG_DATA_ROOT}/{CONFIG_NAME}.json"
@@ -87,73 +80,25 @@ def read_dashboard_available_variables(CONFIG_DATA_ROOT, CONFIG_NAME):
     
     return CONFIG_DEFINITION["scenarios"]
 
-def all_data_from_variables(ROOT, CONFIG):
- 
-    # Setting variables based on config
-    DATA_PATH=CONFIG["scenario"]["data-path"]
-
-    CUTOUT = atlite.Cutout(f"{ROOT}../{DATA_PATH}/cutout.nc")
-    SELECTION = gpd.read_file(f"{ROOT}../{DATA_PATH}/selection.shp")
-    EEZ = gpd.read_file(f"{ROOT}../{DATA_PATH}/eez.shp")
-
-    AVAIL_SOLAR = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_solar.nc")
-    AVAIL_ONWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_onwind.nc")
-    AVAIL_OFFWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_offwind.nc")
-
-    AVAIL_CAPACITY_SOLAR = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_capacity_solar.nc")
-    AVAIL_CAPACITY_ONWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_capacity_onwind.nc")
-    AVAIL_CAPACITY_OFFWIND = xr.open_dataarray(f"{ROOT}../{DATA_PATH}/avail_capacity_offwind.nc")
-
-    ASSUMPTIONS = pd.read_pickle(f"{ROOT}../{DATA_PATH}/costs.pkl")
-
-    DEMAND = pd.read_csv(f"{ROOT}../{DATA_PATH}/demand.csv", index_col=0, parse_dates=[0])
-
-    NETWORK = pypsa.Network()
-    NETWORK.import_from_netcdf(f"{ROOT}../{DATA_PATH}/network.nc")
-
-    STATISTICS = pd.read_pickle(f"{ROOT}../{DATA_PATH}/statistics.pkl")
-
-    return [
-        ASSUMPTIONS,
-        DEMAND,
-        NETWORK,
-        STATISTICS,
-        CUTOUT,
-        SELECTION,
-        EEZ,
-        AVAIL_SOLAR,
-        AVAIL_ONWIND,
-        AVAIL_OFFWIND,
-        AVAIL_CAPACITY_SOLAR,
-        AVAIL_CAPACITY_ONWIND,
-        AVAIL_CAPACITY_OFFWIND,
-    ]
-
 @st.cache_data
 def demand_data_from_variables(DATA_ROOT, CONFIG):
     # Setting variables based on config
-    DATA_PATH=CONFIG["scenario"]["data-path"]
+    YEAR=CONFIG["scenario"]["demand"]
+    TARGET=CONFIG["scenario"]["load-target"]
+    DEMAND_KEY = f"result/{YEAR}/{TARGET}"
 
-    return pd.read_csv(f"{DATA_ROOT}/{DATA_PATH}/demand.csv", index_col=0, parse_dates=[0])
+    return pd.read_csv(f"{DATA_ROOT}/{DEMAND_KEY}/demand.csv", index_col=0, parse_dates=[0])
 
 @st.cache_data
-def statistics_data_from_variables(DATA_ROOT, CONFIG):
+def network_data(DATA_ROOT, CONFIG, key):
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]
 
-    STATISTICS = pd.read_pickle(f"{DATA_ROOT}/{DATA_PATH}/statistics.pkl")
+    fname = f"{DATA_ROOT}/{DATA_PATH}/network.pkl"
+    with open(fname, "rb") as f:
+        data_collection = pickle.load(f)
 
-    return STATISTICS
-
-@st.cache_data
-def network_data_from_variables(DATA_ROOT, CONFIG):
-    # Setting variables based on config
-    DATA_PATH=CONFIG["scenario"]["data-path"]
-
-    NETWORK = pypsa.Network()
-    NETWORK.import_from_netcdf(f"{DATA_ROOT}/{DATA_PATH}/network.nc")
-
-    return NETWORK
+    return data_collection[key]
 
 def ensure_default_variables(var_dict):
     if "load_target" not in var_dict:

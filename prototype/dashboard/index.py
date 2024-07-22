@@ -76,8 +76,14 @@ html(f"""
                 if (map === "true") {{
                     const geo = p.get("geography")
                     if (!geo || geo === "None") {{
-                        parent.document.getElementById("map-frame").className = "frame fullszie";
+                        parent.document.getElementById("map-frame").className = "frame fullsize";
                         parent.document.getElementById("data-frame").className = "frame hidden";
+
+                        parent.document.getElementById("data-frame").src = "./vgr-01?embedded=true&width={WIDTH}&height={HEIGHT}&clear-cache=true";
+
+                        var indexUrl = parent.window.location.protocol + "//" + parent.window.location.host + parent.window.location.pathname;
+                        var indexState = {{ "path": indexUrl }};
+                        parent.window.history.pushState(indexState,"",indexUrl);
                     }}
                     else {{
                         parent.document.getElementById("map-frame").className = "frame";
