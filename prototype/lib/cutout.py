@@ -25,11 +25,6 @@ def create_and_store_cutout(config):
 
     #Source Lantmäteriverket, data maintained by opendatasoft.com
     sweden = gpd.read_file("../data/geo/georef-sweden-kommun@public.geojson")
-    # Remove useless arrays
-    sweden.loc[:, "lan_code"] = sweden.lan_code.apply(lambda x : x[0])
-    sweden.loc[:, "kom_code"] = sweden.kom_code.apply(lambda x : x[0])
-    sweden.loc[:, "lan_name"] = sweden.lan_name.apply(lambda x : x[0])
-    sweden.loc[:, "kom_name"] = sweden.kom_name.apply(lambda x : x[0])
     
     lan = sweden.loc[sweden['lan_code'].isin([LAN_CODE])]
     

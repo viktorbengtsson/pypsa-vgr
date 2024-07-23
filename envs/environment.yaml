@@ -11,7 +11,7 @@ dependencies:
 - seaborn
 - numpy
 - pandas>=2.1
-- geopandas>=0.11.0
+- geopandas==0.14.4
 - plotly
 - shapely
 
