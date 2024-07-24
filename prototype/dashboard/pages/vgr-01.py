@@ -122,7 +122,7 @@ if selected_lan_code:
     selected_year = 2011
 
     VARIABLES = ensure_default_variables(st.query_params)
-    VARIABLES = render_filters(CONFIG_DATA_ROOT, col2, CONFIG_NAME, VARIABLES, st.query_params)
+    [VARIABLES, button_col] = render_filters(CONFIG_DATA_ROOT, col2, CONFIG_NAME, VARIABLES, st.query_params)
 
     CONFIG = _config_from_variables(DATA_ROOT, CONFIG_NAME, VARIABLES)
     COMPARE_CONFIG = None
@@ -135,11 +135,6 @@ if selected_lan_code:
             if CONFIG["scenario"]["data-path"] == COMPARE_CONFIG["scenario"]["data-path"]:
                 COMPARE_CONFIG = None
 
-        button_col = col2
-        if COMPARE_CONFIG is not None:
-            col2A, col2B = col2.columns([1,1])
-            button_col = col2A
-       
         if "compare_config" in st.session_state:
             if COMPARE_CONFIG is None:
                 #col2.write("Change selection above")
@@ -147,7 +142,7 @@ if selected_lan_code:
             else:
                 text = ":x: Rensa"
         else:
-            text = ":pushpin: Välj för jämförelse"
+            text = ":pushpin: Jämför"
         if button_col.button(text, on_click=lambda: on_click(CONFIG), use_container_width=True):
             if "compare_config" in st.session_state:
                 del st.session_state.compare_config
