@@ -1,6 +1,6 @@
+from lib.costs import create_and_store_parameters
 from lib.optimize import create_and_store_optimize
 from lib.network import create_and_store_network
-from lib.costs import create_and_store_costs
 from lib.cutout import create_and_store_cutout
 from lib.availability import create_and_store_availability
 from lib.demand import create_and_store_demand
@@ -10,7 +10,7 @@ from lib.tools import clear_files_not_needed_for_dashboard_for_config
 def store_data(config, for_dashboard):
 
     # Files: costs.csv
-    #create_and_store_costs(config)
+    create_and_store_parameters(config)
 
     # Files: cutout.nc, time_index.csv, selection.shp (incl .cpg, .dbf, .prj, .shx), eez.shp (incl .cpg, .dbf, .prj, .shx)
     create_and_store_cutout(config)
@@ -28,8 +28,8 @@ def store_data(config, for_dashboard):
     create_and_store_optimize(config)
 
     # Files: network.pkl
-    create_and_store_data_analytics(config)
+    #create_and_store_data_analytics(config)
 
-    if for_dashboard:
-        clear_files_not_needed_for_dashboard_for_config(config)
+    #if for_dashboard:
+    #    clear_files_not_needed_for_dashboard_for_config(config)
         
