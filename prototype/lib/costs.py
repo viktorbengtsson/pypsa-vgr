@@ -1,13 +1,18 @@
-import pandas as pd
+import sys
 import os.path
 
-def create_and_store_costs(config):
-    scenario_config=config["scenario"]
-    year = scenario_config["costs"]
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(parent_dir)
 
-    DATA_ROOT_PATH="data/result"
-    YEAR_KEY = f"{year}"
-    DATA_PATH = f"{DATA_ROOT_PATH}/{YEAR_KEY}"
+from library.parameters import read_assumptions
+
+# Process assumptions csv to dataframe and save pickle
+def create_and_store_parameters(config):
+    base_year = config["scenario"]["base-year"]
+    target_year = config["scenario"]["target-year"]
+
+    DATA_PATH =config["scenario"]["data-path"]    
+    DATA_PATH = f"data/{DATA_PATH}"
 
     if os.path.isfile(f"../{DATA_PATH}/costs.pkl"):
         print("Costs: Files already exists, continue")
@@ -15,7 +20,5 @@ def create_and_store_costs(config):
     if not os.path.exists(f"../{DATA_PATH}"):
         os.makedirs(f"../{DATA_PATH}")
 
-    assumptions = pd.read_csv(f"../data/techdata/costs_{year}.csv", index_col=list(range(2))).sort_index()
-    assumptions.loc[assumptions.unit.str.contains("/kW"),"value"]*=1e3
-    assumptions.loc[assumptions.unit.str.contains("EUR"),"value"]*=config["eur_to_sek"]
+    assumptions = read_assumptions(f"../data/assumptions.csv", base_year, target_year, config["base-currency"], config["exchange-rates"], config["scenario"]["discount-rate"])
     assumptions.to_pickle(f"../{DATA_PATH}/costs.pkl")

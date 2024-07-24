@@ -18,6 +18,7 @@ dependencies:
   # Solvers
 - coin-or-cbc
 - glpk
+- highs
 
   # Keep in conda environment when calling ipython
 - ipython
