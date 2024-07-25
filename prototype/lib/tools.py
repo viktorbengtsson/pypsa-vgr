@@ -1,14 +1,8 @@
-import pypsa
-import pickle
 import os.path
 import shutil
-import pandas as pd
 
 def clear_files_not_needed_for_dashboard_for_config(config):
-    scenario_config=config["scenario"]
-
-    DATA_PATH =scenario_config["data-path"]    
-    DATA_PATH = f"data/{DATA_PATH}"
+    DATA_PATH = f"data/{config['scenario']['data-path']}"
 
     paths = [
         f"../{DATA_PATH}/statistics.pkl",

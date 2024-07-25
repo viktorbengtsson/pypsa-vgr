@@ -1,11 +1,5 @@
-from lib.costs import create_and_store_parameters
-from lib.optimize import create_and_store_optimize
-from lib.network import create_and_store_network
-from lib.cutout import create_and_store_cutout
-from lib.availability import create_and_store_availability
-from lib.demand import create_and_store_demand
-from lib.analytics import create_and_store_data_analytics
 from lib.tools import clear_files_not_needed_for_dashboard_for_config
+from lib.create_files import create_and_store_parameters, create_and_store_cutout, create_and_store_availability, create_and_store_demand, create_and_store_network, create_and_store_optimize, create_and_store_data_analytics
 
 def store_data(config, for_dashboard):
 
@@ -28,8 +22,8 @@ def store_data(config, for_dashboard):
     create_and_store_optimize(config)
 
     # Files: network.pkl
-    #create_and_store_data_analytics(config)
+    create_and_store_data_analytics(config)
 
-    #if for_dashboard:
-    #    clear_files_not_needed_for_dashboard_for_config(config)
+    if for_dashboard:
+        clear_files_not_needed_for_dashboard_for_config(config)
         

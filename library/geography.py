@@ -47,7 +47,7 @@ def availability_matrix(cutout, selection, type):
 def capacity_factor(cutout, selection, type, model):
 
     base_dir = pathlib.Path(__file__).parent.parent
-    wind_turbine = base_dir / 'lib' / 'windturbine' / model
+    wind_turbine = base_dir / 'library' / 'windturbine' / model
 
     avail = availability_matrix(cutout, selection, type)
     avail_matrix = avail.stack(spatial=["y", "x"])
