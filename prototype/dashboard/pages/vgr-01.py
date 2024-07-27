@@ -105,12 +105,17 @@ def on_click(is_compare_mode, VARIABLES, filters):
 
 ########## \ State / ##########
 
+is_compare_mode = "compare_config" in st.session_state
+
 if DEBUG:
     tab1, tab2, tab3, tab4 = st.tabs(["Översikt", "Avancerat", "Lab", "Inställningar"])
     with tab1:
         col2, col1 = st.columns([4, 13], gap="large")
 else:
-    col2, col1 = st.columns([4, 13], gap="large")
+    if is_compare_mode:
+        col2, col1 = st.columns([4, 10], gap="large")
+    else:
+        col2, col1 = st.columns([4, 13], gap="large")
 
 #if DEBUG:
 #    render_settings(CONFIG_DATA_ROOT, tab4, CONFIG_NAME)
@@ -119,7 +124,6 @@ else:
 
 if selected_lan_code:
     selected_year = 2011
-    is_compare_mode = "compare_config" in st.session_state
     col2A, col2B = col2.columns([1,1]) if is_compare_mode else [col2, col2]
 
     VARIABLES = ensure_default_variables(st.query_params)

@@ -28,7 +28,7 @@ def render_map(DATA_ROOT, selected_lan_code, selected_kom_code, interactive, HEI
     selection = sweden
 
     if selected_lan_code:
-        WIDTH = 600
+        WIDTH = 450
 
     selection = sweden
     if selected_lan_code is not None:

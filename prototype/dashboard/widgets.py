@@ -111,8 +111,13 @@ def render_widgets(DATA_ROOT, st_obj, config, compare_config):
             }}
             div[data-testid="stHorizontalBlock"] > div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] > div > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stArrowVegaLiteChart"] {{
                 position: absolute;
-                margin-bottom: -7rem;
-                margin-left: 9rem;
+                margin-right: -0.75rem;
+                right: 0;
+            }}
+            @media screen and (max-width: 1100px) {{
+                div[data-testid="stHorizontalBlock"] > div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] > div > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stArrowVegaLiteChart"] {{
+                    display: none;
+                }}
             }}
         </style>
         """,

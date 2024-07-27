@@ -22,7 +22,7 @@ st.markdown(
         }
         div[data-testid^="stAppViewBlockContainer"] {
             padding: 0;
-            width: 600px;
+            width: 450px;
             position: fixed;
             top: 0;
             left: 0;

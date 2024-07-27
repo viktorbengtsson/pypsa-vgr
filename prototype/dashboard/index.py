@@ -36,7 +36,7 @@ st.markdown(
             border: none;
         }}
         #map-frame {{
-            width: 600px;
+            width: 450px;
             height: 100%;
         }}
         #data-frame {{
