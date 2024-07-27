@@ -4,7 +4,7 @@ import yaml
 import pathlib
 from atlite.gis import ExclusionContainer
 
-def availability_matrix(cutout, selection, type):
+def availability_matrix(cutout, selection, type, root_data = "../data"):
     # Exclude land use per solar/wind
     
     # Source: https://www.uts.edu.au/oecm/renewable-resource-mapping
@@ -21,7 +21,7 @@ def availability_matrix(cutout, selection, type):
     # 5.2.3, 5.1.2
     INCLUDED_WIND_OCEAN = [44, 41]
     
-    CORINE = "../data/geo/corine.tif"
+    CORINE = f"{root_data}/geo/corine.tif"
 
     exclusion = {
         'solar': {
@@ -44,12 +44,12 @@ def availability_matrix(cutout, selection, type):
 
     return cutout.availabilitymatrix(selection, excluder)
 
-def capacity_factor(cutout, selection, type, model):
+def capacity_factor(cutout, selection, type, model, root_data = "../data"):
 
     base_dir = pathlib.Path(__file__).parent.parent
     wind_turbine = base_dir / 'library' / 'windturbine' / model
 
-    avail = availability_matrix(cutout, selection, type)
+    avail = availability_matrix(cutout, selection, type, root_data)
     avail_matrix = avail.stack(spatial=["y", "x"])
 
     match type:
