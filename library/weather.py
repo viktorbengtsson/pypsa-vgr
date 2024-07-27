@@ -5,11 +5,17 @@ from shapely.ops import unary_union
 from shapely.geometry import Polygon
 
 def generate_cutout(lan_code, kom_code, weather_start, weather_end, root_data_path = "../data", country_code = "SWE"):
-    #Source Lantmäteriverket, data maintained by opendatasoft.com
-    sweden = gpd.read_file(f"{root_data_path}/geo/georef-sweden-kommun@public.geojson")
-    
-    lan = sweden.loc[sweden['lan_code'].isin([lan_code])]
-    
+    if country_code == "SWE":
+        #Source Lantmäteriverket, data maintained by opendatasoft.com
+        country = gpd.read_file(f"{root_data_path}/geo/georef-sweden-kommun@public.geojson")
+        
+        lan = country.loc[country['lan_code'].isin([lan_code])]
+    else:
+        #Source: https://www.igismap.com/south-africa-shapefile-download-boundary-line-polygon/
+        country = gpd.read_file(f"{root_data_path}/geo/south_africa_Province_level_1.geojson")
+        
+        lan = country.loc[country['shapeiso'].isin([lan_code])]
+            
     minx, miny, maxx, maxy = lan.total_bounds
 
     fname = str(f"{root_data_path}/cutout-{lan_code}-{weather_start}-{weather_end}.nc")
@@ -27,21 +33,25 @@ def generate_cutout(lan_code, kom_code, weather_start, weather_end, root_data_pa
 
     cutout.prepare(features=['influx', 'temperature', 'wind'])
 
-    if kom_code is None:
-        selection = gpd.GeoDataFrame(geometry=[unary_union(lan.geometry)], crs=sweden.crs)
+    eez = None
+    if country_code == "SWE":
+        if kom_code is None:
+            selection = gpd.GeoDataFrame(geometry=[unary_union(lan.geometry)], crs=country.crs)
+        else:
+            kom = country.loc[country['kom_code'].isin([kom_code])]
+            selection = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=country.crs)
+
+        # EEZ (Economical zone)
+        shapefile_path = f"{root_data_path}/geo/Ekonomiska_zonens_yttre_avgränsningslinjer/Ekonomiska_zonens_yttre_avgränsningslinjer_linje.shp"
+        eez_shape = gpd.read_file(shapefile_path).to_crs(selection.crs)
+        min_x, min_y, max_x, max_y = eez_shape.total_bounds
+        # Arbitrarily using min/max from cutout or eez to visualize it on VGR region
+        bounding_box = Polygon([(min_x, miny), (min_x, maxy), (maxx, maxy), (maxx, miny)])
+        bounds = gpd.GeoDataFrame(geometry=[bounding_box], crs=selection.crs) 
+        eez = gpd.overlay(eez_shape, bounds, how='intersection')
+        eez.to_crs(selection.crs)
     else:
-        kom = sweden.loc[sweden['kom_code'].isin([kom_code])]
-        selection = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=sweden.crs)
-    
-    # EEZ (Economical zone)
-    shapefile_path = f"{root_data_path}/geo/Ekonomiska_zonens_yttre_avgränsningslinjer/Ekonomiska_zonens_yttre_avgränsningslinjer_linje.shp"
-    eez_shape = gpd.read_file(shapefile_path).to_crs(selection.crs)
-    min_x, min_y, max_x, max_y = eez_shape.total_bounds
-    # Arbitrarily using min/max from cutout or eez to visualize it on VGR region
-    bounding_box = Polygon([(min_x, miny), (min_x, maxy), (maxx, maxy), (maxx, miny)])
-    bounds = gpd.GeoDataFrame(geometry=[bounding_box], crs=selection.crs) 
-    eez = gpd.overlay(eez_shape, bounds, how='intersection')
-    eez.to_crs(selection.crs)
+        selection = gpd.GeoDataFrame(geometry=[unary_union(lan.geometry)], crs=country.crs)
 
     index = pd.to_datetime(cutout.coords['time'])
 

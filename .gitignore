@@ -169,6 +169,7 @@ cython_debug/
 
 # Too large
 corine.tif
+sanlc.tif
 
 # Other
 vgr-celin-lab.ipynb
