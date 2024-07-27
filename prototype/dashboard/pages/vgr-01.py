@@ -1,12 +1,11 @@
 import streamlit as st
-from gen_table import render_generators_table
-from widgets import render_widgets, render_total_widgets
+from widgets import render_widgets
 from capacity_chart import render_capacity_chart, render_compare_capacity_chart
 from energy_chart import render_compare_energy_chart
 from legend import render_legend
 from data_loading import _config_from_variables, ensure_default_variables, demand_data_from_variables, network_data
 #from tab_settings import render_settings
-from filters import render_filters
+from filters import render_filters, render_filters_compare_mode, filters_update_variables
 
 CONFIG_NAME = "full"
 
@@ -98,11 +97,11 @@ if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true"
 selected_lan_code = None if not "geography" in st.query_params or st.query_params.geography == "None" else st.query_params.geography.split(":")[0]
 selected_kom_code = None if not "geography" in st.query_params or (st.query_params.geography == "None" or len(st.query_params.geography.split(":")) != 2) else st.query_params.geography.split(":")[1]
 
-def on_click(config):
-    if "compare_config" in st.session_state:
+def on_click(is_compare_mode, VARIABLES, filters):
+    if is_compare_mode:
         del st.session_state.compare_config
     else:
-        st.session_state.compare_config = config
+        st.session_state.compare_config = filters_update_variables(DATA_ROOT, CONFIG_NAME, VARIABLES, filters, st.query_params)
 
 ########## \ State / ##########
 
@@ -120,9 +119,13 @@ else:
 
 if selected_lan_code:
     selected_year = 2011
+    is_compare_mode = "compare_config" in st.session_state
+    col2A, col2B = col2.columns([1,1]) if is_compare_mode else [col2, col2]
 
     VARIABLES = ensure_default_variables(st.query_params)
-    [VARIABLES, button_col] = render_filters(CONFIG_DATA_ROOT, col2, CONFIG_NAME, VARIABLES, st.query_params)
+    if is_compare_mode:
+        render_filters_compare_mode(CONFIG_DATA_ROOT, st.session_state.compare_config, col2A, CONFIG_NAME)
+    [VARIABLES, compare_button_st_obj, filters] = render_filters(CONFIG_DATA_ROOT, col2B, CONFIG_NAME, VARIABLES, st.query_params, is_compare_mode)
 
     CONFIG = _config_from_variables(DATA_ROOT, CONFIG_NAME, VARIABLES)
     COMPARE_CONFIG = None
@@ -130,51 +133,28 @@ if selected_lan_code:
     if CONFIG is None:
         col1.write("Inget scenario har genererats för detta län med dina filter val")
     else:
-        if "compare_config" in st.session_state:
+        if is_compare_mode:
             COMPARE_CONFIG = st.session_state.compare_config
-            if CONFIG["scenario"]["data-path"] == COMPARE_CONFIG["scenario"]["data-path"]:
-                COMPARE_CONFIG = None
-
-        if "compare_config" in st.session_state:
-            if COMPARE_CONFIG is None:
-                #col2.write("Change selection above")
-                text = ":x: Rensa val för jämförelse"
-            else:
-                text = ":x: Rensa"
+            compare_button_st_obj = col2A
+            text = ":x: Stäng jämförelse"
         else:
             text = ":pushpin: Jämför"
-        if button_col.button(text, on_click=lambda: on_click(CONFIG), use_container_width=True):
-            if "compare_config" in st.session_state:
-                del st.session_state.compare_config
-            else:
-                st.session_state.compare_config = CONFIG
+        
+        compare_button_st_obj.button(text, on_click=lambda: on_click(is_compare_mode, VARIABLES, filters), use_container_width=True)
 
-        if COMPARE_CONFIG is None:
-            render_legend(DATA_ROOT, col2, CONFIG, False)
-        else:
-            col2A, col2B = col2.columns([1,1])
+        if is_compare_mode:
             render_legend(DATA_ROOT, col2A, COMPARE_CONFIG, True)
             render_legend(DATA_ROOT, col2B, CONFIG, False)
-
-        if COMPARE_CONFIG is not None:
-            #colA, colB = col1.columns([2,1], gap="medium")
             render_compare_energy_chart(DATA_ROOT, col1, CONFIG, COMPARE_CONFIG)
-            #render_total_widgets(colB, CONFIG, COMPARE_CONFIG)
-
-
-        #tab1, tab2 = col1.tabs(["Elproduktion/konsumption (MWh)", "Elpris"])
-        render_widgets(DATA_ROOT, col1, CONFIG, COMPARE_CONFIG)
-
-        #render_generators_table(DATA_ROOT, colA, CONFIG)
-        if COMPARE_CONFIG is None:
-            render_capacity_chart(DATA_ROOT, st, CONFIG)
-        else:
+            render_widgets(DATA_ROOT, col1, CONFIG, COMPARE_CONFIG)
             render_compare_capacity_chart(DATA_ROOT, st, CONFIG, COMPARE_CONFIG)
-
-        #colFoot01, colFoot02, colFoot03, colFoot04, colFoot05, colFoot06 = st.columns([3, 3, 3, 3, 3, 2])
-        #colFoot06.image("./qr.png", use_column_width=True)
+        else:
+            render_legend(DATA_ROOT, col2, CONFIG, False)
+            render_widgets(DATA_ROOT, col1, CONFIG, None)
+            render_capacity_chart(DATA_ROOT, st, CONFIG)
 
         #if DEBUG:
+        #    render_generators_table(DATA_ROOT, tab3, CONFIG)
         #    render_network(tab3, CONFIG)
         #    render_demand(tab3, CONFIG)
 
