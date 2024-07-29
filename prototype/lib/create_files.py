@@ -26,13 +26,13 @@ def check_for_files(data_path, fname):
 # Process assumptions csv to dataframe and save pickle
 def create_and_store_parameters(config):
     DATA_PATH = f"data/{config['scenario']['data-path']}"
-    check_for_files(DATA_PATH, 'costs.pkl')
+    check_for_files(DATA_PATH, 'assumptions.pkl')
 
     base_year = config["scenario"]["base-year"]
     target_year = config["scenario"]["target-year"]
 
     assumptions = read_assumptions(f"../data/assumptions.csv", base_year, target_year, config["base-currency"], config["exchange-rates"], config["scenario"]["discount-rate"])
-    assumptions.to_pickle(f"../{DATA_PATH}/costs.pkl")
+    assumptions.to_pickle(f"../{DATA_PATH}/assumptions.pkl")
 
 # Create a cutout and store resulting files
 def create_and_store_cutout(config):
@@ -80,7 +80,7 @@ def create_and_store_network(config):
     INDEX = pd.to_datetime(pd.read_csv(f"../{GEO_DATA_PATH}/time_index.csv")["0"])
     GEOGRAPHY = gpd.read_file(f"../{GEO_DATA_PATH}/selection.shp").total_bounds
     LOAD = pd.read_csv(f"../{DEMAND_DATA_PATH}/demand.csv")["se3"].values.flatten()
-    ASSUMPTIONS = pd.read_pickle(f"../{DATA_PATH}/costs.pkl")
+    ASSUMPTIONS = pd.read_pickle(f"../{DATA_PATH}/assumptions.pkl")
 
     CAPACITY_FACTOR_SOLAR = xr.open_dataarray(f"../{GEO_DATA_PATH}/capacity_factor_solar.nc").values.flatten()
     CAPACITY_FACTOR_ONWIND = xr.open_dataarray(f"../{GEO_DATA_PATH}/capacity_factor_solar.nc").values.flatten()
@@ -146,7 +146,7 @@ def create_and_store_data_analytics(config):
     with open(f"../{DATA_PATH}/statistics.pkl", "rb") as f:
         STATISTICS = pickle.load(f)
 
-    ASSUMPTIONS = pd.read_pickle(f"../{DATA_PATH}/costs.pkl")
+    ASSUMPTIONS = pd.read_pickle(f"../{DATA_PATH}/assumptions.pkl")
 
     # Organize a data collection optimized for data analytics
     data_collection = collect_data(NETWORK, STATISTICS, ASSUMPTIONS)
