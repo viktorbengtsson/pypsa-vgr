@@ -26,7 +26,7 @@ def availability_matrix(cutout, selection, type):
     # 5.2.3, 5.1.2
     INCLUDED_WIND_OCEAN = [44, 41]
     
-    CORINE = "data/geo/corine.tif"
+    CORINE = os.path.join(parent_dir, "data/geo/corine.tif")
 
     exclusion = {
         'solar': {

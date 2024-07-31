@@ -10,19 +10,15 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 
 def generate_cutout(lan_code, kom_code, weather_start, weather_end):
+    
     #Source Lantmäteriverket, data maintained by opendatasoft.com
-    sweden = gpd.read_file("data/geo/georef-sweden-kommun@public.geojson")
-    # Remove useless arrays
-    sweden.loc[:, "lan_code"] = sweden.lan_code.apply(lambda x : x[0])
-    sweden.loc[:, "kom_code"] = sweden.kom_code.apply(lambda x : x[0])
-    sweden.loc[:, "lan_name"] = sweden.lan_name.apply(lambda x : x[0])
-    sweden.loc[:, "kom_name"] = sweden.kom_name.apply(lambda x : x[0])
+    sweden = gpd.read_file("../data/geo/georef-sweden-kommun@public.geojson")
     
     lan = sweden.loc[sweden['lan_code'].isin([lan_code])]
     
     minx, miny, maxx, maxy = lan.total_bounds
 
-    fname = str(f"data/cutout-{lan_code}-{weather_start}-{weather_end}.nc")
+    fname = os.path.join(parent_dir, f"data/cutout-{lan_code}-{weather_start}-{weather_end}.nc")
     
     cutout = atlite.Cutout(
         path=fname,
@@ -44,7 +40,7 @@ def generate_cutout(lan_code, kom_code, weather_start, weather_end):
         selection = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=sweden.crs)
     
     # EEZ (Economical zone)
-    shapefile_path = "data/geo/Ekonomiska_zonens_yttre_avgränsningslinjer/Ekonomiska_zonens_yttre_avgränsningslinjer_linje.shp"
+    shapefile_path = os.path.join(parent_dir, "data/geo/Ekonomiska_zonens_yttre_avgränsningslinjer/Ekonomiska_zonens_yttre_avgränsningslinjer_linje.shp")
     eez_shape = gpd.read_file(shapefile_path).to_crs(selection.crs)
     min_x, min_y, max_x, max_y = eez_shape.total_bounds
     # Arbitrarily using min/max from cutout or eez to visualize it on VGR region
