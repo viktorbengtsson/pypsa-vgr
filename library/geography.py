@@ -1,8 +1,13 @@
+
 import os.path
+import sys
 import atlite
 import yaml
 import pathlib
 from atlite.gis import ExclusionContainer
+
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
 
 def availability_matrix(cutout, selection, type):
     # Exclude land use per solar/wind
@@ -21,7 +26,7 @@ def availability_matrix(cutout, selection, type):
     # 5.2.3, 5.1.2
     INCLUDED_WIND_OCEAN = [44, 41]
     
-    CORINE = "../data/geo/corine.tif"
+    CORINE = "data/geo/corine.tif"
 
     exclusion = {
         'solar': {

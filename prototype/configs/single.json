@@ -1,29 +1,23 @@
 {
     "base-currency": "SEK",
     "exchange-rates": {
-        "EUR": 11.68
+        "EUR": 11.68,
+        "USD": 10.70
     },
-    "eur_to_sek": 11.68,
     "models": {
         "solar": "",
         "onwind": "2030_5MW_onshore.yaml",
         "offwind": "2030_20MW_offshore.yaml"
     },
     "scenarios": {
-        "weather": [
-            2023
-        ],
         "base-year": [
             2024
         ],
         "target-year": [
             2035
         ], 
-        "costs": [
-            2030
-        ],
         "discount-rate": [
-            0.04
+            0.05
         ],
         "demand": [
             2023
