@@ -58,15 +58,15 @@ def render_map(DATA_ROOT, selected_lan_code, selected_kom_code, interactive, HEI
 
     for index, row in selection.iterrows():
         if row.geometry.geom_type == 'Polygon':
-            if row[code_column][0] in selection_polygons:
-                selection_polygons[row[code_column][0]][0].append(row.geometry)
+            if row[code_column] in selection_polygons:
+                selection_polygons[row[code_column]][0].append(row.geometry)
             else:
-                selection_polygons[row[code_column][0]] = ([row.geometry], row[name_column][0], row["lan_code"][0], row["lan_name"][0], row["kom_code"][0], row["kom_name"][0])
+                selection_polygons[row[code_column]] = ([row.geometry], row[name_column], row["lan_code"], row["lan_name"], row["kom_code"], row["kom_name"])
         elif row.geometry.geom_type == 'MultiPolygon':
-            if not row[code_column][0] in selection_polygons:
-                selection_polygons[row[code_column][0]] = ([], row[name_column][0], row["lan_code"][0], row["lan_name"][0], row["kom_code"][0], row["kom_name"][0])
+            if not row[code_column] in selection_polygons:
+                selection_polygons[row[code_column]] = ([], row[name_column], row["lan_code"], row["lan_name"], row["kom_code"], row["kom_name"])
             for poly_idx, polygon in enumerate(row.geometry.geoms):
-                selection_polygons[row[code_column][0]][0].append(polygon)
+                selection_polygons[row[code_column]][0].append(polygon)
 
     # Merge all polygons (union)
     selected_lan_name = None
