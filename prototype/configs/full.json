@@ -1,0 +1,39 @@
+{
+    "eur_to_sek": 11.68,
+    "onwind_turbine": "2030_5MW_onshore.yaml",
+    "offwind_turbine": "2030_20MW_offshore.yaml",
+    "scenarios": {
+        "weather": [
+            2023
+        ],
+        "costs": [
+            2030
+        ],
+        "demand": [
+            2023
+        ],
+        "load-target": [
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30
+        ],
+        "network": {
+            "nuclear": [true, false],
+            "h2": [true, false],
+            "offwind": [true, false],
+            "biogas": ["Ingen", "Liten", "Mellan", "Stor"],
+            "onwind-limit": [],
+            "offwind-limit": []
+        },
+        "geography": [
+            "14", "14:1480",
+            "12"
+        ]
+    },
+    "profiles": {
+        "biogas": {
+            "Ingen": 0,
+            "Liten": 200,
+            "Mellan": 500,
+            "Stor": 1000
+        }
+    }
+}

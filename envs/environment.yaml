@@ -1,0 +1,39 @@
+name: pypsa-vgr
+channels:
+- conda-forge
+dependencies:
+- python>=3.8
+- pip
+- atlite>=0.2.9
+- pypsa>=0.28
+
+  # Dependencies of the workflow itself
+- seaborn
+- numpy
+- pandas>=2.1
+- geopandas>=0.11.0
+- plotly
+- shapely
+
+  # Solvers
+- coin-or-cbc
+- glpk
+- highs
+
+  # Keep in conda environment when calling ipython
+- ipython
+
+  # GIS dependencies:
+- cartopy
+
+  # Streamlit dashboard
+- streamlit
+- leafmap
+- xarray
+- rioxarray
+- netcdf4
+- localtileserver
+- streamlit_folium
+
+# Dev
+- jupyterlab
