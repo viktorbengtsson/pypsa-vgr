@@ -13,7 +13,6 @@ This repo contains a pypsa model for expanded renewable energy production in VGR
   3. Wind park (offshore)
   4. (Hydrogen gas turbine)
 
-
 ## Data used in scripts
 
 - Swedish municipals (GeoJSON)
