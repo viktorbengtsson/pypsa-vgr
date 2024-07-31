@@ -75,10 +75,6 @@ def create_scenario(config, scenario, keys, for_dashboard):
     config["scenario"]["geography_lan_code"] = config["scenario"]["geography"].split(":")[0]
     config["scenario"]["geography_kom_code"] = config["scenario"]["geography"].split(":")[1] if ":" in config["scenario"]["geography"] else None
 
-    weather_year = config["scenario"]["weather"]
-    config["scenario"]["weather_start"] = f"{weather_year}-01"
-    config["scenario"]["weather_end"] = f"{weather_year}-12"
-
     Path(f"../{folder}").mkdir(parents=True, exist_ok=True)
     with open(f"../{folder}/config.json", "w") as fp:
         json.dump(config, fp, indent=4)

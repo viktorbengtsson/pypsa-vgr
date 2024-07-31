@@ -16,30 +16,38 @@ from library.geography import availability_matrix, capacity_factor
 from library.network import build_network
 from prototype.lib.collect_analytics import collect_data
 
-def check_for_files(data_path, fname):
-    if os.path.isfile(f"../{data_path}/{fname}"):
-        print("Costs: Files already exists, continue")
-        return
-    if not os.path.exists(f"../{data_path}"):
-        os.makedirs(f"../{data_path}")
-
 # Process assumptions csv to dataframe and save pickle
 def create_and_store_parameters(config):
-    DATA_PATH = f"data/{config['scenario']['data-path']}"
-    check_for_files(DATA_PATH, 'assumptions.pkl')
+    DATA_PATH = os.path.join(parent_dir, f"data/{config['scenario']['data-path']}")
+
+    if os.path.isfile(os.path.join(DATA_PATH, "assumptions.pkl")):
+        print("assumptions.pkl already exists, continue")
+        return
+
+    if not os.path.exists(DATA_PATH):
+        os.makedirs(DATA_PATH)
 
     base_year = config["scenario"]["base-year"]
     target_year = config["scenario"]["target-year"]
 
-    assumptions = read_assumptions(f"../data/assumptions.csv", base_year, target_year, config["base-currency"], config["exchange-rates"], config["scenario"]["discount-rate"])
-    assumptions.to_pickle(f"../{DATA_PATH}/assumptions.pkl")
+    assumptions = read_assumptions(os.path.join(parent_dir, f"data/assumptions.csv"), base_year, target_year, config["base-currency"], config["exchange-rates"], config["scenario"]["discount-rate"])
+    assumptions.to_pickle(os.path.join(DATA_PATH, "assumptions.pkl"))
 
 # Create a cutout and store resulting files
 def create_and_store_cutout(config):
-    DATA_PATH = f"data/result/geo/{config['scenario']['geography_lan_code']}-{config['scenario']['weather_start']}-{config['scenario']['weather_end']}"
-    check_for_files(DATA_PATH, 'cutout.nc')
 
-    cutout, selection, eez, index = generate_cutout(config['scenario']['geography_lan_code'], config['scenario']['geography_kom_code'], config['scenario']['weather_start'], config['scenario']['weather_end'])
+    weather_start = '2023-01' # Temporary fix
+    weather_end = '2023-12' # Temporary fix
+    DATA_PATH = f"data/result/geo/{config['scenario']['geography_lan_code']}-{weather_start}-{weather_end}"
+
+    if os.path.isfile(f"../{DATA_PATH}/cutout.nc"):
+        print(f"Cutout already exists, continue")
+        return
+    
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
+    
+    cutout, selection, eez, index = generate_cutout(config['scenario']['geography_lan_code'], config['scenario']['geography_kom_code'], weather_start, weather_end)
 
     cutout.to_file(f"../{DATA_PATH}/cutout.nc")
     selection.to_file(f"../{DATA_PATH}/selection.shp")
@@ -48,8 +56,17 @@ def create_and_store_cutout(config):
 
 # Store availability matrix and capacity factor
 def create_and_store_availability(config):
-    DATA_PATH = f"data/result/geo/{config['scenario']['geography_lan_code']}-{config['scenario']['weather_start']}-{config['scenario']['weather_end']}"
-    check_for_files(DATA_PATH, 'avail_solar.nc')
+    weather_start = '2023-01' # Temporary fix
+    weather_end = '2023-12' # Temporary fix
+
+    DATA_PATH = f"data/result/geo/{config['scenario']['geography_lan_code']}-{weather_start}-{weather_end}"
+
+    if os.path.isfile(f"../{DATA_PATH}/avail_solar.nc"):
+        print(f"Capacity series already exists, continue")
+        return
+    
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
 
     CUTOUT = atlite.Cutout(f"../{DATA_PATH}/cutout.nc")
     SELECTION = gpd.read_file(f"../{DATA_PATH}/selection.shp")
@@ -60,8 +77,14 @@ def create_and_store_availability(config):
 
 # Store demand/load time series
 def create_and_store_demand(config):
-    DATA_PATH = f"data/result/{config['scenario']['demand']}/{config['scenario']['load-target']}"
-    check_for_files(DATA_PATH, 'demand.csv')
+    DATA_PATH = f"data/result/demand/{config['scenario']['load-target']}"
+
+    if os.path.isfile(f"../{DATA_PATH}/demand.csv"):
+        print(f"Demand series already exists, continue")
+        return
+    
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
 
     # Load normalized load (for SE3 from file)
     load = pd.read_csv(f"../data/demand/normalized-load-2023-3h.csv", delimiter=',')
@@ -72,11 +95,20 @@ def create_and_store_demand(config):
 
 # Build network and store in file
 def create_and_store_network(config):
+    weather_start = '2023-01' # Temporary fix
+    weather_end = '2023-12' # Temporary fix
+
     DATA_PATH = f"data/{config['scenario']['data-path']}"
-    GEO_DATA_PATH = f"data/result/geo/{config['scenario']['geography_lan_code']}-{config['scenario']['weather_start']}-{config['scenario']['weather_end']}"
-    DEMAND_DATA_PATH = f"data/result/{config['scenario']['demand']}/{config['scenario']['load-target']}"
-    check_for_files(DATA_PATH, 'network.nc')
+    GEO_DATA_PATH = f"data/result/geo/{config['scenario']['geography_lan_code']}-{weather_start}-{weather_end}"
+    DEMAND_DATA_PATH = f"data/result/demand/{config['scenario']['load-target']}"
     
+    if os.path.isfile(f"../{DATA_PATH}/network.nc"):
+        print(f"Network already exists, continue")
+        return
+    
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
+
     INDEX = pd.to_datetime(pd.read_csv(f"../{GEO_DATA_PATH}/time_index.csv")["0"])
     GEOGRAPHY = gpd.read_file(f"../{GEO_DATA_PATH}/selection.shp").total_bounds
     LOAD = pd.read_csv(f"../{DEMAND_DATA_PATH}/demand.csv")["se3"].values.flatten()
@@ -104,7 +136,13 @@ def create_and_store_network(config):
 # Run optimization and store results
 def create_and_store_optimize(config):
     DATA_PATH = f"data/{config['scenario']['data-path']}"
-    check_for_files(DATA_PATH, 'statistics.pkl')
+
+    if os.path.isfile(f"../{DATA_PATH}/statistics.pkl"):
+        print(f"Statistics file already exists, continue")
+        return
+    
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
     
     NETWORK = pypsa.Network()
     NETWORK.import_from_netcdf(f"../{DATA_PATH}/network.nc")
@@ -138,7 +176,13 @@ def create_and_store_optimize(config):
 
 def create_and_store_data_analytics(config):
     DATA_PATH = f"data/{config['scenario']['data-path']}"
-    check_for_files(DATA_PATH, 'network.pkl')
+
+    if os.path.isfile(f"../{DATA_PATH}/network.pkl"):
+        print(f"Analytics file already exists, continue")
+        return
+    
+    if not os.path.exists(f"../{DATA_PATH}"):
+        os.makedirs(f"../{DATA_PATH}")
 
     NETWORK = pypsa.Network()
     NETWORK.import_from_netcdf(f"../{DATA_PATH}/network.nc")
