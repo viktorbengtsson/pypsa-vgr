@@ -1,12 +1,13 @@
 import pandas as pd
 import math
+import paths
 
 def normalize_demand():
     # This script takes the timvärden output from Svenska Kraftnät statistics (currently for 2023) and creates a normalized data for SE3 (elområde/electricity area)
     # The file is part of the repo so only need to run this file if the downloaded statistics changes
 
     ## Load the data, use only the timestamp column and the total consumption for SE3 (in column 4) and skip the first 5 rows that consist of header data. Create a new header.
-    timvarden = pd.read_csv(f"../data/demand/timvarden-2023-01-12.csv", delimiter=',', skiprows=5, usecols=[0,3], header=None)
+    timvarden = pd.read_csv(paths.input_path / 'demand/timvarden-2023-01-12.csv', delimiter=',', skiprows=5, usecols=[0,3], header=None)
     timvarden.columns = ['timestamp', 'se3']
 
     ## Create an index from the timestamp column. Convert the se3 column to float, remove the thousand separator and change the sign to positive.
@@ -21,7 +22,7 @@ def normalize_demand():
     normalized_load = tretimvarden / (tretimvarden.sum() * 3)
 
     ## Save to file
-    normalized_load.to_csv(f"../data/demand/normalized-load-2023-3h.csv")
+    normalized_load.to_csv(paths.input_path / 'demand/normalized-load-2023-3h.csv')
 
 # This calculation is based on a 2023 estimate from energiforetagen.se that can be fetched here: https://www.energiforetagen.se/pressrum/pressmeddelanden/2023/ny-rapport-sa-moter-vi-sveriges-elbehov-2045/
 # It projectes an increase from 140 TWh annually in 2023 to 330 TWh annually in 2045
