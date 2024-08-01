@@ -164,13 +164,13 @@ cython_debug/
 # Pypsa files
 *.nc
 
-# Generated result files
-#data/result
+# Generated output files
+#output
 
 # Too large
 corine.tif
 
 # Other
 vgr-celin-lab.ipynb
-!prototype/lib
+!generator/lib
 .streamlit/secrets.toml
