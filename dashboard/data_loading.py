@@ -4,11 +4,14 @@ import os
 import os.path
 import pandas as pd
 import streamlit as st
+import paths
 
 def _read_config_definition(CONFIG_DATA_ROOT, CONFIG_NAME):
     fname=f"{CONFIG_DATA_ROOT}/{CONFIG_NAME}.json"
     with open(fname, "r") as f:
         CONFIG_DEFINITION = json.load(f)
+
+    print(CONFIG_DEFINITION)
     
     return CONFIG_DEFINITION
 
@@ -17,8 +20,9 @@ def _read_constants(CONFIG_NAME):
     if not os.path.isfile(fname):
         with open(fname, "wb") as f:
             pickle.dump({
-                "weather": 2023,
-                "costs": 2030,
+                "base_year": 2024,
+                "target_year": 2035,
+                "discount_rate": 0.05,
                 "demand": 2023
             }, f)
     
@@ -35,8 +39,9 @@ def _update_constants(CONFIG_NAME, code, value):
         pickle.dump(CONSTANTS, f)
 
 def _get_scenario_key(CONSTANTS, VARIABLES):
-    weather_data_year = CONSTANTS["weather"]
-    costs_data_year = CONSTANTS["costs"]
+    base_year = CONSTANTS["base_year"]
+    target_year = CONSTANTS["target_year"]
+    discount_rate = CONSTANTS["discount_rate"]
     demand_data_year = CONSTANTS["demand"]
 
     load_target = VARIABLES.get("load_target") or 10
@@ -48,8 +53,9 @@ def _get_scenario_key(CONSTANTS, VARIABLES):
     network_offwind_limit = VARIABLES.get("network_offwind_limit")
     geography = VARIABLES.get("geography") or "14"
 
-    return f"weather={weather_data_year},\
-costs={costs_data_year},\
+    return f"base-year={base_year},\
+target-year={target_year},\
+discount-rate={discount_rate},\
 demand={demand_data_year},\
 load-target={load_target},\
 network-nuclear={network_nuclear},\
@@ -65,7 +71,7 @@ def _config_from_variables(DATA_ROOT, CONFIG_NAME, VARIABLES):
     CONSTANTS = _read_constants(CONFIG_NAME)
     SCENARIO = _get_scenario_key(CONSTANTS, VARIABLES)
 
-    fname = f"{DATA_ROOT}/result/{SCENARIO}/config.json"
+    fname = f"{DATA_ROOT}/{SCENARIO}/config.json"
     if not os.path.isfile(fname):
         print(f"Could not find file: {fname}")
         return None
@@ -80,14 +86,18 @@ def read_dashboard_available_variables(CONFIG_DATA_ROOT, CONFIG_NAME):
     
     return CONFIG_DEFINITION["scenarios"]
 
+def get_assumption_data(DATA_ROOT):
+    return pd.read_csv(f"{DATA_ROOT}/assumptions.csv")
+
 @st.cache_data
 def demand_data_from_variables(DATA_ROOT, CONFIG):
     # Setting variables based on config
     YEAR=CONFIG["scenario"]["demand"]
     TARGET=CONFIG["scenario"]["load-target"]
-    DEMAND_KEY = f"result/{YEAR}/{TARGET}"
+    #DEMAND_KEY = f"{YEAR}/{TARGET}"
+    DEMAND_KEY = f"{TARGET}"
 
-    return pd.read_csv(f"{DATA_ROOT}/{DEMAND_KEY}/demand.csv", index_col=0, parse_dates=[0])
+    return pd.read_csv(f"{DATA_ROOT}/demand/{DEMAND_KEY}/demand.csv", index_col=1, parse_dates=[1])
 
 @st.cache_data
 def network_data(DATA_ROOT, CONFIG, key):
@@ -100,17 +110,19 @@ def network_data(DATA_ROOT, CONFIG, key):
 
     return data_collection[key]
 
-def ensure_default_variables(var_dict):
+def ensure_default_variables(var_dict, CONFIG_DATA_ROOT, CONFIG_NAME):
+    SCENARIOS = read_dashboard_available_variables(CONFIG_DATA_ROOT, CONFIG_NAME)
+
     if "load_target" not in var_dict:
-        var_dict.load_target = 10
+        var_dict.load_target = SCENARIOS["load-target"][0]
     if "network_nuclear" not in var_dict:
-        var_dict.network_nuclear = False
+        var_dict.network_nuclear = SCENARIOS["network"]["nuclear"][0]
     if "network_h2" not in var_dict:
-        var_dict.network_h2 = True
+        var_dict.network_h2 = SCENARIOS["network"]["h2"][0]
     if "network_offwind" not in var_dict:
-        var_dict.network_offwind = True
+        var_dict.network_offwind = SCENARIOS["network"]["offwind"][0]
     if "network_biogas" not in var_dict:
-        var_dict.network_biogas = "Ingen"
+        var_dict.network_biogas = SCENARIOS["network"]["biogas"][0]
     if "network_onwind_limit" not in var_dict:
         var_dict.network_onwind_limit = None
     if "network_offwind_limit" not in var_dict:

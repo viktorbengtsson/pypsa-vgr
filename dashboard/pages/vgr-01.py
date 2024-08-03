@@ -6,8 +6,9 @@ from legend import render_legend
 from data_loading import _config_from_variables, ensure_default_variables, demand_data_from_variables, network_data
 #from tab_settings import render_settings
 from filters import render_filters, render_filters_compare_mode, filters_update_variables
+import paths
 
-CONFIG_NAME = "full"
+CONFIG_NAME = "single"
 
 ########## / Streamlit init \ ##########
 
@@ -84,8 +85,8 @@ if "DATA_ROOT" in st.secrets:
     DATA_ROOT = st.secrets["DATA_ROOT"]
     CONFIG_DATA_ROOT = st.secrets["CONFIG_DATA_ROOT"]
 else:
-    DATA_ROOT = "../../data"
-    CONFIG_DATA_ROOT = "../configs"
+    DATA_ROOT = paths.output_path
+    CONFIG_DATA_ROOT = paths.config_path
 
 if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
     print("Clearing cache")
@@ -122,7 +123,7 @@ if selected_lan_code:
     is_compare_mode = "compare_config" in st.session_state
     col2A, col2B = col2.columns([1,1]) if is_compare_mode else [col2, col2]
 
-    VARIABLES = ensure_default_variables(st.query_params)
+    VARIABLES = ensure_default_variables(st.query_params, CONFIG_DATA_ROOT, CONFIG_NAME)
     if is_compare_mode:
         render_filters_compare_mode(CONFIG_DATA_ROOT, st.session_state.compare_config, col2A, CONFIG_NAME)
     [VARIABLES, compare_button_st_obj, filters] = render_filters(CONFIG_DATA_ROOT, col2B, CONFIG_NAME, VARIABLES, st.query_params, is_compare_mode)

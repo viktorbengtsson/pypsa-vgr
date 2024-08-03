@@ -165,7 +165,7 @@ cython_debug/
 *.nc
 
 # Generated output files
-#output
+output
 
 # Too large
 corine.tif
@@ -174,3 +174,4 @@ corine.tif
 vgr-celin-lab.ipynb
 !generator/lib
 .streamlit/secrets.toml
+dashboard/constants.pkl

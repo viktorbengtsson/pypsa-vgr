@@ -1,5 +1,5 @@
 import pandas as pd
-from data_loading import demand_data_from_variables, network_data
+from data_loading import demand_data_from_variables, network_data, get_assumption_data
 from visualizations import get_labels, get_plot_colors, get_plot_label_colors, get_plot_keys
 import altair as alt
 import json
@@ -26,8 +26,8 @@ def render_capacity_chart(DATA_ROOT, st_col1, config):
 
     DO_ROLLING = True
 
-    DEMAND_rolling = DEMAND.rolling(window=window_size, center=True).mean() if DO_ROLLING else DEMAND
     GEN_rolling = GEN.rolling(window=window_size, center=True).mean() if DO_ROLLING else GEN
+    DEMAND_rolling = DEMAND.rolling(window=window_size, center=True).mean() if DO_ROLLING else DEMAND
     if DO_ROLLING:
         for col in DEMAND.columns:
             DEMAND_rolling.loc[DEMAND_rolling.index[0], col] = DEMAND[col].iloc[0::7].mean()
@@ -125,7 +125,7 @@ def _get_compare_capacity_chart(DATA_ROOT, config, pinned = False):
 def render_compare_capacity_chart(DATA_ROOT, st_col1, config, compare_config):
 
     DEMAND = demand_data_from_variables(DATA_ROOT, config)
-    parameters = pd.read_csv(f"{DATA_ROOT}/assumptions.csv")
+    parameters = get_assumption_data(DATA_ROOT)
     parameters.set_index(['technology', 'parameter'], inplace=True)
 
     DEMAND = DEMAND['se3'].resample('ME').sum()*3 / 1_000

@@ -5,6 +5,7 @@ import atlite
 import xarray as xr
 import pickle
 import pypsa
+import shutil
 from pathlib import Path
 
 root_path = Path(__file__).resolve().parent.parent.parent
@@ -201,3 +202,7 @@ def create_and_store_data_analytics(config):
     
     with (data_path / 'network.pkl').open('wb') as fp:
         pickle.dump(data_collection, fp)
+
+def copy_input_data():
+    if not (paths.output_path / 'assumptions.csv').is_file():
+        shutil.copyfile(paths.input_path / 'assumptions.csv', paths.output_path / 'assumptions.csv')

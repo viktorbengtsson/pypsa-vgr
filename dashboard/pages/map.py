@@ -53,6 +53,6 @@ selected_kom_code = None if not "geography" in st.query_params or (st.query_para
 
 ########## / Energy info from selection \ ##########
 
-render_map(DATA_ROOT, selected_lan_code, selected_kom_code, True, HEIGHT, WIDTH)
+render_map(selected_lan_code, selected_kom_code, True, HEIGHT, WIDTH)
 
 #st.image("./qr.png", use_column_width=False, width=100)
