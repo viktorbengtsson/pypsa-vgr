@@ -11,10 +11,12 @@ import paths
 def clear_files_not_needed_for_dashboard_for_config(config):
     data_path = paths.output_path / config['scenario']['data-path']
 
-    paths_array = [
-        data_path / 'statistics.pkl',
-        data_path / 'network.nc',
-    ]
+    # paths_array = [
+    #    data_path / 'statistics.pkl',
+    #    data_path / 'network.nc',
+    #    data_path / 'assumptions.pkl',
+    #]
+    paths_array = [data_path]
 
     for item in paths_array:
         try:

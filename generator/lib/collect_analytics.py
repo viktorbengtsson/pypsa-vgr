@@ -101,7 +101,8 @@ def _table(NETWORK, parameters):
 
     return {
         "data": data,
-        "sum_total_cost": sum_total_cost
+        "sum_total_cost": sum_total_cost,
+        "totals": totals
     }
 
 def _energy_compare(NETWORK, parameters):
@@ -141,8 +142,7 @@ def _energy_compare(NETWORK, parameters):
 
     return {
         "data": pd.concat([GEN_DATA, STOR_DATA]),
-        "main_series_labels": gen_main_series_labels + stor_main_series_labels,
-        "main_series_keys": gen_main_series_keys + stor_main_series_keys
+        "series": pd.DataFrame({'labels': gen_main_series_labels + stor_main_series_labels, 'keys': gen_main_series_keys + stor_main_series_keys })
     }
 
 def _widgets(NETWORK, STATISTICS, parameters):
@@ -177,9 +177,14 @@ def _widgets(NETWORK, STATISTICS, parameters):
     biogas['energy_produced'] = NETWORK.generators_t.p[['Biogas input']].sum() * 3 * float(parameters.loc['biogas', 'efficiency'].value)
     biogas['annual_cost'] = np.where(biogas['p_nom_opt'] != 0, biogas['marginal_cost'] * biogas['energy_produced'] / float(parameters.loc['biogas', 'efficiency'].value), 0)
     #biogas_key = ["Combined Cycle Gas turbine", "Simple Cycle Gas turbine"]
-    biogas_price = biogas['annual_cost'].sum() / biogas['energy_produced'].sum() / 1000 if biogas['energy_produced'].sum() > 0 else 0
+    #biogas_price = biogas['annual_cost'].sum() / biogas['energy_produced'].sum() / 1000 if biogas['energy_produced'].sum() > 0 else 0
       
-    return [generators, stores, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction]
+    generators["widget"] = "generators"
+    stores["widget"] = "stores"
+    backstop = pd.DataFrame(data={"widget": ["backstop", "backstop"], 'key': ["total", "fraction"], 'value': [backstop_total, backstop_fraction]})
+    curtailment = pd.DataFrame(data={"widget": ["curtailment", "curtailment"], 'key': ["total", "fraction"], 'value': [curtailment_total, curtailment_fraction]})
+
+    return pd.concat([generators, stores, backstop, curtailment])
     
 
 def collect_data(network, statistics, assumptions):

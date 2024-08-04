@@ -8,8 +8,6 @@ from data_loading import _config_from_variables, ensure_default_variables, deman
 from filters import render_filters, render_filters_compare_mode, filters_update_variables
 import paths
 
-CONFIG_NAME = "single"
-
 ########## / Streamlit init \ ##########
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
@@ -83,10 +81,8 @@ DEBUG = ("debug" in st.query_params and st.query_params.debug == "True")
 if "DATA_ROOT" in st.secrets:
     # Manually set in Community Cloud Secrets to "./data"
     DATA_ROOT = st.secrets["DATA_ROOT"]
-    CONFIG_DATA_ROOT = st.secrets["CONFIG_DATA_ROOT"]
 else:
     DATA_ROOT = paths.output_path
-    CONFIG_DATA_ROOT = paths.config_path
 
 if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
     print("Clearing cache")
@@ -102,7 +98,7 @@ def on_click(is_compare_mode, VARIABLES, filters):
     if is_compare_mode:
         del st.session_state.compare_config
     else:
-        st.session_state.compare_config = filters_update_variables(DATA_ROOT, CONFIG_NAME, VARIABLES, filters, st.query_params)
+        st.session_state.compare_config = filters_update_variables(DATA_ROOT, VARIABLES, filters, st.query_params)
 
 ########## \ State / ##########
 
@@ -114,7 +110,7 @@ else:
     col2, col1 = st.columns([4, 13], gap="large")
 
 #if DEBUG:
-#    render_settings(CONFIG_DATA_ROOT, tab4, CONFIG_NAME)
+#    render_settings(tab4)
 
 ########## / Energy info from selection \ ##########
 
@@ -123,12 +119,12 @@ if selected_lan_code:
     is_compare_mode = "compare_config" in st.session_state
     col2A, col2B = col2.columns([1,1]) if is_compare_mode else [col2, col2]
 
-    VARIABLES = ensure_default_variables(st.query_params, CONFIG_DATA_ROOT, CONFIG_NAME)
+    VARIABLES = ensure_default_variables(st.query_params, DATA_ROOT)
     if is_compare_mode:
-        render_filters_compare_mode(CONFIG_DATA_ROOT, st.session_state.compare_config, col2A, CONFIG_NAME)
-    [VARIABLES, compare_button_st_obj, filters] = render_filters(CONFIG_DATA_ROOT, col2B, CONFIG_NAME, VARIABLES, st.query_params, is_compare_mode)
+        render_filters_compare_mode(DATA_ROOT, st.session_state.compare_config, col2A)
+    [VARIABLES, compare_button_st_obj, filters] = render_filters(DATA_ROOT, col2B, VARIABLES, st.query_params, is_compare_mode)
 
-    CONFIG = _config_from_variables(DATA_ROOT, CONFIG_NAME, VARIABLES)
+    CONFIG = _config_from_variables(DATA_ROOT, VARIABLES)
     COMPARE_CONFIG = None
 
     if CONFIG is None:

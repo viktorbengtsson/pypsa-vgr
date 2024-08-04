@@ -79,6 +79,8 @@ def get_plot_colors(main_series_keys, use_next_palette = False):
         "Simple Cycle Gas turbine": palette[4],
     }
 
+    print(main_series_keys)
+
     return {k: colors[k] for k in main_series_keys}
 
 def get_plot_label_colors(main_series_keys, use_next_palette = False):

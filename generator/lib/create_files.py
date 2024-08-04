@@ -181,6 +181,7 @@ def create_and_store_optimize(config):
 
 def create_and_store_data_analytics(config):
     data_path = paths.output_path / config['scenario']['data-path']
+    network_data_path = paths.output_path / 'network' / config['scenario']['data-path']
 
     if (data_path / 'network.pkl').is_file():
         print("Analytics file already exists, continue")
@@ -188,6 +189,9 @@ def create_and_store_data_analytics(config):
 
     if not data_path.exists():
         data_path.mkdir(parents=True, exist_ok=True)
+    
+    if not network_data_path.exists():
+        network_data_path.mkdir(parents=True, exist_ok=True)
 
     NETWORK = pypsa.Network()
     NETWORK.import_from_netcdf(data_path / 'network.nc')
@@ -200,9 +204,23 @@ def create_and_store_data_analytics(config):
     # Organize a data collection optimized for data analytics
     data_collection = collect_data(NETWORK, STATISTICS, ASSUMPTIONS)
     
-    with (data_path / 'network.pkl').open('wb') as fp:
-        pickle.dump(data_collection, fp)
+    #with (data_path / 'network.pkl').open('wb') as fp:
+    #    pickle.dump(data_collection, fp)
+    
+    for key, value in data_collection.items():
+        x = network_data_path / f"network_{key}.csv"
+        if key == "table":
+            value["data"].to_csv(network_data_path / f"network_{key}.csv")
+            value["totals"].to_csv(network_data_path / f"network_{key}_totals.csv")
+        elif key == "energy_compare":
+            value["data"].to_csv(network_data_path / f"network_{key}.csv")
+            value["series"].to_csv(network_data_path / f"network_{key}_series.csv")
+        else:
+            value.to_csv(network_data_path / f"network_{key}.csv")
 
-def copy_input_data():
+def copy_input_data(config_name):
     if not (paths.output_path / 'assumptions.csv').is_file():
         shutil.copyfile(paths.input_path / 'assumptions.csv', paths.output_path / 'assumptions.csv')
+
+    if not (paths.output_path / 'config.json').is_file():
+        shutil.copyfile(paths.generator_path / 'configs' / f"{config_name}.json", paths.output_path / 'config.json')

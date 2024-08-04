@@ -63,10 +63,10 @@ def create_scenario_key(config, scenario, keys):
     scenario = dict((existing_keys[i]["code"], x) for i, x in enumerate(scenario))
     return [unique_key.format(**scenario), scenario]
 
-def create_scenario(config, scenario, keys, for_dashboard):
+def create_scenario(config, scenario, keys, for_dashboard, config_name):
     [unique_key, scenario] = create_scenario_key(config, scenario, keys)
 
-    data_path = paths.output_path / unique_key
+    data_path = paths.output_path / 'config' / unique_key
     
     config["scenario"] = scenario
     config["scenario"]["data-path"] = unique_key
@@ -78,7 +78,7 @@ def create_scenario(config, scenario, keys, for_dashboard):
     with (data_path / 'config.json').open('w') as fp:
         json.dump(config, fp, indent=4)
 
-    store_data(config, for_dashboard)
+    store_data(config, for_dashboard, config_name)
 
 if __name__ == "__main__":
     action = str(sys.argv[1])
@@ -106,16 +106,11 @@ if __name__ == "__main__":
     found = False
     for idx, scenario in enumerate(scenarios):
         if action == "create":
-            create_scenario(config, scenario, keys, run_mode == "dashboard")
+            create_scenario(config, scenario, keys, run_mode == "dashboard", config_name)
             print(f"{idx+1} out of {len(scenarios)}: {scenario}")
         if action == "list":
             [unique_key, _] = create_scenario_key(config, scenario, keys)
             print(unique_key)
-        if action == "validate":
-            [unique_key, _] = create_scenario_key(config, scenario, keys)
-            if selected_unique_key == unique_key:
-                found = True
-                break
 
     if action == "create" and run_mode == "dashboard":
         print("Clear data shared by all scenarios")
@@ -123,10 +118,3 @@ if __name__ == "__main__":
 
     if action == "create":
         print("Execution time: %.4f minutes" % ((time.time() - start_time) / 60))
-
-    if action == "validate":
-        if not found:
-            raise Exception(f"Scenario {selected_unique_key} could not be found in configuration {config_name}.json")
-        for fname in [f"../output/{selected_unique_key}/{{key}}".format(key=file) for file in ["config.json"]]:
-            if not os.path.isfile(fname):
-                raise Exception(f"Missing scenario file: {fname}. \n\nPlease run following command to create files: %run scenarios.py \"create\" \"{config_name}\"")

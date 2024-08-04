@@ -1,14 +1,14 @@
 from data_loading import read_dashboard_available_variables, _config_from_variables
 
-def _render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, readonly_mode):
-    SCENARIOS = read_dashboard_available_variables(CONFIG_DATA_ROOT, CONFIG_NAME)
+def _render_filters(DATA_ROOT, st_obj, VARIABLES, readonly_mode):
+    SCENARIOS = read_dashboard_available_variables(DATA_ROOT)
 
     if len(SCENARIOS["load-target"]) > 1:
         load_target = st_obj.select_slider("Elproduktionsmål [TWh]", options=SCENARIOS["load-target"], value=VARIABLES["load_target"], disabled=readonly_mode, key=f"filter_load_target_{readonly_mode}")
     else:
         if SCENARIOS["load-target"][0] != VARIABLES["load_target"]:
             st_obj.write("")
-            st_obj.write("You have probably forgot to specify correct CONFIG_NAME in vgr-01.py")
+            st_obj.write("It seems like you have a /output/config.json file that does not match the data in /output")
             return
         
         load_target = st_obj.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], value=SCENARIOS["load-target"][0], disabled=readonly_mode, key=f"filter_load_target_{readonly_mode}")
@@ -21,8 +21,8 @@ def _render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, readonly_m
         biogas = st_obj.select_slider("Biogas", options=SCENARIOS["network"]["biogas"], value=VARIABLES["network_biogas"] if VARIABLES["network_biogas"] in SCENARIOS["network"]["biogas"] else SCENARIOS["network"]["biogas"][0], disabled=readonly_mode, key=f"filter_biogas_{readonly_mode}")
     else:
         biogas = SCENARIOS["network"]["biogas"][0]
-    #wind = st_obj.selectbox("Vindkrafts", ["Statisk", "Försiktig", "Aggressiv"], index=0)
-    wind = st_obj.select_slider("Vindkrafts", options=["Statisk", "Försiktig", "Aggressiv"], value="Statisk", disabled=readonly_mode, key=f"filter_wind_{readonly_mode}")
+    #wind = st_obj.selectbox("Vindkraft", ["Statisk", "Försiktig", "Aggressiv"], index=0)
+    wind = st_obj.select_slider("Vindkraft", options=["Statisk", "Försiktig", "Aggressiv"], value="Statisk", disabled=readonly_mode, key=f"filter_wind_{readonly_mode}")
     #h2_industry = st_obj.selectbox("Vätgasuttag industri", ["Ingen", "Liten", "Medel", "Stor"], index=0)
     h2_industry = st_obj.select_slider("Vätgasuttag industri", options=["Ingen", "Liten", "Medel", "Stor"], value="Liten", disabled=readonly_mode, key=f"filter_h2_industry_{readonly_mode}")
 
@@ -53,12 +53,12 @@ def _if_boolean_then_string(variable):
         return str(variable)
     return variable
 
-def render_filters_compare_mode(CONFIG_DATA_ROOT, CONFIG, st_obj, CONFIG_NAME):
+def render_filters_compare_mode(DATA_ROOT, CONFIG, st_obj):
     VARIABLES = {key.replace('-', '_'): _if_boolean_then_string(value) for key, value in CONFIG["scenario"].items()}
-    _render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, True)
+    _render_filters(DATA_ROOT, st_obj, VARIABLES, True)
 
-def render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, var_dict, readonly_mode):
-    filters = _render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, False)
+def render_filters(DATA_ROOT, st_obj, VARIABLES, var_dict, readonly_mode):
+    filters = _render_filters(DATA_ROOT, st_obj, VARIABLES, False)
 
     colA, colB = [st_obj, st_obj] if readonly_mode else st_obj.columns([1,1])
     if colB.button("⟳ Uppdatera", use_container_width=True):
@@ -66,7 +66,7 @@ def render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, var_dict, r
 
     return [VARIABLES, colA, filters]
 
-def filters_update_variables(DATA_ROOT, CONFIG_NAME, VARIABLES, filters, var_dict):
+def filters_update_variables(DATA_ROOT, VARIABLES, filters, var_dict):
     _update_variables(VARIABLES, var_dict, filters)
 
-    return _config_from_variables(DATA_ROOT, CONFIG_NAME, VARIABLES)
+    return _config_from_variables(DATA_ROOT, VARIABLES)

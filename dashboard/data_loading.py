@@ -4,18 +4,15 @@ import os
 import os.path
 import pandas as pd
 import streamlit as st
-import paths
 
-def _read_config_definition(CONFIG_DATA_ROOT, CONFIG_NAME):
-    fname=f"{CONFIG_DATA_ROOT}/{CONFIG_NAME}.json"
+def _read_config_definition(DATA_ROOT):
+    fname=f"{DATA_ROOT}/config.json"
     with open(fname, "r") as f:
         CONFIG_DEFINITION = json.load(f)
 
-    print(CONFIG_DEFINITION)
-    
     return CONFIG_DEFINITION
 
-def _read_constants(CONFIG_NAME):
+def _read_constants():
     fname = "./constants.pkl"
     if not os.path.isfile(fname):
         with open(fname, "wb") as f:
@@ -31,8 +28,8 @@ def _read_constants(CONFIG_NAME):
     
     return CONSTANTS
 
-def _update_constants(CONFIG_NAME, code, value):
-    CONSTANTS = _read_constants(CONFIG_NAME)
+def _update_constants(code, value):
+    CONSTANTS = _read_constants()
     CONSTANTS[code] = value
     fname = "./constants.pkl"
     with open(fname, "wb") as f:
@@ -66,12 +63,12 @@ network-onwind-limit={network_onwind_limit},\
 network-offwind-limit={network_offwind_limit},\
 geography={geography}"
 
-def _config_from_variables(DATA_ROOT, CONFIG_NAME, VARIABLES):
+def _config_from_variables(DATA_ROOT, VARIABLES):
 
-    CONSTANTS = _read_constants(CONFIG_NAME)
+    CONSTANTS = _read_constants()
     SCENARIO = _get_scenario_key(CONSTANTS, VARIABLES)
 
-    fname = f"{DATA_ROOT}/{SCENARIO}/config.json"
+    fname = f"{DATA_ROOT}/config/{SCENARIO}/config.json"
     if not os.path.isfile(fname):
         print(f"Could not find file: {fname}")
         return None
@@ -81,8 +78,8 @@ def _config_from_variables(DATA_ROOT, CONFIG_NAME, VARIABLES):
 
     return CONFIG
 
-def read_dashboard_available_variables(CONFIG_DATA_ROOT, CONFIG_NAME):
-    CONFIG_DEFINITION = _read_config_definition(CONFIG_DATA_ROOT, CONFIG_NAME)
+def read_dashboard_available_variables(DATA_ROOT):
+    CONFIG_DEFINITION = _read_config_definition(DATA_ROOT)
     
     return CONFIG_DEFINITION["scenarios"]
 
@@ -104,14 +101,29 @@ def network_data(DATA_ROOT, CONFIG, key):
     # Setting variables based on config
     DATA_PATH=CONFIG["scenario"]["data-path"]
 
-    fname = f"{DATA_ROOT}/{DATA_PATH}/network.pkl"
-    with open(fname, "rb") as f:
-        data_collection = pickle.load(f)
+    fname = f"{DATA_ROOT}/network/{DATA_PATH}/network_{key}.csv"
+    index_col = 0
+    if key.endswith("series"):
+        df = pd.read_csv(fname, usecols=['keys', 'labels'])
+        dict = df.set_index("keys")["labels"].to_dict()
+        return dict
+    if key == "widgets":
+        df = pd.read_csv(fname, index_col=0)
+        generators = df[df['widget'] == 'generators'].drop(columns=['widget','key','value'])
+        stores = df[df['widget'] == 'stores'].drop(columns=['widget','key','value'])
+        biogas_price = None
+        backstop = df[df['widget'] == 'backstop']
+        backstop_total = backstop[backstop['key'] == 'total']["value"].tolist()[0]
+        backstop_fraction = backstop[backstop['key'] == 'fraction']["value"].tolist()[0]
+        curtailment = df[df['widget'] == 'curtailment']
+        curtailment_total = curtailment[curtailment['key'] == 'total']["value"].tolist()[0]
+        curtailment_fraction = curtailment[curtailment['key'] == 'fraction']["value"].tolist()[0]
+        return [generators, stores, biogas_price, backstop_total, backstop_fraction, curtailment_total, curtailment_fraction]
 
-    return data_collection[key]
+    return pd.read_csv(fname, index_col=index_col, parse_dates=[0])
 
-def ensure_default_variables(var_dict, CONFIG_DATA_ROOT, CONFIG_NAME):
-    SCENARIOS = read_dashboard_available_variables(CONFIG_DATA_ROOT, CONFIG_NAME)
+def ensure_default_variables(var_dict, DATA_ROOT):
+    SCENARIOS = read_dashboard_available_variables(DATA_ROOT)
 
     if "load_target" not in var_dict:
         var_dict.load_target = SCENARIOS["load-target"][0]

@@ -4,12 +4,13 @@ import altair as alt
 
 def _get_compare_data(DATA_ROOT, config, pinned):
     GEN_AND_STOR = network_data(DATA_ROOT, config, "energy_compare")
+    GEN_AND_STOR_SERIES = network_data(DATA_ROOT, config, "energy_compare_series")
 
-    label_colors = get_plot_label_colors(GEN_AND_STOR["main_series_keys"], pinned)
+    label_colors = get_plot_label_colors(GEN_AND_STOR_SERIES, pinned)
 
-    GEN_AND_STOR["data"]['Color'] = GEN_AND_STOR["data"]['Type'].map(label_colors)
+    GEN_AND_STOR['Color'] = GEN_AND_STOR['Type'].map(label_colors)
 
-    return GEN_AND_STOR["data"]
+    return GEN_AND_STOR
 
 def render_compare_energy_chart(DATA_ROOT, st_obj, config, compare_config):
 
