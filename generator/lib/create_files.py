@@ -119,8 +119,8 @@ def create_and_store_network(config):
     ASSUMPTIONS = pd.read_pickle(data_path / 'assumptions.pkl')
 
     CAPACITY_FACTOR_SOLAR = xr.open_dataarray(geo_data_path / 'capacity_factor_solar.nc').values.flatten()
-    CAPACITY_FACTOR_ONWIND = xr.open_dataarray(geo_data_path / 'capacity_factor_solar.nc').values.flatten()
-    CAPACITY_FACTOR_OFFWIND = xr.open_dataarray(geo_data_path / 'capacity_factor_solar.nc').values.flatten()
+    CAPACITY_FACTOR_ONWIND = xr.open_dataarray(geo_data_path / 'capacity_factor_onwind.nc').values.flatten()
+    CAPACITY_FACTOR_OFFWIND = xr.open_dataarray(geo_data_path / 'capacity_factor_offwind.nc').values.flatten()
 
     RESOLUTION = 3 #3h window for weather data and pypsa model optimization
 
