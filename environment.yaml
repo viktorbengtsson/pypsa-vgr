@@ -34,6 +34,8 @@ dependencies:
 - netcdf4
 - localtileserver
 - streamlit_folium
+- streamlit_js_eval
+
 
 # Dev
 - jupyterlab
