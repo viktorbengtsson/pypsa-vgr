@@ -50,8 +50,8 @@ def render_gen_widget(st_obj, header, key, data, countSuffix, compare_data, pie_
             if biogas_price is None:
                 price = data.loc[key, "annual_cost"].sum() / data.loc[key, "energy_produced"].sum() / 1000 if data.loc[key, "energy_produced"].sum() > 0 else 0
             else:
-                price = biogas_price
-            st.metric(f"{price:.2f} kr/kWh", f"{count:.0f} {countSuffix}", delta=f"{capacity:.0f} MW", delta_color="off")
+                price = None #biogas_price
+            st.metric(f"{price:.2f} kr/kWh" if price is not None else "", f"{count:.0f} {countSuffix}", delta=f"{capacity:.0f} MW", delta_color="off")
         else:
             count = data.loc[key, "generators"].sum()
             compare_count = compare_data.loc[key, "generators"].sum()
@@ -77,8 +77,13 @@ def render_stor_widget(st_obj, header, key, data, compare_data, pie_data = None)
 def render_other_widget(st_obj, header, value, fraction):
     with st_obj.container(border=True):
         st.title(header)
-        percentage = fraction * 100
-        st.metric(f"{value:.3f} TWh", f"{percentage:.2f} %", delta="", delta_color="off")
+        percentage = fraction * 100 if fraction is not None else None
+        st.metric(f"{value:.3f} TWh" if value is not None else "", f"{percentage:.2f} %" if percentage is not None else "", delta="", delta_color="off", label_visibility=("collapsed" if value is None else "visible"))
+
+def render_backstop_widget(st_obj, header, value):
+    with st_obj.container(border=True):
+        st.title(header)
+        st.metric("", f"{value:.3f} TWh", delta="", delta_color="off", label_visibility="collapsed")
 
 def _get_data(DATA_ROOT, config):
     WIDGETS = network_data(DATA_ROOT, config, "widgets")
@@ -148,22 +153,22 @@ def render_widgets(DATA_ROOT, st_obj, config, compare_config):
         render_gen_widget(col1, "Vindkraftverk (land)", ["Onwind park"], generators, "st", generators_compare, gen_pie_data)
         render_gen_widget(col2, "Vindkraftverk (hav)", ["Offwind park"], generators, "st", generators_compare, gen_pie_data)
         render_gen_widget(col1, "Solpark", ["Solar park"], generators, "ha", generators_compare, gen_pie_data)
-        render_gen_widget(col2, "Biogas", ["Combined Cycle Gas turbine", "Simple Cycle Gas turbine"], generators, "st", generators_compare, gen_pie_data, biogas_price)
-        render_gen_widget(col1, "Kärnkraftverk (SMR)", ["Conventional nuclear", "SMR nuclear"], generators, "st", generators_compare, gen_pie_data)
+        render_gen_widget(col2, "Gaskraftverk", ["Combined Cycle Gas turbine", "Simple Cycle Gas turbine"], generators, "st", generators_compare, gen_pie_data, biogas_price)
+        #render_gen_widget(col1, "Kärnkraftverk (SMR)", ["Conventional nuclear", "SMR nuclear"], generators, "st", generators_compare, gen_pie_data)
 
         render_stor_widget(col3, "Vätgas", ["H2 storage"], stores, stores_compare, store_pie_data)
         render_stor_widget(col3, "Batteri", ["Battery storage"], stores, stores_compare, store_pie_data)
 
-        render_other_widget(col3, "Backstop", backstop_total, backstop_fraction)
-        render_other_widget(col3, "Spill", curtailment_total, curtailment_fraction)
+        render_other_widget(col3, "Tillförlitlighet", None, 1 - backstop_fraction)
+        render_backstop_widget(col3, "Överproduktion", curtailment_total)
     else:
         col1, col2, col3, col4 = st_obj.columns([1,1,1,1], gap="small")
 
         render_gen_widget(col1, "Vindkraftverk (land)", ["Onwind park"], generators, "st", generators_compare)
         render_gen_widget(col2, "Vindkraftverk (hav)", ["Offwind park"], generators, "st", generators_compare)
         render_gen_widget(col3, "Solpark", ["Solar park"], generators, "ha", generators_compare)
-        render_gen_widget(col4, "Biogas", ["Combined Cycle Gas turbine", "Simple Cycle Gas turbine"], generators, "st", generators_compare)
-        render_gen_widget(col1, "Kärnkraftverk (SMR)", ["Conventional nuclear", "SMR nuclear"], generators, "st", generators_compare)
+        render_gen_widget(col4, "Gaskraftverk", ["Combined Cycle Gas turbine", "Simple Cycle Gas turbine"], generators, "st", generators_compare)
+        #render_gen_widget(col1, "Kärnkraftverk (SMR)", ["Conventional nuclear", "SMR nuclear"], generators, "st", generators_compare)
 
         render_stor_widget(col3, "Vätgas", ["H2 storage"], stores, stores_compare)
         render_stor_widget(col4, "Batteri", ["Battery storage"], stores, stores_compare)
@@ -171,5 +176,5 @@ def render_widgets(DATA_ROOT, st_obj, config, compare_config):
 def render_total_widgets(st_obj, config, compare_config):
     data = pd.DataFrame({'Aktivt val': ["Stor", "30345 MSEK", "A", "B", "C"], 'Jämförelse':["Liten", "3423 MSEK", "Aj", "Bj", "Cj"] })
     data.reset_index(drop=True)
-    data.index = ['Biogas', 'Total kost', 'Total prod', 'Backstop', 'Spill']
+    data.index = ['Gaskraftverk', 'Total kost', 'Total prod', 'Tillförlitlighet', 'Överproduktion']
     st_obj.dataframe(data, use_container_width=True)

@@ -13,7 +13,8 @@ def _render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, readonly_m
         
         load_target = st_obj.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], value=SCENARIOS["load-target"][0], disabled=readonly_mode, key=f"filter_load_target_{readonly_mode}")
 
-    nuclear = st_obj.toggle("Kärnkraft", value=(VARIABLES["network_nuclear"] == "True"), disabled=readonly_mode, key=f"filter_nuclear_{readonly_mode}")
+    nuclear = False
+    #nuclear = st_obj.toggle("Kärnkraft", value=(VARIABLES["network_nuclear"] == "True"), disabled=readonly_mode, key=f"filter_nuclear_{readonly_mode}")
     h2 = st_obj.toggle("Vätgas", value=(VARIABLES["network_h2"] == "True"), disabled=readonly_mode, key=f"filter_h2_{readonly_mode}")
     offwind = st_obj.toggle("Havsvind", value=(VARIABLES["network_offwind"] == "True"), disabled=readonly_mode, key=f"filter_offwind_{readonly_mode}")
     #biogas = st_obj.selectbox("Biogas", SCENARIOS["network"]["biogas"], index=SCENARIOS["network"]["biogas"].index(VARIABLES["network_biogas"]) if VARIABLES["network_biogas"] in SCENARIOS["network"]["biogas"] else None)
@@ -22,9 +23,9 @@ def _render_filters(CONFIG_DATA_ROOT, st_obj, CONFIG_NAME, VARIABLES, readonly_m
     else:
         biogas = SCENARIOS["network"]["biogas"][0]
     #wind = st_obj.selectbox("Vindkrafts", ["Statisk", "Försiktig", "Aggressiv"], index=0)
-    wind = st_obj.select_slider("Vindkrafts", options=["Statisk", "Försiktig", "Aggressiv"], value="Statisk", disabled=readonly_mode, key=f"filter_wind_{readonly_mode}")
+    #wind = st_obj.select_slider("Vindkrafts", options=["Statisk", "Försiktig", "Aggressiv"], value="Statisk", disabled=readonly_mode, key=f"filter_wind_{readonly_mode}")
     #h2_industry = st_obj.selectbox("Vätgasuttag industri", ["Ingen", "Liten", "Medel", "Stor"], index=0)
-    h2_industry = st_obj.select_slider("Vätgasuttag industri", options=["Ingen", "Liten", "Medel", "Stor"], value="Liten", disabled=readonly_mode, key=f"filter_h2_industry_{readonly_mode}")
+    #h2_industry = st_obj.select_slider("Vätgasuttag industri", options=["Ingen", "Liten", "Medel", "Stor"], value="Liten", disabled=readonly_mode, key=f"filter_h2_industry_{readonly_mode}")
 
     return [nuclear, h2, offwind, biogas, load_target]
 

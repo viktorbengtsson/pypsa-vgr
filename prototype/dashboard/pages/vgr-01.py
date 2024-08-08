@@ -25,7 +25,7 @@ st.markdown(
             padding-bottom: 2rem;
         }
         div[data-testid="stAppViewBlockContainer"] > div[data-testid="stVerticalBlockBorderWrapper"] > div > div[data-testid="stVerticalBlock"] > div:last-of-type {
-            margin-top: -2rem;
+            margin-top: 2rem;
         }
         .stTabs {
             z-index: 1000000;
