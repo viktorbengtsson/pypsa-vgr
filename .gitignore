@@ -161,8 +161,14 @@ cython_debug/
 #.idea/
 
 
-# Pypsa files
+# Pypsa and atlite files
 *.nc
+*.cpg
+*.dbf
+*.prj
+*.shp
+*.shx
+index-*-????-??-????-??.csv
 
 # Generated output files
 output
