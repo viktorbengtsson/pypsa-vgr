@@ -13,7 +13,7 @@ def store_data(config, tidy):
 
     # Files: avail_{solar|onwind|offwind}.nc, avail_capacity_{solar|onwind|offwind}.nc (verify only)
     print("Check renewables data")
-    check_weather_files(config)
+    check_renewables_files(config)
 
     # Files: demand.csv
     print("Create and store demand")
