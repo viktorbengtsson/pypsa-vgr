@@ -181,3 +181,4 @@ vgr-celin-lab.ipynb
 !generator/lib
 .streamlit/secrets.toml
 dashboard/constants.pkl
+node_modules
