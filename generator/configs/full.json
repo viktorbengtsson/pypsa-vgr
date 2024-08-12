@@ -1,26 +1,22 @@
 {
+    "config-name": "full",
     "base-currency": "SEK",
     "exchange-rates": {
         "EUR": 11.68,
         "USD": 10.70
     },
-    "models": {
-        "solar": "",
-        "onwind": "2030_5MW_onshore.yaml",
-        "offwind": "2030_20MW_offshore.yaml"
-    },
+    "base-year": 2024,
+    "discount-rate": 0.05,
     "scenarios": {
-        "base-year": [
-            2024
+        "geography": [
+            "14", "14:1480",
+            "12"
         ],
         "target-year": [
             2035
-        ], 
-        "discount-rate": [
-            0.05
         ],
-        "demand": [
-            2023
+        "floor": [
+            0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1
         ],
         "load-target": [
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30
@@ -29,14 +25,8 @@
             "nuclear": [true, false],
             "h2": [true, false],
             "offwind": [true, false],
-            "biogas": ["Ingen", "Liten", "Mellan", "Stor"],
-            "onwind-limit": [],
-            "offwind-limit": []
-        },
-        "geography": [
-            "14", "14:1480",
-            "12"
-        ]
+            "biogas": ["Ingen", "Liten", "Mellan", "Stor"]
+        }
     },
     "profiles": {
         "biogas": {

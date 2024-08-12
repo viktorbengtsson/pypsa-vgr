@@ -63,10 +63,10 @@ def create_scenario_key(config, scenario, keys):
     scenario = dict((existing_keys[i]["code"], x) for i, x in enumerate(scenario))
     return [unique_key.format(**scenario), scenario]
 
-def create_scenario(config, scenario, keys, for_dashboard, config_name):
+def create_scenario(config, scenario, keys, tidy):
     [unique_key, scenario] = create_scenario_key(config, scenario, keys)
 
-    data_path = paths.output_path / 'config' / unique_key
+    data_path = paths.output_path / unique_key
     
     config["scenario"] = scenario
     config["scenario"]["data-path"] = unique_key
@@ -78,19 +78,20 @@ def create_scenario(config, scenario, keys, for_dashboard, config_name):
     with (data_path / 'config.json').open('w') as fp:
         json.dump(config, fp, indent=4)
 
-    store_data(config, for_dashboard, config_name)
+    store_data(config, tidy)
 
 if __name__ == "__main__":
     action = str(sys.argv[1])
     config_name = str(sys.argv[2])
-    run_mode = str(sys.argv[3])
-    selected_unique_key = None if len(sys.argv) < 5 else str(sys.argv[4])
+    clear = str(sys.argv[3])
+    tidy = str(sys.argv[4])
+
     [config, scenarios, keys] = load_config(".", config_name, action)
 
     if len(scenarios) > 10000:
         raise Exception(f"Exceeded maximum number for scenarios (1000): {len(scenarios)}")
 
-    if run_mode == "True" or run_mode == "dashboard":
+    if clear == 'True':
         print("Clear output folder")
         for item in paths.output_path.iterdir():
             try:
@@ -106,15 +107,11 @@ if __name__ == "__main__":
     found = False
     for idx, scenario in enumerate(scenarios):
         if action == "create":
-            create_scenario(config, scenario, keys, run_mode == "dashboard", config_name)
+            create_scenario(config, scenario, keys, tidy)
             print(f"{idx+1} out of {len(scenarios)}: {scenario}")
         if action == "list":
-            [unique_key, _] = create_scenario_key(config, scenario, keys)
+            [unique_key, _] = create_scenario_key(config, scenario, keys, tidy)
             print(unique_key)
-
-    if action == "create" and run_mode == "dashboard":
-        print("Clear data shared by all scenarios")
-        clear_files_not_needed_for_dashboard()
 
     if action == "create":
         print("Execution time: %.4f minutes" % ((time.time() - start_time) / 60))

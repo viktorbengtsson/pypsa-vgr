@@ -5,6 +5,8 @@ from shapely.ops import unary_union
 from shapely.geometry import Polygon
 import paths
 
+weather_path = paths.input_path / 'weather'
+
 def generate_cutout(lan_code, kom_code, weather_start, weather_end):
     
     #Source Lantmäteriverket, data maintained by opendatasoft.com
@@ -14,7 +16,7 @@ def generate_cutout(lan_code, kom_code, weather_start, weather_end):
     
     minx, miny, maxx, maxy = lan.total_bounds
 
-    fname = paths.input_path / 'weather' /  f"cutout-{lan_code}-{weather_start}-{weather_end}.nc"
+    fname = weather_path /  f"cutout-{lan_code}-{weather_start}-{weather_end}.nc"
     
     cutout = atlite.Cutout(
         path=fname,
@@ -48,3 +50,23 @@ def generate_cutout(lan_code, kom_code, weather_start, weather_end):
     index = pd.to_datetime(cutout.coords['time'])
 
     return [cutout, selection, eez, index]
+
+def store_weather(geo, weather_start, weather_end):
+    cutout_path = weather_path / f"cutout-{geo}-{weather_start}-{weather_end}.nc"
+    selection_path = weather_path / f"selection-{geo}-{weather_start}-{weather_end}.shp"
+    index_path = weather_path / f"index-{geo}-{weather_start}-{weather_end}.csv"
+
+    if not (cutout_path.is_file() and selection_path.is_file() and index_path.is_file()):
+        cutout, selection, eez, index = generate_cutout(geo, None, weather_start, weather_end)
+
+        selection.to_file(selection_path)
+        index.to_series().to_csv(index_path)
+
+def load_weather(geo, weather_start, weather_end):
+    cutout_path = weather_path / f"cutout-{geo}-{weather_start}-{weather_end}.nc"
+    selection_path = weather_path / f"selection-{geo}-{weather_start}-{weather_end}.shp"
+
+    cutout = atlite.Cutout(cutout_path)
+    selection = gpd.read_file(selection_path)
+
+    return cutout, selection

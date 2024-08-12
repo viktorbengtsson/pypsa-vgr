@@ -1,0 +1,17 @@
+{
+    "weather-start": "2023-01",
+    "weather-end": "2023-12",
+    "geo": {
+        "Västra Götalands Län": "14"
+    },
+    "energy-types": [
+        "solar",
+        "onwind",
+        "offwind"
+    ],
+    "generators": {
+        "solar": "",
+        "onwind": "2030_5MW_onshore.yaml",
+        "offwind": "2030_20MW_offshore.yaml"
+    }
+}
