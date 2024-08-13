@@ -1,6 +1,6 @@
 import pypsa
 
-def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_onwind, cf_offwind, use_offwind, use_h2, use_nuclear, biogas_production_max_nominal):
+def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_onwind, cf_offwind, use_offwind, use_h2, biogas_production_max_nominal):
 
     def annuity(r, n):
         return r / (1.0 - 1.0 / (1.0 + r) ** n)
@@ -26,10 +26,10 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
         'biogas',
         'mixedgas',
         'backstop',
-        'nuclear',
+        # 'nuclear',
         ]
 
-    carrier_colors = ['black', 'green', 'blue', 'red', 'lightblue', 'grey', 'brown', 'brown', 'white', 'mintgreen']
+    carrier_colors = ['black', 'green', 'blue', 'red', 'lightblue', 'grey', 'brown', 'brown', 'white']#, 'mintgreen']
 
     network.madd(
         'Carrier',
@@ -233,7 +233,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
         network.add('Link', 'Biogas pipeline', carrier='biogas', bus0='Biogas market', bus1='Gas turbine',
                     p_nom_extendable=True,
                     )
-
+    '''
     ## Add nuclear bus and components (sometimes present)
     if use_nuclear:
         network.add('Bus', 'Nuclear', carrier='nuclear', x=midx, y=midy+0.9)
@@ -248,7 +248,6 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                     lifetime=assumptions.loc['nuclear_conv','lifetime'].value,
                     )
         
-        '''
         num_nuclear_smr = 0
         network.add('Generator', f"{'SMR nuclear'}", carrier='nuclear', bus='Nuclear',
                     p_nom_extendable=True,
@@ -259,10 +258,10 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                     marginal_cost=float(assumptions.loc['nuclear_smr','VOM'].value) + float(assumptions.loc['nuclear_smr','fuel'].value),
                     lifetime=assumptions.loc['nuclear_smr','lifetime'].value,
                     )
-        '''
 
         network.add('Link', 'Nuclear to load', carrier='nuclear', bus0='Nuclear', bus1='Load bus',
                     p_nom_extendable=True,
                     )
+    '''
 
     return network

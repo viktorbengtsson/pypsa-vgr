@@ -97,16 +97,14 @@ def create_and_store_network(config):
     capacity_factor_onwind = xr.open_dataarray(renewables_path / f"capacity-factor-{config['scenario']['geography']}-{weather_config['weather-start']}-{weather_config['weather-end']}-onwind.nc").values.flatten()
     capacity_factor_offwind = xr.open_dataarray(renewables_path / f"capacity-factor-{config['scenario']['geography']}-{weather_config['weather-start']}-{weather_config['weather-end']}-offwind.nc").values.flatten()
 
-    use_nuclear = bool(config['scenario']["network-nuclear"])
-    use_offwind = bool(config['scenario']["network-offwind"])
-    use_h2 = bool(config['scenario']["network-h2"])
-    biogas_profile = str(config['scenario']["network-biogas"]) # Ingen, Liten, Mellan, Stor
+    #use_nuclear = bool(config['scenario']["network-nuclear"])
+    offwind = bool(config['scenario']["offwind"])
+    h2 = bool(config['scenario']["h2"])
+    biogas_limit = config['scenario']["biogas-limit"]
 
-    biogas_production_max_nominal = config["profiles"]["biogas"][biogas_profile]
+    print(f"Using config:\n\th2:{h2}\n\toffwind:{offwind}\n\tbiogas:{biogas_limit}")
 
-    print(f"Using config:\n\th2:{use_h2}\n\tnuclear:{use_nuclear}\n\toffwind:{use_offwind}\n\tbiogas:{biogas_profile}")
-
-    network = build_network(index, resolution, geography, demand, assumptions, capacity_factor_solar, capacity_factor_onwind, capacity_factor_offwind, use_offwind, use_h2, use_nuclear, biogas_production_max_nominal)
+    network = build_network(index, resolution, geography, demand, assumptions, capacity_factor_solar, capacity_factor_onwind, capacity_factor_offwind, offwind, h2, biogas_limit)
 
     network.export_to_netcdf(data_path / 'network.nc')
 
@@ -119,13 +117,13 @@ def create_and_store_optimize(config):
     network.import_from_netcdf(data_path / 'network.nc')
     model = network.optimize.create_model()
 
-    use_offwind = bool(config["scenario"]["network-offwind"])
+    offwind = bool(config["scenario"]["offwind"])
     
     generator_capacity = model.variables["Generator-p_nom"]
     link_capacity = model.variables["Link-p_nom"]
     
     ## Offwind constraint
-    if use_offwind:
+    if offwind:
         offwind_percentage = 0.5
 
         offwind_constraint = (1 - offwind_percentage) / offwind_percentage * generator_capacity.loc['offwind'] - generator_capacity.loc['onwind']

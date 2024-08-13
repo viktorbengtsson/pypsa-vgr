@@ -1,4 +1,3 @@
-from lib.tools import clear_files_not_needed_for_dashboard_for_config
 from lib.create_files import create_and_store_parameters, check_weather_files, check_renewables_files, create_and_store_demand, create_and_store_network, create_and_store_optimize, create_and_store_results, clear_working_files
 
 def store_data(config, tidy):

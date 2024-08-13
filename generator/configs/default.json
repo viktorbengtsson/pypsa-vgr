@@ -21,19 +21,8 @@
         "load-target": [
             10, 20, 30
         ],
-        "network": {
-            "nuclear": [true, false],
-            "h2": [true, false],
-            "offwind": [true, false],
-            "biogas": ["Ingen", "Liten", "Mellan", "Stor"]
-        }
-    },
-    "profiles": {
-        "biogas": {
-            "Ingen": 0,
-            "Liten": 200,
-            "Mellan": 500,
-            "Stor": 1000
-        }
+        "h2": [true, false],
+        "offwind": [true, false],
+        "biogas-limit": [0, 500, 1000, 1500]
     }
 }
