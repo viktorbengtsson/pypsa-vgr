@@ -1,11 +1,9 @@
 import sys
 import json
 import time
-import os.path
 import shutil
 import itertools
 from store_data import store_data
-from lib.tools import clear_files_not_needed_for_dashboard
 import paths
 
 def load_config_scenarios(scenarios, category=None):
