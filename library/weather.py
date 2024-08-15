@@ -7,14 +7,14 @@ import paths
 
 weather_path = paths.input_path / 'weather'
 
-def generate_cutout(lan_code, kom_code, weather_start, weather_end):
+def generate_cutout(lan_code, sections, weather_start, weather_end):
     
     #Source Lantmäteriverket, data maintained by opendatasoft.com
-    sweden = gpd.read_file(paths.input_path / 'geo/georef-sweden-kommun@public.geojson')
+    geo_area = gpd.read_file(paths.input_path / 'geo/georef-sweden-kommun@public.geojson')
     
-    lan = sweden.loc[sweden['lan_code'].isin([lan_code])]
+    main_area = geo_area.loc[geo_area['lan_code'].isin([lan_code])]
     
-    minx, miny, maxx, maxy = lan.total_bounds
+    minx, miny, maxx, maxy = main_area.total_bounds
 
     fname = weather_path /  f"cutout-{lan_code}-{weather_start}-{weather_end}.nc"
     
@@ -31,40 +31,53 @@ def generate_cutout(lan_code, kom_code, weather_start, weather_end):
 
     cutout.prepare(features=['influx', 'temperature', 'wind'])
 
-    if kom_code is None:
-        selection = gpd.GeoDataFrame(geometry=[unary_union(lan.geometry)], crs=sweden.crs)
-    else:
-        kom = sweden.loc[sweden['kom_code'].isin([kom_code])]
-        selection = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=sweden.crs)
-    
+    selections = {
+        lan_code: gpd.GeoDataFrame(geometry=[unary_union(main_area.geometry)], crs=geo_area.crs)
+    }
+
+    for _, item in sections.items():
+        if isinstance(item, list):
+            kom = geo_area.loc[geo_area['kom_code'].isin(item)]
+            selections[f"{lan_code}:{':'.join(item)}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
+        else:
+            kom = geo_area.loc[geo_area['kom_code'].isin([item])]
+            selections[f"{lan_code}:{item}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
+
     # EEZ (Economical zone)
     shapefile_path = paths.input_path / 'geo/Ekonomiska_zonens_yttre_avgränsningslinjer/Ekonomiska_zonens_yttre_avgränsningslinjer_linje.shp'
-    eez_shape = gpd.read_file(shapefile_path).to_crs(selection.crs)
+    eez_shape = gpd.read_file(shapefile_path).to_crs(geo_area.crs)
     min_x, min_y, max_x, max_y = eez_shape.total_bounds
     # Arbitrarily using min/max from cutout or eez to visualize it on VGR region
     bounding_box = Polygon([(min_x, miny), (min_x, maxy), (maxx, maxy), (maxx, miny)])
-    bounds = gpd.GeoDataFrame(geometry=[bounding_box], crs=selection.crs) 
+    bounds = gpd.GeoDataFrame(geometry=[bounding_box], crs=geo_area.crs) 
     eez = gpd.overlay(eez_shape, bounds, how='intersection')
-    eez.to_crs(selection.crs)
+    eez.to_crs(geo_area.crs)
 
     index = pd.to_datetime(cutout.coords['time'])
 
-    return [cutout, selection, eez, index]
+    return [cutout, selections, eez, index]
 
-def store_weather(geo, weather_start, weather_end):
+def store_weather(geo, sections, weather_start, weather_end):
     cutout_path = weather_path / f"cutout-{geo}-{weather_start}-{weather_end}.nc"
-    selection_path = weather_path / f"selection-{geo}-{weather_start}-{weather_end}.shp"
     index_path = weather_path / f"index-{geo}-{weather_start}-{weather_end}.csv"
 
-    if not (cutout_path.is_file() and selection_path.is_file() and index_path.is_file()):
-        cutout, selection, eez, index = generate_cutout(geo, None, weather_start, weather_end)
+    cutout, selections, eez, index = generate_cutout(geo, sections, weather_start, weather_end)
 
-        selection.to_file(selection_path)
-        index.to_series().to_csv(index_path)
+    index.to_series().to_csv(index_path)
 
-def load_weather(geo, weather_start, weather_end):
-    cutout_path = weather_path / f"cutout-{geo}-{weather_start}-{weather_end}.nc"
-    selection_path = weather_path / f"selection-{geo}-{weather_start}-{weather_end}.shp"
+    for key, selection in selections.items():
+        file_key = key.replace(":", "-")
+        selection_path = weather_path / f"selection-{file_key}-{weather_start}-{weather_end}.shp"
+
+        if not selection_path.is_file():
+            selection.to_file(selection_path)
+
+def load_weather(weather_geo, section_geo, weather_start, weather_end):
+    cutout_path = weather_path / f"cutout-{weather_geo}-{weather_start}-{weather_end}.nc"
+
+    section_key = section_geo if not isinstance(section_geo, list) else "-".join(section_geo)
+
+    selection_path = weather_path / f"selection-{weather_geo}-{section_key}-{weather_start}-{weather_end}.shp"
 
     cutout = atlite.Cutout(cutout_path)
     selection = gpd.read_file(selection_path)

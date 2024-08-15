@@ -49,10 +49,12 @@ def availability_matrix(cutout, selection, energy_type):
     type_excluder = excluder(energy_type)
     return cutout.availabilitymatrix(selection, type_excluder)
 
-def capacity_factor(cutout, selection, energy_type, generator, geo, weather_start, weather_end):
+def capacity_factor(cutout, selection, energy_type, generator, weather_geo, section_geo, weather_start, weather_end):
+
+    section_key = section_geo if not isinstance(section_geo, list) else "-".join(section_geo)
 
     wind_turbine = renewables_path / 'windturbine' / generator
-    matrix_path = renewables_path / f"availability-matrix-{geo}-{weather_start}-{weather_end}-{energy_type}.nc"
+    matrix_path = renewables_path / f"availability-matrix-{weather_geo}-{section_key}-{weather_start}-{weather_end}-{energy_type}.nc"
 
     if (matrix_path).is_file():
         avail = xr.open_dataarray(matrix_path)
@@ -89,18 +91,22 @@ def capacity_factor(cutout, selection, energy_type, generator, geo, weather_star
             print("Unknown energy type (solar, onwind, offwind)")
             return
 
-def store_availability_matrix(cutout, selection, energy_type, geo, weather_start, weather_end):
+def store_availability_matrix(cutout, selection, energy_type, weather_geo, section_geo, weather_start, weather_end):
 
-    matrix_path = renewables_path / f"availability-matrix-{geo}-{weather_start}-{weather_end}-{energy_type}.nc"
+    section_key = section_geo if not isinstance(section_geo, list) else "-".join(section_geo)
+
+    matrix_path = renewables_path / f"availability-matrix-{weather_geo}-{section_key}-{weather_start}-{weather_end}-{energy_type}.nc"
 
     if not matrix_path.is_file():
         avail_matrix = availability_matrix(cutout, selection, energy_type)
         avail_matrix.to_netcdf(matrix_path)
 
-def store_capacity_factor(cutout, selection, energy_type, model, geo, weather_start, weather_end):
+def store_capacity_factor(cutout, selection, energy_type, model, weather_geo, section_geo, weather_start, weather_end):
 
-    capfac_path = renewables_path / f"capacity-factor-{geo}-{weather_start}-{weather_end}-{energy_type}.nc"
+    section_key = section_geo if not isinstance(section_geo, list) else "-".join(section_geo)
+
+    capfac_path = renewables_path / f"capacity-factor-{weather_geo}-{section_key}-{weather_start}-{weather_end}-{energy_type}.nc"
 
     if not capfac_path.is_file():
-        capfac = capacity_factor(cutout, selection, energy_type, model, geo, weather_start, weather_end)
+        capfac = capacity_factor(cutout, selection, energy_type, model, weather_geo, section_geo, weather_start, weather_end)
         capfac.to_netcdf(capfac_path)

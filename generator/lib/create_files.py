@@ -16,6 +16,12 @@ from library.assumptions import read_assumptions
 from library.network import build_network
 from generator.lib.tools import delete_file
 
+def _get_geo(config):
+    keys = config['scenario']['geography'].split("-", 1)
+    geo = { "weather": keys[0], "section": keys[1] if len(keys) > 1 else keys[0] }
+    geo["section_key"] = geo["weather"] if geo["weather"] == geo["section"] else f"{geo['weather']}-{geo['section']}"
+    return geo
+
 # Process assumptions csv to dataframe and save csv
 def create_and_store_parameters(config):
     data_path = paths.output_path / config['scenario']['data-path']
@@ -34,24 +40,26 @@ def create_and_store_parameters(config):
 # Check that weather files exist (if not see /input/weather/generate-weather.ipynb)
 def check_weather_files(config):
     weather_path = paths.input_path / 'weather'
+    geo = _get_geo(config)
 
-    cutout_files = list(weather_path.glob(f"cutout-{config['scenario']['geography']}-*.nc"))
-    selection_files = list(weather_path.glob(f"selection-{config['scenario']['geography']}-*.shp"))
-    index_files = list(weather_path.glob(f"index-{config['scenario']['geography']}-*.csv"))
+    cutout_files = list(weather_path.glob(f"cutout-{geo['weather']}-*.nc"))
+    selection_files = list(weather_path.glob(f"selection-{geo['section_key']}-*.shp"))
+    index_files = list(weather_path.glob(f"index-{geo['weather']}-*.csv"))
 
     if not (len(cutout_files) > 0 and len(selection_files) > 0 and len(index_files) > 0):
-        print(f"Weather files do not exist for geography {config['scenario']['geography']}. Please see /input/weather/generate-weather.ipynb")
+        print(f"Weather files do not exist for geography weather={geo['weather']}, section={geo['section']}. Please see /input/weather/generate-weather.ipynb")
 
 
 # Check that renewables files exist (if not see /input/renewables/generate-renewables.ipynb)
 def check_renewables_files(config):
     renewables_path = paths.input_path / 'renewables'
+    geo = _get_geo(config)
 
-    avail_matrix_files = list(renewables_path.glob(f"availability-matrix-{config['scenario']['geography']}-*.nc"))    
-    cap_fac_files = list(renewables_path.glob(f"capacity-factor-{config['scenario']['geography']}-*.nc"))    
+    avail_matrix_files = list(renewables_path.glob(f"availability-matrix-{geo['section_key']}-*.nc"))    
+    cap_fac_files = list(renewables_path.glob(f"capacity-factor-{geo['section_key']}-*.nc"))    
 
     if not (len(avail_matrix_files) > 0 and len(cap_fac_files) > 0):
-        print(f"Renewables files do not exist for geography {config['scenario']['geography']}. Please see /input/renewables/generate-renewables.ipynb")
+        print(f"Renewables files do not exist for geography {geo['section_key']}. Please see /input/renewables/generate-renewables.ipynb")
 
 
 # Store demand/load time series
@@ -86,16 +94,17 @@ def create_and_store_network(config):
 
     weather_path = paths.input_path / 'weather'
     renewables_path = paths.input_path / 'renewables'
+    geo = _get_geo(config)
 
-    index = pd.to_datetime(pd.read_csv(weather_path / f"index-{config['scenario']['geography']}-{weather_config['weather-start']}-{weather_config['weather-end']}.csv")['0'])
+    index = pd.to_datetime(pd.read_csv(weather_path / f"index-{geo['weather']}-{weather_config['weather-start']}-{weather_config['weather-end']}.csv")['0'])
     resolution = 3
-    geography = gpd.read_file(weather_path / f"selection-{config['scenario']['geography']}-{weather_config['weather-start']}-{weather_config['weather-end']}.shp").total_bounds
+    geography = gpd.read_file(weather_path / f"selection-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}.shp").total_bounds
     demand = pd.read_csv(data_path / 'demand.csv', index_col=0).values.flatten()
     assumptions = pd.read_csv(data_path / 'assumptions.csv', index_col=[0,1])
 
-    capacity_factor_solar = xr.open_dataarray(renewables_path / f"capacity-factor-{config['scenario']['geography']}-{weather_config['weather-start']}-{weather_config['weather-end']}-solar.nc").values.flatten()
-    capacity_factor_onwind = xr.open_dataarray(renewables_path / f"capacity-factor-{config['scenario']['geography']}-{weather_config['weather-start']}-{weather_config['weather-end']}-onwind.nc").values.flatten()
-    capacity_factor_offwind = xr.open_dataarray(renewables_path / f"capacity-factor-{config['scenario']['geography']}-{weather_config['weather-start']}-{weather_config['weather-end']}-offwind.nc").values.flatten()
+    capacity_factor_solar = xr.open_dataarray(renewables_path / f"capacity-factor-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}-solar.nc").values.flatten()
+    capacity_factor_onwind = xr.open_dataarray(renewables_path / f"capacity-factor-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}-onwind.nc").values.flatten()
+    capacity_factor_offwind = xr.open_dataarray(renewables_path / f"capacity-factor-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}-offwind.nc").values.flatten()
 
     #use_nuclear = bool(config['scenario']["network-nuclear"])
     offwind = bool(config['scenario']["offwind"])
