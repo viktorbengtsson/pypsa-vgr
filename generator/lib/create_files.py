@@ -96,7 +96,7 @@ def create_and_store_network(config):
     renewables_path = paths.input_path / 'renewables'
     geo = _get_geo(config)
 
-    index = pd.to_datetime(pd.read_csv(weather_path / f"index-{geo['weather']}-{weather_config['weather-start']}-{weather_config['weather-end']}.csv")['0'])
+    index = pd.to_datetime(pd.read_csv(weather_path / f"index-{geo['weather'][:2]}-{weather_config['weather-start']}-{weather_config['weather-end']}.csv")['0'])
     resolution = 3
     geography = gpd.read_file(weather_path / f"selection-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}.shp").total_bounds
     demand = pd.read_csv(data_path / 'demand.csv', index_col=0).values.flatten()
