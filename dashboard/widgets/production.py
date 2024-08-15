@@ -12,7 +12,7 @@ def big_chart(data):
         color=alt.Color('generator:N', legend=alt.Legend(title="Generator Type"))
     )
 
-def big_chart_widget(geo, year, floor, load, h2, offwind, biogas, generators):
+def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, generators):
 
     # State management
     data_root = set_data_root()
@@ -21,7 +21,7 @@ def big_chart_widget(geo, year, floor, load, h2, offwind, biogas, generators):
     resolution = '1w'
 
     for generator in generators:
-        generator_data = pd.read_csv(data_root / scenario(geo, year, floor, load, h2, offwind, biogas) / 'generators' / generator / f"power_t_{resolution}.csv", parse_dates=True)
+        generator_data = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv", parse_dates=True)
         generator_data = generator_data.rename(columns={generator: 'value'})
         generator_data['generator'] = generator
         generators_data = pd.concat([generators_data, generator_data], axis=0)

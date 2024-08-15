@@ -20,16 +20,16 @@ def power_line(data, type):
         strokeWidth=0  # Remove the border around the chart
     )
 
-def energy_widget(geo, year, floor, load, h2, offwind, biogas, generator):
+def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, generator):
     # State management
     data_root = set_data_root()
 
     resolution = '1w'
-    power_t = pd.read_csv(data_root / scenario(geo, year, floor, load, h2, offwind, biogas) / 'generators' / generator / f"power_t_{resolution}.csv", parse_dates=True)
+    power_t = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv", parse_dates=True)
     if resolution == '1w':
         power_t = power_t.iloc[1:]
 
-    details = pd.read_csv(data_root / scenario(geo, year, floor, load, h2, offwind, biogas) / 'generators' / generator / 'details.csv',index_col=0)
+    details = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / 'details.csv',index_col=0)
 
     with st.container():
         col1, col2 = st.columns(2)

@@ -1,8 +1,8 @@
 import setuptools
 
 setuptools.setup(
-    name="streamlit-map-selector",
-    version="0.0.1",
+    name="streamlit_map_selector",
+    version="0.0.4",
     author="",
     author_email="",
     description="",

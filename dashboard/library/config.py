@@ -35,7 +35,7 @@ def _read_config_definition(DATA_ROOT):
 
 def all_keys():
     return [
-        "load_target",
+        "load-target",
         "h2",
         "offwind",
         "biogas-limit",
@@ -45,10 +45,12 @@ def get_default_variables(DATA_ROOT):
     SCENARIOS = _read_config_definition(DATA_ROOT)["scenarios"]
 
     return {
+        "target_year": int(SCENARIOS["target-year"][0]),
+        "floor": float(SCENARIOS["floor"][0]),
         "load_target": int(SCENARIOS["load-target"][0]),
-        "network_h2": SCENARIOS["h2"][0],
-        "network_offwind": SCENARIOS["offwind"][0],
-        "network_biogas": int(SCENARIOS["biogas-limit"][0])
+        "h2": SCENARIOS["h2"][0],
+        "offwind": SCENARIOS["offwind"][0],
+        "biogas_limit": int(SCENARIOS["biogas-limit"][0]),
     }
 
 def read_dashboard_available_variables(DATA_ROOT):
