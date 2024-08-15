@@ -18,5 +18,5 @@ else:
     _map_selector = components.declare_component("map_selector", path=build_dir)
 
 
-def custom_map_selector(default, key=None):
-    return _map_selector(default=default, key=key)
+def streamlit_map_selector(main_geo, initial_geo, available_geo, country="sweden", key=None):
+    return _map_selector(main_geo=main_geo, initial_geo=initial_geo, available_geo=available_geo, country=country, key=key)
