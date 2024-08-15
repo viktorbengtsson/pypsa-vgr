@@ -81,15 +81,15 @@ def create_scenario(config, scenario, keys, tidy):
 if __name__ == "__main__":
     action = str(sys.argv[1])
     config_name = str(sys.argv[2])
-    clear = str(sys.argv[3])
-    tidy = str(sys.argv[4])
+    clear = str(sys.argv[3]) == 'True'
+    tidy = str(sys.argv[4]) == 'True'
 
     [config, scenarios, keys] = load_config(".", config_name, action)
 
     if len(scenarios) > 10000:
         raise Exception(f"Exceeded maximum number for scenarios (1000): {len(scenarios)}")
 
-    if clear == 'True':
+    if clear:
         print("Clear output folder")
         for item in paths.output_path.iterdir():
             try:

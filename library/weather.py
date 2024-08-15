@@ -35,13 +35,14 @@ def generate_cutout(lan_code, sections, weather_start, weather_end):
         lan_code: gpd.GeoDataFrame(geometry=[unary_union(main_area.geometry)], crs=geo_area.crs)
     }
 
-    for _, item in sections.items():
-        if isinstance(item, list):
-            kom = geo_area.loc[geo_area['kom_code'].isin(item)]
-            selections[f"{lan_code}:{':'.join(item)}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
-        else:
-            kom = geo_area.loc[geo_area['kom_code'].isin([item])]
-            selections[f"{lan_code}:{item}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
+    if sections is not None:
+        for _, item in sections.items():
+            if isinstance(item, list):
+                kom = geo_area.loc[geo_area['kom_code'].isin(item)]
+                selections[f"{lan_code}:{':'.join(item)}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
+            else:
+                kom = geo_area.loc[geo_area['kom_code'].isin([item])]
+                selections[f"{lan_code}:{item}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
 
     # EEZ (Economical zone)
     shapefile_path = paths.input_path / 'geo/Ekonomiska_zonens_yttre_avgränsningslinjer/Ekonomiska_zonens_yttre_avgränsningslinjer_linje.shp'
@@ -75,9 +76,10 @@ def store_weather(geo, sections, weather_start, weather_end):
 def load_weather(weather_geo, section_geo, weather_start, weather_end):
     cutout_path = weather_path / f"cutout-{weather_geo}-{weather_start}-{weather_end}.nc"
 
-    section_key = section_geo if not isinstance(section_geo, list) else "-".join(section_geo)
+    section_key = None if section_geo is None else (section_geo if not isinstance(section_geo, list) else "-".join(section_geo))
+    geo_key = f"{weather_geo}-{section_key}" if section_key is not None else weather_geo
 
-    selection_path = weather_path / f"selection-{weather_geo}-{section_key}-{weather_start}-{weather_end}.shp"
+    selection_path = weather_path / f"selection-{geo_key}-{weather_start}-{weather_end}.shp"
 
     cutout = atlite.Cutout(cutout_path)
     selection = gpd.read_file(selection_path)
