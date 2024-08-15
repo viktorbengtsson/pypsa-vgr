@@ -1,4 +1,4 @@
-from map_selector import custom_map_selector
+from MapSelector.map_selector.map_selector import custom_map_selector
 from library.config import read_dashboard_available_variables
 
 def _render_filtering(st_obj, data_root, variables):
