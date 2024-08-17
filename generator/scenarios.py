@@ -5,8 +5,10 @@ import shutil
 import itertools
 from store_data import store_data
 import paths
+import os.path
+from time import sleep
 
-def load_config_scenarios(scenarios, category=None):
+def _load_config_scenarios(scenarios, category=None):
     combinations = []
     keys = []
     for key in scenarios:
@@ -26,18 +28,18 @@ def load_config_scenarios(scenarios, category=None):
         else:
             if category is not None:
                 raise Exception(f"Scenarios configuration must either be a list or an object where each property is a list. The level for {key} is too deep.")
-            [more_combinations, more_keys] = load_config_scenarios(value, category=key)
+            [more_combinations, more_keys] = _load_config_scenarios(value, category=key)
             if len(more_combinations) > 0:
                 combinations.extend(more_combinations)
             if len(more_keys) > 0:
                 keys.extend(more_keys)
     return [combinations, keys]
 
-def load_config(root, config_name, action = None):
+def _load_config(root, config_name, action = None):
     with open(f"{root}/configs/{config_name}.json", "r") as f:
         config = json.load(f)
 
-    [combinations, keys] = load_config_scenarios(config.pop("scenarios", None))
+    [combinations, keys] = _load_config_scenarios(config.pop("scenarios", None))
     scenarios = list(itertools.product(*combinations))
 
     if action == "create":
@@ -48,7 +50,7 @@ def load_config(root, config_name, action = None):
 
     return [config, scenarios, keys]
 
-def create_scenario_key(config, scenario, keys):
+def _create_scenario_key(scenario, keys):
     unique_key = ""
     for item in keys:
         code = item["code"]
@@ -59,10 +61,10 @@ def create_scenario_key(config, scenario, keys):
     existing_keys = list(filter(lambda item: not item["is_empty"], keys))
 
     scenario = dict((existing_keys[i]["code"], x) for i, x in enumerate(scenario))
-    return [unique_key.format(**scenario), scenario]
+    return [unique_key.format(**scenario).replace(":", "-"), scenario]
 
-def create_scenario(config, scenario, keys, tidy):
-    [unique_key, scenario] = create_scenario_key(config, scenario, keys)
+def _create_scenario(config, scenario, keys, tidy):
+    [unique_key, scenario] = _create_scenario_key(scenario, keys)
 
     data_path = paths.output_path / unique_key
     
@@ -72,11 +74,14 @@ def create_scenario(config, scenario, keys, tidy):
     config["scenario"]["geography_lan_code"] = config["scenario"]["geography"].split(":")[0]
     config["scenario"]["geography_kom_code"] = config["scenario"]["geography"].split(":")[1] if ":" in config["scenario"]["geography"] else None
 
-    data_path.mkdir(parents=True, exist_ok=True)
-    with (data_path / 'config.json').open('w') as fp:
-        json.dump(config, fp, indent=4)
+    if os.path.isfile(data_path / 'config.json'):
+        print(f"{data_path}/config.json already exists")
+    else:
+        data_path.mkdir(parents=True, exist_ok=True)
+        with (data_path / 'config.json').open('w') as fp:
+            json.dump(config, fp, indent=4)
 
-    store_data(config, tidy)
+        store_data(config, tidy)
 
 if __name__ == "__main__":
     action = str(sys.argv[1])
@@ -84,10 +89,18 @@ if __name__ == "__main__":
     clear = str(sys.argv[3]) == 'True'
     tidy = str(sys.argv[4]) == 'True'
 
-    [config, scenarios, keys] = load_config(".", config_name, action)
+    [config, scenarios, keys] = _load_config(".", config_name, action)
 
     if len(scenarios) > 10000:
-        raise Exception(f"Exceeded maximum number for scenarios (1000): {len(scenarios)}")
+        print(f"You are about to start generating a large number of scenarios, it might take a very long long time: {len(scenarios)}")
+        # Give time to stop before creating files... (30s)
+        print("Will start in 30 seconds")
+        sleep(10)
+        print("Will start in 20 seconds")
+        sleep(10)
+        print("Will start in 10 seconds")
+    if len(scenarios) > 50000:
+        raise Exception(f"Exceeded maximum number for scenarios (50000): {len(scenarios)}")
 
     if clear:
         print("Clear output folder")
@@ -105,10 +118,10 @@ if __name__ == "__main__":
     found = False
     for idx, scenario in enumerate(scenarios):
         if action == "create":
-            create_scenario(config, scenario, keys, tidy)
+            _create_scenario(config, scenario, keys, tidy)
             print(f"{idx+1} out of {len(scenarios)}: {scenario}")
         if action == "list":
-            [unique_key, _] = create_scenario_key(config, scenario, keys, tidy)
+            [unique_key, _] = _create_scenario_key(scenario, keys, tidy)
             print(unique_key)
 
     if action == "create":
