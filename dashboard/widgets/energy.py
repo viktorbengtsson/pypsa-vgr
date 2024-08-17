@@ -3,6 +3,7 @@ import pandas as pd
 import altair as alt
 from library.config import set_data_root
 from widgets.utilities import round_and_prefix, round_and_prettify, scenario
+import os.path
 
 # Create the line chart using Altair
 def power_line(data, type):
@@ -24,8 +25,14 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
     # State management
     data_root = set_data_root()
 
+
     resolution = '1w'
-    power_t = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv", parse_dates=True)
+    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv"
+    if not os.path.isfile(fname):
+        st.write("") # No data
+        return
+
+    power_t = pd.read_csv(fname, parse_dates=True)
     if resolution == '1w':
         power_t = power_t.iloc[1:]
 

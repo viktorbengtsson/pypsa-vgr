@@ -3,7 +3,6 @@ import pandas as pd
 import geopandas as gpd
 import json
 import xarray as xr
-import pickle
 import pypsa
 import shutil
 from pathlib import Path
@@ -17,8 +16,8 @@ from library.network import build_network
 from generator.lib.tools import delete_file
 
 def _get_geo(config):
-    keys = config['scenario']['geography'].split("-", 1)
-    geo = { "weather": keys[0][:2], "section": keys[1] if len(keys) > 1 else keys[0] }
+    keys = config['scenario']['geography'].split(":", 1)
+    geo = { "weather": keys[0], "section": keys[1] if len(keys) > 1 else keys[0] }
     geo["section_key"] = geo["weather"] if geo["weather"] == geo["section"] else f"{geo['weather']}-{geo['section']}"
     return geo
 

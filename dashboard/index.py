@@ -13,18 +13,21 @@ from widgets.controls import controls_widget
 # State management
 data_root = set_data_root()
 default_main_geo = "14" #VGR
+default_geo_level = "0" #Län
 
 if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
     clear_cache()
 
-if 'main_geo' not in st.session_state:
+initial_load = False
+if 'main_geo' not in st.session_state or 'geo_level' not in st.session_state or 'geo' not in st.session_state or 'variables' not in st.session_state:
+    initial_load = True
     st.session_state['main_geo'] = default_main_geo if not "main_geo" in st.query_params or st.query_params.main_geo is None or st.query_params.main_geo == "" else st.query_params.main_geo
-if 'geo' not in st.session_state:
+    st.session_state['geo_level'] = default_geo_level if not "geo_level" in st.query_params or st.query_params.geo_level is None or st.query_params.geo_level == "" else st.query_params.geo_level
     st.session_state['geo'] = "" if not "geo" in st.query_params or st.query_params.geo is None or st.query_params.geo == "" else st.query_params.geo
-if 'variables' not in st.session_state:
     st.session_state['variables'] = get_default_variables(data_root)
 
 main_geo = st.session_state['main_geo']
+geo_level = st.session_state['geo_level']
 geo = st.session_state['geo']
 variables = st.session_state['variables']
 
@@ -35,12 +38,15 @@ col1, col2 = st.columns([3, 1], gap="small")
 # Show map selector and selection widget in sidebar
 with sidebar:
     available_geo, main_geo = main_geo_selector(main_geo)
-    geo = streamlit_map_selector(main_geo=main_geo, available_geo=available_geo, initial_geo=geo)
+    if initial_load:
+        geo = streamlit_map_selector(main_geo=main_geo, available_geo=available_geo, initial_geo=geo)
+    else:
+        geo = streamlit_map_selector(main_geo=main_geo, available_geo=available_geo, initial_geo=None)
 
     if geo is None:
         st.stop()   # Not sure why map_selector returns None on the initial render
 
-    controls = sidebar.container()
+    controls = st.container()
     with controls:
         variables = controls_widget(variables)
 
@@ -63,7 +69,13 @@ with col2:
 # The right-side column holds energy widgets
 
 
-# Persist session values in query string
+# Persist session values and query string
 st.query_params["main_geo"] = main_geo
+st.query_params["geo_level"] = geo_level
 st.query_params["geo"] = geo
 st.query_params["variables"] = ','.join(map(str, variables))
+
+st.session_state['geo_level'] = geo_level
+st.session_state['main_geo'] = main_geo
+st.session_state['geo'] = geo
+st.session_state['variables'] = variables

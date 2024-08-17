@@ -1,6 +1,9 @@
 import streamlit as st
 from library.config import set_data_root, read_dashboard_available_variables
 
+def _is_loaded(key):
+    st.session_state[f"is_loaded_{key}"] = True
+
 def controls_widget(variables):
     # State management
     data_root = set_data_root()
@@ -17,17 +20,29 @@ def controls_widget(variables):
             st.write("It seems like you have a /output/config.json file that does not match the data in /output")
             return
         
-        load_target = st.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], value=SCENARIOS["load-target"][0], disabled=readonly_mode, key=f"filter_load_target_{readonly_mode}")
+        if 'is_loaded_load_target' not in st.session_state:
+            load_target = st.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], value=SCENARIOS["load-target"][0], disabled=readonly_mode, key=f"filter_load_target_{readonly_mode}", on_change=lambda: _is_loaded("load_target"))
+        else:
+            load_target = st.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], disabled=readonly_mode, key=f"filter_load_target_{readonly_mode}")
 
     # H2
-    h2 = st.toggle("Vätgas", value=(variables["h2"]), disabled=(readonly_mode or len(SCENARIOS["h2"]) == 1), key=f"filter_h2_{readonly_mode}")
+    if 'is_loaded_h2' not in st.session_state:
+        h2 = st.toggle("Vätgas", value=variables["h2"], disabled=(readonly_mode or len(SCENARIOS["h2"]) == 1), key=f"filter_h2_{readonly_mode}", on_change=lambda: _is_loaded("h2"))
+    else:
+       h2 = st.toggle("Vätgas", disabled=(readonly_mode or len(SCENARIOS["h2"]) == 1), key=f"filter_h2_{readonly_mode}")
     
     # OFF WIND
-    offwind = st.toggle("Havsvind", value=(variables["offwind"]), disabled=(readonly_mode or len(SCENARIOS["offwind"]) == 1), key=f"filter_offwind_{readonly_mode}")
+    if 'is_loaded_offwind' not in st.session_state:
+        offwind = st.toggle("Havsvind", value=(variables["offwind"]), disabled=(readonly_mode or len(SCENARIOS["offwind"]) == 1), key=f"filter_offwind_{readonly_mode}", on_change=lambda: _is_loaded("offwind"))
+    else:
+        offwind = st.toggle("Havsvind", disabled=(readonly_mode or len(SCENARIOS["offwind"]) == 1), key=f"filter_offwind_{readonly_mode}")
 
     # BIOGAS
     if len(SCENARIOS["biogas-limit"]) > 1:
-        biogas = st.select_slider("Biogas", options=SCENARIOS["biogas-limit"], value=variables["biogas_limit"] if variables["biogas_limit"] in SCENARIOS["biogas-limit"] else SCENARIOS["biogas-limit"][0], disabled=readonly_mode, key=f"filter_biogas_{readonly_mode}")
+        if 'is_loaded_biogas' not in st.session_state:
+            biogas = st.select_slider("Biogas", options=SCENARIOS["biogas-limit"], value=variables["biogas_limit"] if variables["biogas_limit"] in SCENARIOS["biogas-limit"] else SCENARIOS["biogas-limit"][0], disabled=readonly_mode, key=f"filter_biogas_{readonly_mode}", on_change=lambda: _is_loaded("biogas"))
+        else:
+            biogas = st.select_slider("Biogas", options=SCENARIOS["biogas-limit"], disabled=readonly_mode, key=f"filter_biogas_{readonly_mode}")
     else:
         biogas = SCENARIOS["biogas-limit"][0]
 
