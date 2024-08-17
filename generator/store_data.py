@@ -30,4 +30,4 @@ def store_data(config, tidy):
     create_and_store_results(config)
 
     if tidy:
-        clear_working_files(config)        
+        clear_working_files(config)

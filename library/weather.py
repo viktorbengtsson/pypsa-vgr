@@ -35,13 +35,14 @@ def generate_cutout(lan_code, sections, weather_start, weather_end):
         lan_code: gpd.GeoDataFrame(geometry=[unary_union(main_area.geometry)], crs=geo_area.crs)
     }
 
-    for _, item in sections.items():
-        if isinstance(item, list):
-            kom = geo_area.loc[geo_area['kom_code'].isin(item)]
-            selections[f"{lan_code}:{':'.join(item)}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
-        else:
-            kom = geo_area.loc[geo_area['kom_code'].isin([item])]
-            selections[f"{lan_code}:{item}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
+    if sections is not None:
+        for _, item in sections.items():
+            if isinstance(item, list):
+                kom = geo_area.loc[geo_area['kom_code'].isin(item)]
+                selections[f"{lan_code}:{':'.join(item)}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
+            else:
+                kom = geo_area.loc[geo_area['kom_code'].isin([item])]
+                selections[f"{lan_code}:{item}"] = gpd.GeoDataFrame(geometry=[unary_union(kom.geometry)], crs=geo_area.crs)
 
     # EEZ (Economical zone)
     shapefile_path = paths.input_path / 'geo/Ekonomiska_zonens_yttre_avgränsningslinjer/Ekonomiska_zonens_yttre_avgränsningslinjer_linje.shp'
