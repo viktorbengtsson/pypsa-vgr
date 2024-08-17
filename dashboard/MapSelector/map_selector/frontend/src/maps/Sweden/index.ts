@@ -1,5 +1,5 @@
 import React from 'react';
-import { IMap, MapProps, ISection } from '../types';
+import { IMap, MapProps } from '../types';
 import { sections, main_areas, level1_areas } from "./sections"
 import MapComponent from "./MapComponent"
 

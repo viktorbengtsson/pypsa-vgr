@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import SwedenMap from "./maps/Sweden/index"
 import { IMap } from "./maps/types"
 
@@ -73,7 +73,7 @@ class MapSelector extends StreamlitComponentBase<State> {
 
   }
   private deSelect = (code: string): void => {
-    const { selection, geo_level } = this.state
+    const { selection } = this.state
     const newSelection = [...selection]
     newSelection.splice(newSelection.indexOf(code) , 1)
 
