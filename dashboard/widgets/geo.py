@@ -18,7 +18,7 @@ def main_geo_selector(current_main_geo):
             sections[main] = [section]
 
     if (len(sections) == 1):
-        main_geo = next(iter(sections.values()))
+        main_geo = next(iter(sections.values()))[0]
     else:
         main_geo = st.selectbox("",
             sections.keys(),

@@ -17,11 +17,9 @@ default_main_geo = "14" #VGR
 if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
     clear_cache()
 
-if 'main_geo' not in st.session_state:
+if 'main_geo' not in st.session_state or 'geo' not in st.session_state or 'variables' not in st.session_state:
     st.session_state['main_geo'] = default_main_geo if not "main_geo" in st.query_params or st.query_params.main_geo is None or st.query_params.main_geo == "" else st.query_params.main_geo
-if 'geo' not in st.session_state:
     st.session_state['geo'] = "" if not "geo" in st.query_params or st.query_params.geo is None or st.query_params.geo == "" else st.query_params.geo
-if 'variables' not in st.session_state:
     st.session_state['variables'] = get_default_variables(data_root)
 
 main_geo = st.session_state['main_geo']
@@ -63,7 +61,11 @@ with col2:
 # The right-side column holds energy widgets
 
 
-# Persist session values in query string
+# Persist session values and query string
 st.query_params["main_geo"] = main_geo
 st.query_params["geo"] = geo
 st.query_params["variables"] = ','.join(map(str, variables))
+
+st.session_state['main_geo'] = main_geo
+st.session_state['geo'] = geo
+st.session_state['variables'] = variables
