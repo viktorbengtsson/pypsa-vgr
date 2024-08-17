@@ -1,6 +1,6 @@
 import React from 'react';
 import { IMap, MapProps, ISection } from '../types';
-import { sections, main_areas } from "./sections"
+import { sections, main_areas, level1_areas } from "./sections"
 import MapComponent from "./MapComponent"
 
 class MapSweden implements IMap {
@@ -16,13 +16,6 @@ class MapSweden implements IMap {
     this.Component = MapComponent
   }
 
-  private geoToSelection: (geo: string) => string[] = (geo: string) => {
-    return geo === this.mainGeo ? [] : [geo]
-  }
-  private selectionToGeo: (selection: string[]) => string = (selection: string[]) => {
-    return selection.length === 0 ? this.mainGeo : selection[0]
-  }
-
   setMainGeo (newMainGeo: string) {
     this.mainGeo = newMainGeo
   }
@@ -36,26 +29,51 @@ class MapSweden implements IMap {
     return { width: 290, height: 700, viewBox: undefined }
   }
   
-
   selectAll () {
     return { geo: this.mainGeo, selection: [] }
   }
   
-  getSelection (initial_geo: string | undefined) {
-    return initial_geo ? this.geoToSelection(initial_geo) : []
+  getSelection (initial_geo: string | undefined, availableLevels: number[]) {
+    if (initial_geo) {
+      const selection = [initial_geo]
+      return { selection, geo_level: selection.length === 0 ? (availableLevels[0] ?? 0) : selection[0].length > 7 ? 1 : 0 }
+    }
+    else {
+      return { selection: [this.mainGeo], geo_level: 0 }
+    }
   }
 
   getGeo (selection: string[]) {
     if (selection.length === 0) {
       return this.mainGeo;
     }
-    return selection[0]
+    else if (selection.length > 1) {
+      return this.mainGeo + "-" + selection.join("-")
+    }
+    else if (this.mainGeo === selection[0]) {
+      return this.mainGeo
+    }
+
+    return this.mainGeo + "-" + selection[0]
   }
 
-  getSelectedSections (selection: string[]) {
-    return sections
-      .filter(g => selection.includes(g.section_code))
-      .sort((s1, s2) => selection.findIndex(s => s === s1.section_code) - selection.findIndex(s => s === s2.section_code))
+  getSelectionItems (selection: string[], geo_level: number) {
+    switch (geo_level) {
+      case 0:
+        const mainGeoName = main_areas.find(a => a.code === this.mainGeo)?.name ?? "Unknown"
+        return [{ code: this.mainGeo, name: mainGeoName }]
+      case 1:
+        const code = selection.join("-")
+        const level1GeoName = level1_areas.find(a => a.code === code)?.name ?? "Unknown"
+        return [{ code: code, name: level1GeoName }]
+      case 2:
+        return sections
+          .filter(g => selection.includes(g.section_code))
+          .sort((s1, s2) => selection.findIndex(s => s === s1.section_code) - selection.findIndex(s => s === s2.section_code))
+          .map(x => ({ code: x.section_code, name: x.section_name }))
+      default:
+        return []
+    }
   }
 }
 

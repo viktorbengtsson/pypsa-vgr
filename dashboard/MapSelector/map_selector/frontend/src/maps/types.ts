@@ -12,11 +12,11 @@ export interface IMap {
     setMainGeo: (newMainGeo: string) => void;
     getSize: () => { width: number, height: number, viewBox: string | undefined }
     selectAll: () => { geo: string, selection: string[] }
-    getSelection: (initial_geo: string | undefined) => string[]
+    getSelection: (initial_geo: string | undefined, availableLevels : number[]) => { selection: string[], geo_level: number }
     getGeo: (selection: string[]) => string
-    getSelectedSections: (selection: string[]) => {
-        section_code: string,
-        section_name: string,
+    getSelectionItems: (selection: string[], geo_level: number) => {
+        code: string,
+        name: string,
     }[]
 }
 

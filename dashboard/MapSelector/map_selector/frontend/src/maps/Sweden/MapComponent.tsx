@@ -16,13 +16,13 @@ class MapSwedenComponent extends Component<MapProps> {
           ` :root { --background-color: transparent }
             .map-selector .sections, .sections div {
               font-family: "Source Sans Pro", sans-serif;
-              font-size: 12px;
+              font-size: 11px;
             }
             .map-selector .sections {
               fill: #ccc;
               fill-rule: evenodd;
               stroke: transparent;
-              stroke-width: 0.3;
+              stroke-width: 0.1;
               path { opacity: ${outsideOfMainAreaVisible ? 0.2 : 0}; pointer-events: none; }
             }
           `}}
