@@ -83,5 +83,6 @@ def load_weather(weather_geo, section_geo, weather_start, weather_end):
 
     cutout = atlite.Cutout(cutout_path)
     selection = gpd.read_file(selection_path)
+    index = pd.to_datetime(cutout.coords['time'])
 
-    return cutout, selection
+    return cutout, selection, index
