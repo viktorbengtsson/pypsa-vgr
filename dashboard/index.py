@@ -68,7 +68,7 @@ with sidebar:
             tmp.empty()
             close_compare = tmp.button('Stäng jämförelse')
             compare_variables = variables
-            colA, colB = st.columns([1,6], gap="small")
+            colA, colB = st.columns([1,4], gap="small")
             controls = colB
             with colA:
                 controls_readonly_widget(compare_variables)

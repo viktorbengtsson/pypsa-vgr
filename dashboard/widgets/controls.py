@@ -12,7 +12,10 @@ def controls_widget(variables):
 
     # LOAD TARGET
     if len(SCENARIOS["load-target"]) > 1:
-        load_target = st.select_slider("Elproduktionsmål [TWh]", options=SCENARIOS["load-target"], value=variables["load_target"])
+        if 'is_loaded_load_target' not in st.session_state:
+            load_target = st.select_slider("Elproduktionsmål [TWh]", options=SCENARIOS["load-target"], value=variables["load_target"], on_change=lambda: _is_loaded("load_target"))
+        else:
+            load_target = st.select_slider("Elproduktionsmål [TWh]", options=SCENARIOS["load-target"])
     else:
         if SCENARIOS["load-target"][0] != variables["load_target"]:
             st.write("")
@@ -74,4 +77,4 @@ def controls_readonly_widget(variables):
 
     # BIOGAS
     if len(SCENARIOS["biogas-limit"]) > 1:
-        st.select_slider("", options=[variables["biogas_limit"]], disabled=True, label_visibility="hidden", key="readonly_biogas")
+        st.select_slider("", options=[variables["biogas_limit"], variables["biogas_limit"]], disabled=True, label_visibility="hidden", key="readonly_biogas")
