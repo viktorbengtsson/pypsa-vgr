@@ -29,7 +29,10 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
     resolution = '1w'
     fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv"
     if not os.path.isfile(fname):
-        st.write("") # No data
+        with st.container():
+            col1, col2 = st.columns(2)
+            col1.metric(label='Nominal effect', value=round_and_prefix(0,'M','W'))
+            col2.metric(label='Units required', value=round_and_prettify(0,generator))
         return
 
     power_t = pd.read_csv(fname, parse_dates=True)
