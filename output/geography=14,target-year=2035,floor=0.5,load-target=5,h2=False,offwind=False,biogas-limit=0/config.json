@@ -1,0 +1,22 @@
+{
+    "config-name": "small",
+    "base-currency": "SEK",
+    "exchange-rates": {
+        "EUR": 11.68,
+        "USD": 10.7
+    },
+    "base-year": 2024,
+    "discount-rate": 0.05,
+    "scenario": {
+        "geography": "14",
+        "target-year": 2035,
+        "floor": 0.5,
+        "load-target": 5,
+        "h2": false,
+        "offwind": false,
+        "biogas-limit": 0,
+        "data-path": "geography=14,target-year=2035,floor=0.5,load-target=5,h2=False,offwind=False,biogas-limit=0",
+        "geography_lan_code": "14",
+        "geography_kom_code": null
+    }
+}
