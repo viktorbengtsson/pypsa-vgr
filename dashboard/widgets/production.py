@@ -2,14 +2,19 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from library.config import set_data_root
-from widgets.utilities import round_and_prefix, round_and_prettify, scenario
+from widgets.utilities import scenario, full_palette
 
 # Create the line chart using Altair
 def big_chart(data):
+    color_mapping = full_palette()
     return alt.Chart(data).mark_bar().encode(
         x=alt.X('snapshot:T', title=None),
         y=alt.Y('value:Q', title=None, stack=True),
-        color=alt.Color('generator:N', legend=alt.Legend(title="Generator Type"))
+        color=alt.Color(
+            'generator:N',
+            scale=alt.Scale(domain=list(color_mapping.keys()), range=[color_mapping[key] for key in color_mapping.keys()]),
+            legend=alt.Legend(title="Generator Type")
+        )
     )
 
 def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, generators):

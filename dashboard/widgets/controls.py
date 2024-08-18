@@ -8,12 +8,14 @@ def controls_widget(variables):
     # State management
     data_root = set_data_root()
 
-    readonly_mode = False
     SCENARIOS = read_dashboard_available_variables(data_root)
 
     # LOAD TARGET
     if len(SCENARIOS["load-target"]) > 1:
-        load_target = st.select_slider("Elproduktionsmål [TWh]", options=SCENARIOS["load-target"], value=variables["load_target"], disabled=readonly_mode, key=f"filter_load_target_{readonly_mode}")
+        if 'is_loaded_load_target' not in st.session_state:
+            load_target = st.select_slider("Elproduktionsmål [TWh]", options=SCENARIOS["load-target"], value=variables["load_target"], on_change=lambda: _is_loaded("load_target"))
+        else:
+            load_target = st.select_slider("Elproduktionsmål [TWh]", options=SCENARIOS["load-target"])
     else:
         if SCENARIOS["load-target"][0] != variables["load_target"]:
             st.write("")
@@ -21,28 +23,28 @@ def controls_widget(variables):
             return
         
         if 'is_loaded_load_target' not in st.session_state:
-            load_target = st.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], value=SCENARIOS["load-target"][0], disabled=readonly_mode, key=f"filter_load_target_{readonly_mode}", on_change=lambda: _is_loaded("load_target"))
+            load_target = st.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], value=SCENARIOS["load-target"][0], on_change=lambda: _is_loaded("load_target"))
         else:
-            load_target = st.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], disabled=readonly_mode, key=f"filter_load_target_{readonly_mode}")
+            load_target = st.select_slider("Elproduktionsmål [TWh]", options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]])
 
     # H2
     if 'is_loaded_h2' not in st.session_state:
-        h2 = st.toggle("Vätgas", value=variables["h2"], disabled=(readonly_mode or len(SCENARIOS["h2"]) == 1), key=f"filter_h2_{readonly_mode}", on_change=lambda: _is_loaded("h2"))
+        h2 = st.toggle("Vätgas", value=variables["h2"], disabled=(len(SCENARIOS["h2"]) == 1), on_change=lambda: _is_loaded("h2"))
     else:
-       h2 = st.toggle("Vätgas", disabled=(readonly_mode or len(SCENARIOS["h2"]) == 1), key=f"filter_h2_{readonly_mode}")
+       h2 = st.toggle("Vätgas", disabled=(len(SCENARIOS["h2"]) == 1))
     
-    # OFF WIND
+    # OFFWIND
     if 'is_loaded_offwind' not in st.session_state:
-        offwind = st.toggle("Havsvind", value=(variables["offwind"]), disabled=(readonly_mode or len(SCENARIOS["offwind"]) == 1), key=f"filter_offwind_{readonly_mode}", on_change=lambda: _is_loaded("offwind"))
+        offwind = st.toggle("Havsvind", value=(variables["offwind"]), disabled=(len(SCENARIOS["offwind"]) == 1), on_change=lambda: _is_loaded("offwind"))
     else:
-        offwind = st.toggle("Havsvind", disabled=(readonly_mode or len(SCENARIOS["offwind"]) == 1), key=f"filter_offwind_{readonly_mode}")
+        offwind = st.toggle("Havsvind", disabled=(len(SCENARIOS["offwind"]) == 1))
 
     # BIOGAS
     if len(SCENARIOS["biogas-limit"]) > 1:
         if 'is_loaded_biogas' not in st.session_state:
-            biogas = st.select_slider("Biogas", options=SCENARIOS["biogas-limit"], value=variables["biogas_limit"] if variables["biogas_limit"] in SCENARIOS["biogas-limit"] else SCENARIOS["biogas-limit"][0], disabled=readonly_mode, key=f"filter_biogas_{readonly_mode}", on_change=lambda: _is_loaded("biogas"))
+            biogas = st.select_slider("Biogas", options=SCENARIOS["biogas-limit"], value=variables["biogas_limit"] if variables["biogas_limit"] in SCENARIOS["biogas-limit"] else SCENARIOS["biogas-limit"][0], on_change=lambda: _is_loaded("biogas"))
         else:
-            biogas = st.select_slider("Biogas", options=SCENARIOS["biogas-limit"], disabled=readonly_mode, key=f"filter_biogas_{readonly_mode}")
+            biogas = st.select_slider("Biogas", options=SCENARIOS["biogas-limit"])
     else:
         biogas = SCENARIOS["biogas-limit"][0]
 
@@ -54,3 +56,25 @@ def controls_widget(variables):
     variables["biogas_limit"] = biogas
 
     return variables
+
+def controls_readonly_widget(variables):
+    # State management
+    data_root = set_data_root()
+
+    SCENARIOS = read_dashboard_available_variables(data_root)
+
+    # LOAD TARGET
+    if len(SCENARIOS["load-target"]) > 1:
+        st.select_slider("", options=SCENARIOS["load-target"], value=variables["load_target"], disabled=True, label_visibility="hidden", key="readonly_load_target")
+    else:
+        st.select_slider("", options=[variables["load_target"], variables["load_target"]], value=variables["load_target"], disabled=True, label_visibility="hidden", key="readonly_load_target")
+
+    # H2
+    st.toggle("", value=(variables["h2"]), disabled=True, label_visibility="hidden", key="readonly_h2")
+
+    # OFFWIND
+    st.toggle("", value=(variables["offwind"]), disabled=True, label_visibility="hidden", key="readonly_offwind")
+
+    # BIOGAS
+    if len(SCENARIOS["biogas-limit"]) > 1:
+        st.select_slider("", options=[variables["biogas_limit"], variables["biogas_limit"]], disabled=True, label_visibility="hidden", key="readonly_biogas")

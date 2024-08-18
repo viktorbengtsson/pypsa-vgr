@@ -2,10 +2,6 @@ import React, { Component } from 'react';
 import { MapProps } from '../types';
 
 class MapSwedenComponent extends Component<MapProps> {
-    constructor(props: MapProps) {
-      super(props);
-    }
-
     render() {
       const disabled = false
       const outsideOfMainAreaVisible = true

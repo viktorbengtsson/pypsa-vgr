@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import SwedenMap from "./maps/Sweden/index"
 import { IMap } from "./maps/types"
 
@@ -73,7 +73,7 @@ class MapSelector extends StreamlitComponentBase<State> {
 
   }
   private deSelect = (code: string): void => {
-    const { selection, geo_level } = this.state
+    const { selection } = this.state
     const newSelection = [...selection]
     newSelection.splice(newSelection.indexOf(code) , 1)
 
@@ -152,6 +152,7 @@ class MapSelector extends StreamlitComponentBase<State> {
     const selectedItems = this.map.getSelectionItems(selection, geo_level)
     const size = this.map.getSize()
     const levelSelector = geo_level === 0 ? "main" : "section"
+    const MapComponent = this.map.Component
 
     return (
       <div style={{ position: "relative" }}>
@@ -166,7 +167,7 @@ class MapSelector extends StreamlitComponentBase<State> {
            ${ selection.map(s => `.map-selector .sections path.${levelSelector}-${s} { fill: var(--primary-color) }`).join(" ") }
         `}}
         />
-        <this.map.Component onSelectionChanged={this.onSelectionChanged} width={size.width} height={size.height} viewBox={size.viewBox ?? ""} />
+        <MapComponent onSelectionChanged={this.onSelectionChanged} width={size.width} height={size.height} viewBox={size.viewBox ?? ""} />
         <div className="sections" style={{ padding: "4px" }}>
           <div style={{ display: "flex", flexDirection: "row" }}>
             <div style={{ flex: 1, border: "1px solid rgba(0, 0, 0, 0.2)", borderRadius: "0.5rem", padding: "0.25rem", display: "flex", flexDirection: "row", gap: "0.25rem", flexWrap: "wrap", overflow: "auto", maxHeight: "5.5rem" }}>
