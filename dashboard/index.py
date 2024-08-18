@@ -7,7 +7,7 @@ from widgets.production import big_chart_widget
 from widgets.sufficiency import sufficiency_widget
 from widgets.comparison import comparison_widget
 from widgets.price import price_widget
-from widgets.energy import energy_widget
+from widgets.energy import energy_widget, energy_max_value
 from widgets.controls import controls_widget, controls_readonly_widget
 
 # State management
@@ -89,10 +89,11 @@ with col1:
 
 
 with col2:
-    energy_widget(geo=geo, **variables, generator='solar')
-    energy_widget(geo=geo, **variables, generator='onwind')
-    energy_widget(geo=geo, **variables, generator='offwind')
-    energy_widget(geo=geo, **variables, generator='biogas_market')
+    max_value = energy_max_value(geo=geo, **variables, generators=['solar', 'onwind', 'offwind', 'biogas_market'])
+    energy_widget(geo=geo, **variables, max_value=max_value, generator='solar')
+    energy_widget(geo=geo, **variables, max_value=max_value, generator='onwind')
+    energy_widget(geo=geo, **variables, max_value=max_value, generator='offwind')
+    energy_widget(geo=geo, **variables, max_value=max_value, generator='biogas_market')
 
 # The right-side column holds energy widgets
 

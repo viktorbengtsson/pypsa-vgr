@@ -29,3 +29,20 @@ def round_and_prettify(value, type):
 
 def scenario(geo, year, floor, load, h2, offwind, biogas):
     return f"geography={geo},target-year={year},floor={floor},load-target={load},h2={h2},offwind={offwind},biogas-limit={biogas}"
+
+def gen_palette(generator):
+    return full_palette().get(generator, "#000000")
+
+def stor_palette(storage):
+    return full_palette().get(storage, "#000000")
+
+def full_palette():
+    return {
+        'solar': '#FCE849',
+        'onwind': "#84B082",
+        'offwind': "#60BFFF",
+        'biogas_market': "#EF476F",
+        'backstop': "#B7B5B3",
+        'battery': "#BDFFB5",
+        'h2': "#C18EFF"
+    }
