@@ -1,5 +1,5 @@
 {
-    "config-name": "single",
+    "config-name": "small",
     "base-currency": "SEK",
     "exchange-rates": {
         "EUR": 11.68,
@@ -7,7 +7,7 @@
     },
     "base-year": 2024,
     "discount-rate": 0.05,
-    "h2-initial": 150000,
+    "h2-initial": 0,
     "offwind-ratio": 0.5,
     "scenarios": {
         "geography": [
@@ -15,15 +15,15 @@
         ],
         "target-year": [
             2030
-        ],
+        ], 
         "floor": [
             0.5
         ],
         "load-target": [
-            19
+            5, 7.5, 10, 12.5, 15
         ],
-        "h2": [true],
-        "offwind": [true],
-        "biogas-limit": [500]
+        "h2": [true, false],
+        "offwind": [true, false],
+        "biogas-limit": [0, 500]
     }
 }

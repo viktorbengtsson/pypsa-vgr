@@ -109,10 +109,11 @@ def create_and_store_network(config):
     offwind = bool(config['scenario']["offwind"])
     h2 = bool(config['scenario']["h2"])
     biogas_limit = config['scenario']["biogas-limit"]
+    h2_initial = config['h2-initial']
 
     print(f"Using config:\n\th2:{h2}\n\toffwind:{offwind}\n\tbiogas:{biogas_limit}")
 
-    network = build_network(index, resolution, geography, demand, assumptions, capacity_factor_solar, capacity_factor_onwind, capacity_factor_offwind, offwind, h2, biogas_limit)
+    network = build_network(index, resolution, geography, demand, assumptions, capacity_factor_solar, capacity_factor_onwind, capacity_factor_offwind, offwind, h2, h2_initial, biogas_limit)
 
     network.export_to_netcdf(data_path / 'network.nc')
 
@@ -132,7 +133,7 @@ def create_and_store_optimize(config):
     
     ## Offwind constraint
     if offwind:
-        offwind_percentage = 0.5
+        offwind_percentage = config['offwind-ratio']
 
         offwind_constraint = (1 - offwind_percentage) / offwind_percentage * generator_capacity.loc['offwind'] - generator_capacity.loc['onwind']
         model.add_constraints(offwind_constraint == 0, name="Offwind_constraint")
@@ -161,13 +162,15 @@ def create_and_store_results(config):
     ## Create files for demand data
     demand_t_3h = pd.read_csv(data_path / 'demand.csv', index_col=0, parse_dates=True) * 3
     demand_t_1d = demand_t_3h.resample('1d').sum()
-    demand_t_1w = demand_t_3h.resample('1w').sum()
+    demand_t_1w = demand_t_3h.resample('1W').sum()
+    demand_t_1M = demand_t_3h.resample('1M').sum()
 
     demand_path = data_path / 'demand'
     demand_path.mkdir(parents=True, exist_ok=True)
     demand_t_3h.to_csv(demand_path / 'demand_t_3h.csv')
     demand_t_1d.to_csv(demand_path / 'demand_t_1d.csv')
     demand_t_1w.to_csv(demand_path / 'demand_t_1w.csv')
+    demand_t_1M.to_csv(demand_path / 'demand_t_1M.csv')
 
     
     # Load the results from the pypsa network
@@ -180,7 +183,8 @@ def create_and_store_results(config):
 
     generators_power_t_3h = network.generators_t.p *3
     generators_power_t_1d = generators_power_t_3h.resample('1d').sum()
-    generators_power_t_1w = generators_power_t_3h.resample('1w').sum()
+    generators_power_t_1w = generators_power_t_3h.resample('1W').sum()
+    generators_power_t_1M = generators_power_t_3h.resample('1M').sum()
     
     for generator in generators.index:
         generator_path = data_path / 'generators' / generator
@@ -189,6 +193,7 @@ def create_and_store_results(config):
         generators_power_t_3h[generator].to_csv(generator_path / 'power_t_3h.csv')
         generators_power_t_1d[generator].to_csv(generator_path / 'power_t_1d.csv')
         generators_power_t_1w[generator].to_csv(generator_path / 'power_t_1w.csv')
+        generators_power_t_1M[generator].to_csv(generator_path / 'power_t_1M.csv')
 
     ## Create stores data
     stores = network.stores[['e_nom_mod', 'e_nom_opt', 'capital_cost', 'marginal_cost']]
@@ -196,7 +201,8 @@ def create_and_store_results(config):
 
     stores_power_t_3h = network.stores_t.p * 3
     stores_power_t_1d = stores_power_t_3h.resample('1d').sum()
-    stores_power_t_1w = stores_power_t_3h.resample('1w').sum()
+    stores_power_t_1w = stores_power_t_3h.resample('1W').sum()
+    stores_power_t_1M = stores_power_t_3h.resample('1M').sum()
     
     for store in stores.index:
         stores_path = data_path / 'stores' / store
@@ -205,6 +211,7 @@ def create_and_store_results(config):
         stores_power_t_3h[store].to_csv(stores_path / 'power_t_3h.csv')
         stores_power_t_1d[store].to_csv(stores_path / 'power_t_1d.csv')
         stores_power_t_1w[store].to_csv(stores_path / 'power_t_1w.csv')
+        stores_power_t_1M[store].to_csv(stores_path / 'power_t_1M.csv')
         
 def clear_working_files(config):
     data_path = paths.output_path / config['scenario']['data-path']
