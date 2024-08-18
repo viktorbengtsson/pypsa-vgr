@@ -10,3 +10,4 @@ atlite
 xarray
 seaborn
 extra_streamlit_components
+./dashboard/MapSelector

@@ -7,8 +7,8 @@ from widgets.production import big_chart_widget
 from widgets.sufficiency import sufficiency_widget
 from widgets.comparison import comparison_widget
 from widgets.price import price_widget
-from widgets.energy import energy_widget
-from widgets.controls import controls_widget
+from widgets.energy import energy_widget, energy_max_value
+from widgets.controls import controls_widget, controls_readonly_widget
 
 # State management
 data_root = set_data_root()
@@ -25,11 +25,25 @@ if 'main_geo' not in st.session_state or 'geo_level' not in st.session_state or 
     st.session_state['geo_level'] = default_geo_level if not "geo_level" in st.query_params or st.query_params.geo_level is None or st.query_params.geo_level == "" else st.query_params.geo_level
     st.session_state['geo'] = "" if not "geo" in st.query_params or st.query_params.geo is None or st.query_params.geo == "" else st.query_params.geo
     st.session_state['variables'] = get_default_variables(data_root)
+    st.session_state['compare_variables'] = None
 
 main_geo = st.session_state['main_geo']
 geo_level = st.session_state['geo_level']
 geo = st.session_state['geo']
 variables = st.session_state['variables']
+compare_variables = st.session_state['compare_variables']
+
+st.markdown("""
+    <style>
+        button {
+            padding: 0.125rem 0.375rem !important;
+            min-height: 1.5rem !important;
+        }
+        button div p {
+            font-size: 11px !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # Define columns
 sidebar = st.sidebar
@@ -48,6 +62,20 @@ with sidebar:
 
     controls = st.container()
     with controls:
+        tmp = st.empty()
+        compare = tmp.button('Jämför')
+        if compare:
+            tmp.empty()
+            close_compare = tmp.button('Stäng jämförelse')
+            compare_variables = variables
+            colA, colB = st.columns([1,4], gap="small")
+            controls = colB
+            with colA:
+                controls_readonly_widget(compare_variables)
+        else:
+            compare_variables = None
+
+    with controls:
         variables = controls_widget(variables)
 
 with col1:
@@ -61,10 +89,11 @@ with col1:
 
 
 with col2:
-    energy_widget(geo=geo, **variables, generator='solar')
-    energy_widget(geo=geo, **variables, generator='onwind')
-    energy_widget(geo=geo, **variables, generator='offwind')
-    energy_widget(geo=geo, **variables, generator='biogas_market')
+    max_value = energy_max_value(geo=geo, **variables, generators=['solar', 'onwind', 'offwind', 'biogas_market'])
+    energy_widget(geo=geo, **variables, max_value=max_value, generator='solar')
+    energy_widget(geo=geo, **variables, max_value=max_value, generator='onwind')
+    energy_widget(geo=geo, **variables, max_value=max_value, generator='offwind')
+    energy_widget(geo=geo, **variables, max_value=max_value, generator='biogas_market')
 
 # The right-side column holds energy widgets
 
@@ -79,3 +108,4 @@ st.session_state['geo_level'] = geo_level
 st.session_state['main_geo'] = main_geo
 st.session_state['geo'] = geo
 st.session_state['variables'] = variables
+st.session_state['compare_variables'] = compare_variables
