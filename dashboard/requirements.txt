@@ -7,6 +7,7 @@ shapely
 geopandas==0.14.4
 pypsa
 atlite
+plotly
 xarray
 seaborn
 extra_streamlit_components
