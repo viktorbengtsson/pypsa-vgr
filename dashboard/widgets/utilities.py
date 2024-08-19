@@ -1,4 +1,5 @@
 import math
+from library.language import TEXTS
 
 def round_and_prefix(value, prefix, unit):
     prefixes = ['', 'k', 'M', 'G', 'T']
@@ -15,8 +16,8 @@ def round_and_prefix(value, prefix, unit):
 def round_and_prettify(value, type):
     units = {
         "solar": 'ha',
-        "onwind": 'turbines',
-        "offwind": 'turbines',
+        "onwind": TEXTS['turbines'],
+        "offwind": TEXTS['turbines'],
         "import": ''
     }
 

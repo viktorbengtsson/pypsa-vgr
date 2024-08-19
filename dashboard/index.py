@@ -9,6 +9,7 @@ from widgets.comparison import comparison_widget
 from widgets.price import price_widget
 from widgets.energy import energy_widget, energy_max_value
 from widgets.controls import controls_widget, controls_readonly_widget
+from library.language import TEXTS
 
 # State management
 data_root = set_data_root()
@@ -63,10 +64,10 @@ with sidebar:
     controls = st.container()
     with controls:
         tmp = st.empty()
-        compare = tmp.button('Jämför')
+        compare = tmp.button(TEXTS["Compare"])
         if compare:
             tmp.empty()
-            close_compare = tmp.button('Stäng jämförelse')
+            close_compare = tmp.button(TEXTS["Close compare"])
             compare_variables = variables
             colA, colB = st.columns([1,4], gap="small")
             controls = colB

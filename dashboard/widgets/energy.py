@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from library.config import set_data_root
 from widgets.utilities import round_and_prefix, round_and_prettify, scenario, gen_palette
 import os.path
+from library.language import TEXTS
 
 def _plot_metrics_and_bar(
     metricName1, metric1,
@@ -31,6 +31,7 @@ def _plot_metrics_and_bar(
     ax1.axis('off')
 
     plt.tight_layout()
+    plt.subplots_adjust(hspace=0.2)
 
     st.pyplot(fig)
 
@@ -83,8 +84,9 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
         # END TEMPORARY
 
         _plot_metrics_and_bar(
-            "Nominal effect", round_and_prefix(details.loc['p_nom_opt'][generator],'M','W'),
-            "Units required", round_and_prettify(details.loc['mod_units'][generator],generator),
+            TEXTS["Nominal effect"], round_and_prefix(details.loc['p_nom_opt'][generator],'M','W'),
+            TEXTS["Units required"], round_and_prettify(details.loc['mod_units'][generator],generator),
             power_t['snapshot'].astype('str'), power_t[generator],
             max_value, gen_palette(generator)
         )
+        st.write('\n' * 2) 
