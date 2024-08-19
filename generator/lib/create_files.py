@@ -139,7 +139,7 @@ def create_and_store_optimize(config):
         model.add_constraints(offwind_constraint == 0, name="Offwind_constraint")
 
     ## Battery charge/discharge ratio
-    lhs = link_capacity.loc["Battery charge"] - network.links.at["Battery charge", "efficiency"] * link_capacity.loc["Battery discharge"]
+    lhs = link_capacity.loc["battery-charge"] - network.links.at["battery-charge", "efficiency"] * link_capacity.loc["battery-discharge"]
     model.add_constraints(lhs == 0, name="Link-battery_fix_ratio")
 
     # Run optimization
@@ -195,6 +195,31 @@ def create_and_store_results(config):
         generators_power_t_1w[generator].to_csv(generator_path / 'power_t_1w.csv')
         generators_power_t_1M[generator].to_csv(generator_path / 'power_t_1M.csv')
 
+    ## Add active links data (battery inverters, electrolysis, and gas turbines)
+    links_charge = ['battery-charge']
+    links_discharge = ['battery-discharge']
+    if config['scenario']['h2']:
+        links_charge += ['h2-electrolysis']
+    if config['scenario']['h2'] or config['scenario']['biogas-limit'] > 0:
+        links_discharge += ['gas-turbine']
+    links = network.links.loc[links_charge + links_discharge][['p_nom_opt', 'p_nom_mod', 'capital_cost', 'marginal_cost']]
+    links['mod_units'] = links['p_nom_opt']/links['p_nom_mod']
+
+    links_power_t_3h = -network.links_t.p0[links_charge]
+    links_power_t_3h[links_discharge] = -network.links_t.p1[links_discharge]
+    links_power_t_1d = links_power_t_3h.resample('1d').sum()
+    links_power_t_1w = links_power_t_3h.resample('1W').sum()
+    links_power_t_1M = links_power_t_3h.resample('1M').sum()
+
+    for link in links_charge+links_discharge:
+        link_path = data_path / 'converters' / link
+        link_path.mkdir(parents=True, exist_ok=True)
+        links.loc[link].to_csv(link_path / 'details.csv')
+        links_power_t_3h[link].to_csv(link_path / 'power_t_3h.csv')
+        links_power_t_1d[link].to_csv(link_path / 'power_t_1d.csv')
+        links_power_t_1w[link].to_csv(link_path / 'power_t_1w.csv')
+        links_power_t_1M[link].to_csv(link_path / 'power_t_1M.csv')
+
     ## Create stores data
     stores = network.stores[['e_nom_mod', 'e_nom_opt', 'capital_cost', 'marginal_cost']]
     stores['mod_units'] = stores['e_nom_opt']/stores['e_nom_mod']
@@ -205,14 +230,36 @@ def create_and_store_results(config):
     stores_power_t_1M = stores_power_t_3h.resample('1M').sum()
     
     for store in stores.index:
-        stores_path = data_path / 'stores' / store
-        stores_path.mkdir(parents=True, exist_ok=True)
-        stores.loc[store].to_csv(stores_path / 'details.csv')
-        stores_power_t_3h[store].to_csv(stores_path / 'power_t_3h.csv')
-        stores_power_t_1d[store].to_csv(stores_path / 'power_t_1d.csv')
-        stores_power_t_1w[store].to_csv(stores_path / 'power_t_1w.csv')
-        stores_power_t_1M[store].to_csv(stores_path / 'power_t_1M.csv')
-        
+        store_path = data_path / 'stores' / store
+        store_path.mkdir(parents=True, exist_ok=True)
+        stores.loc[store].to_csv(store_path / 'details.csv')
+        stores_power_t_3h[store].to_csv(store_path / 'power_t_3h.csv')
+        stores_power_t_1d[store].to_csv(store_path / 'power_t_1d.csv')
+        stores_power_t_1w[store].to_csv(store_path / 'power_t_1w.csv')
+        stores_power_t_1M[store].to_csv(store_path / 'power_t_1M.csv')
+
+    ## Create overall network data
+
+    ''' FOR SOME REASON I AM NOT GETTING MARGINAL_PRICES FROM THE MODEL. NEED TO INVESTIGATE THIS.
+    ## Create the buses data
+    buses = network.buses.index
+    if len(network.buses_t.marginal_price.columns) > 0:
+        marginal_price_t_3h = network.buses_t.marginal_price
+    else:
+        marginal_price_t_3h[buses] = len(network.buses_t.marginal_price.index) * [0]
+    marginal_price_t_1d = network.buses_t.marginal_price.resample('1d')
+    marginal_price_t_1w = network.buses_t.marginal_price.resample('1W')
+    marginal_price_t_1M = network.buses_t.marginal_price.resample('1M')
+
+    for bus in buses:
+        bus_path = data_path / 'buses' / bus
+        bus_path.mkdir(parents=True, exist_ok=True)
+        marginal_price_t_3h[bus].to_csv(bus_path / 'marginal_price_t_3h.csv')
+        marginal_price_t_1d[bus].to_csv(bus_path / 'marginal_price_t_1d.csv')
+        marginal_price_t_1w[bus].to_csv(bus_path / 'marginal_price_t_1w.csv')
+        marginal_price_t_1M[bus].to_csv(bus_path / 'marginal_price_t_1M.csv')
+    '''
+
 def clear_working_files(config):
     data_path = paths.output_path / config['scenario']['data-path']
     delete_file(data_path / 'demand.csv')

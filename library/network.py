@@ -41,23 +41,23 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
     midy = (miny + maxy)/2
 
     # Add buses to network
-    network.add('Bus', 'Load bus', carrier='AC', x=midx, y=midy)
-    network.add('Bus', 'Renewables bus', x=midx+0.5, y=midy+0.25)
-    network.add('Bus', 'Battery bus', carrier='li-ion', x=midx-0.5, y=midy)
+    network.add('Bus', 'load-bus', carrier='AC', x=midx, y=midy)
+    network.add('Bus', 'renewables-bus', x=midx+0.5, y=midy+0.25)
+    network.add('Bus', 'battery-bus', carrier='li-ion', x=midx-0.5, y=midy)
     if use_h2 or biogas_limit > 0:
-        network.add('Bus', 'Gas turbine bus', x=midx, y=midy+0.5)
+        network.add('Bus', 'turbine-bus', x=midx, y=midy+0.5)
     if use_h2:
-        network.add('Bus', 'H2 bus', carrier='h2', x=midx-0.5, y=midy+0.5)
+        network.add('Bus', 'h2-bus', carrier='h2', x=midx-0.5, y=midy+0.5)
     if biogas_limit > 0:
-        network.add('Bus', 'Biogas market', x=midx, y=midy+0.9)
+        network.add('Bus', 'biogas-bus', x=midx, y=midy+0.9)
 
 
     # Add load and backstop to Load bus
-    network.add('Load', 'Desired load', bus='Load bus',
+    network.add('Load', 'load', bus='load-bus',
                 p_set=load
                 )
 
-    network.add('Generator', 'backstop', carrier='backstop', bus='Load bus',
+    network.add('Generator', 'backstop', carrier='backstop', bus='load-bus',
                 p_nom_extendable=True,
                 capital_cost=assumptions.loc[('backstop', 'capital_cost'), 'value'],
                 marginal_cost=assumptions.loc[('backstop', 'marginal_cost'), 'value'],
@@ -65,7 +65,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                 )
 
     # Add generators and links to Renewables bus
-    network.add('Generator', 'solar', carrier='solar', bus='Renewables bus',
+    network.add('Generator', 'solar', carrier='solar', bus='renewables-bus',
             p_nom_extendable=True, 
             p_max_pu=cf_solar,
             p_nom_mod=assumptions.loc['solar','unit_size'].value,
@@ -74,7 +74,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
             lifetime=assumptions.loc[('solar', 'lifetime'), 'value'],
             )
 
-    network.add('Generator', 'onwind', carrier='onwind', bus='Renewables bus',
+    network.add('Generator', 'onwind', carrier='onwind', bus='renewables-bus',
                 p_nom_extendable=True,
                 p_max_pu=cf_onwind,
                 p_nom_mod=assumptions.loc['onwind','unit_size'].value,
@@ -84,7 +84,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                 )
 
     if use_offwind:
-        network.add('Generator', 'offwind', carrier='offwind', bus='Renewables bus',
+        network.add('Generator', 'offwind', carrier='offwind', bus='renewables-bus',
                     p_nom_extendable=True,
                     p_max_pu=cf_offwind,
                     p_nom_mod=assumptions.loc['offwind','unit_size'].value,
@@ -93,13 +93,13 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                     lifetime=assumptions.loc['offwind','lifetime'].value,
                     )
 
-    network.add('Link', 'Renewables load link', bus0='Renewables bus', bus1='Load bus',
+    network.add('Link', 'Renewables load link', bus0='renewables-bus', bus1='load-bus',
                 p_nom_extendable=use_offwind,
                 )
 
     # Add battery storage, charging, and discharging
 
-    network.add('Link','Battery charge', bus0='Renewables bus', bus1='Battery bus',
+    network.add('Link','battery-charge', bus0='renewables-bus', bus1='battery-bus',
                 p_nom_extendable = True,
                 capital_cost= annualized_capex('battery_inverter'),
                 marginal_cost=assumptions.loc['battery_inverter','VOM'].value,
@@ -107,7 +107,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                 efficiency = assumptions.loc['battery_inverter','efficiency'].value,
                 )
 
-    network.add('Store', 'battery', carrier='li-ion', bus='Battery bus',
+    network.add('Store', 'battery', carrier='li-ion', bus='battery-bus',
                 e_initial=100,
                 e_nom_extendable=True,
                 e_cyclic=True,
@@ -118,7 +118,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                 lifetime=assumptions.loc['battery_storage', 'lifetime'].value,
                 )
 
-    network.add('Link','Battery discharge', carrier='li-ion', bus0='Battery bus', bus1='Load bus',
+    network.add('Link','battery-discharge', carrier='li-ion', bus0='battery-bus', bus1='load-bus',
                 p_nom_extendable = True,
                 efficiency = assumptions.loc['battery_inverter','efficiency'].value,
                 )
@@ -126,7 +126,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
 
     # Add H2 electrolysis, storage, pipline to gas turbine
     if use_h2:
-        network.add('Link', 'H2 electrolysis', carrier='h2', bus0='Renewables bus', bus1='H2 bus',
+        network.add('Link', 'h2-electrolysis', carrier='h2', bus0='renewables-bus', bus1='h2-bus',
                     p_nom_extendable=True,
                     p_nom_mod=assumptions.loc['h2_electrolysis','unit_size'].value,
                     capital_cost= annualized_capex('h2_electrolysis'),
@@ -135,7 +135,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                     efficiency=assumptions.loc['h2_electrolysis','efficiency'].value,
                     )
 
-        network.add('Store', 'h2', carrier='h2', bus='H2 bus',
+        network.add('Store', 'h2', carrier='h2', bus='h2-bus',
                     e_initial=h2_initial,
                     e_nom_extendable=True,
                     e_cyclic=True,
@@ -144,7 +144,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                     lifetime=assumptions.loc['h2_storage','lifetime'].value
                     )
 
-        network.add('Link', 'H2 pipeline', carrier='h2', bus0='H2 bus', bus1='Gas turbine bus',
+        network.add('Link', 'H2 pipeline', carrier='h2', bus0='h2-bus', bus1='turbine-bus',
                     p_nom_extendable=True,
                     )
 
@@ -152,20 +152,20 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
     # Add biogas market (generator) and pipeline to gas turbine
 
     if biogas_limit > 0:
-        network.add('Generator', 'biogas_market', carrier='biogas', bus='Biogas market',
+        network.add('Generator', 'biogas-market', carrier='biogas', bus='biogas-bus',
                     p_nom_extendable=True,
                     p_nom_max=biogas_limit,
                     marginal_cost=assumptions.loc['biogas','cost'].value,
                     lifetime=100,
                     )
 
-        network.add('Link', 'Biogas pipeline', carrier='biogas', bus0='Biogas market', bus1='Gas turbine bus',
+        network.add('Link', 'Biogas pipeline', carrier='biogas', bus0='biogas-bus', bus1='turbine-bus',
                     p_nom_extendable=True,
                     )
 
-    # Add gas turbines
+    # Add gas turbines (we only use the CC gas turbine for now)
     if use_h2 or biogas_limit > 0:
-        network.add('Link', 'gasturbine-cc', carrier='mixedgas', bus0='Gas turbine bus', bus1='Load bus',
+        network.add('Link', 'gas-turbine', carrier='mixedgas', bus0='turbine-bus', bus1='load-bus',
                     p_nom_extendable=True,
                     p_nom_mod=assumptions.loc['combined_cycle_gas_turbine','unit_size'].value,
                     capital_cost= annualized_capex('combined_cycle_gas_turbine'),
@@ -175,7 +175,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                     )
 
         '''
-        network.add('Link', 'gasturbine-sc', carrier='mixedgas', bus0='Gas turbine bus', bus1='Load bus',
+        network.add('Link', 'gasturbine-sc', carrier='mixedgas', bus0='turbine-bus', bus1='load-bus',
                     p_nom_extendable=True,
                     p_nom_mod=assumptions.loc['simple_cycle_gas_turbine','unit_size'].value,
                     capital_cost= annualized_capex('simple_cycle_gas_turbine'),
@@ -211,7 +211,7 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                     lifetime=assumptions.loc['nuclear_smr','lifetime'].value,
                     )
 
-        network.add('Link', 'Nuclear to load', carrier='nuclear', bus0='Nuclear', bus1='Load bus',
+        network.add('Link', 'Nuclear to load', carrier='nuclear', bus0='Nuclear', bus1='load-bus',
                     p_nom_extendable=True,
                     )
     '''
