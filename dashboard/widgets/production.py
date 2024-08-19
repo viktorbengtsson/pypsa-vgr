@@ -1,21 +1,57 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import plotly.express as px
 from library.config import set_data_root
 from widgets.utilities import scenario, full_palette
+from library.language import TEXTS
 
-# Create the line chart using Altair
-def big_chart(data):
+def _legend():
     color_mapping = full_palette()
-    return alt.Chart(data).mark_bar().encode(
-        x=alt.X('snapshot:T', title=None),
-        y=alt.Y('value:Q', title=None, stack=True),
-        color=alt.Color(
-            'generator:N',
-            scale=alt.Scale(domain=list(color_mapping.keys()), range=[color_mapping[key] for key in color_mapping.keys()]),
-            legend=alt.Legend(title="Generator Type")
-        )
+
+    generators = ['solar', 'onwind', 'offwind', 'backstop','biogas_market']
+    gen_legends = alt.Chart(None).mark_circle(size=0).encode(
+        color=alt.Color('any:N', scale=alt.Scale(
+            domain=[TEXTS[key] for key in generators if key in TEXTS],
+            range=[color_mapping[key] for key in generators if key in color_mapping])
+        ).legend(title=TEXTS["Generator types"], fillColor="#FFFFFF", symbolOpacity=1, symbolType="square", orient='left'),
+    ).configure_view(strokeWidth=0
+    ).properties( width=100, height=120, title='')
+
+    stores = ['h2', 'battery']
+    stor_legends = alt.Chart(None).mark_circle(size=0).encode(
+        color=alt.Color('any:N', scale=alt.Scale(
+            domain=[TEXTS[key] for key in stores if key in TEXTS],
+            range=[color_mapping[key] for key in stores if key in color_mapping])
+        ).legend(title=TEXTS["Storage types"], fillColor="#FFFFFF", symbolOpacity=1, symbolType="square", orient='left'),
+    ).configure_view(strokeWidth=0
+    ).properties( width=100, height=60, title='')
+
+    st.altair_chart(gen_legends, use_container_width=True)
+    st.altair_chart(stor_legends, use_container_width=True)
+
+def _big_chart(data):
+    color_mapping = full_palette()
+    fig = px.bar(data, 
+        x='snapshot',
+        y='value',
+        color='generator',
+        color_discrete_map=color_mapping
     )
+
+    fig.update_layout(
+        height=240,
+        barmode='stack',
+        showlegend=False,
+        xaxis_title=None,
+        yaxis_title=None,
+        margin=dict(t=0, b=40, l=40, r=40)
+    )
+    fig.update_xaxes(
+        dtick='M1',
+        tickformat='%b'
+    )
+    st.plotly_chart(fig, config={'displayModeBar': False})
 
 def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, generators):
 
@@ -33,4 +69,10 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
 
     print(generators_data)
 
-    st.altair_chart(big_chart(generators_data), use_container_width=True)
+    col1, col2 = st.columns([8, 1], gap="small")
+    with col1:
+        #st.altair_chart(_big_chart(generators_data), use_container_width=True)
+        _big_chart(generators_data)
+
+    with col2:
+        _legend()
