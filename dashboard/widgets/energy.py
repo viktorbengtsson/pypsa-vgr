@@ -39,11 +39,11 @@ def _energy_max_value(geo, target_year, floor, load_target, h2, offwind, biogas_
     # State management
     data_root = set_data_root()
 
-    resolution = '1w'
+    resolution = '1M'
     fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv"
     if os.path.isfile(fname):
         power_t = pd.read_csv(fname, parse_dates=True)
-        if resolution == '1w':
+        if resolution == '1M':
             power_t = power_t.iloc[1:]
         return power_t[generator].max()
     
@@ -58,7 +58,7 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
     # State management
     data_root = set_data_root()
 
-    resolution = '1w'
+    resolution = '1M'
     fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv"
     if not os.path.isfile(fname):
         with st.container():
@@ -70,19 +70,12 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
         return
 
     power_t = pd.read_csv(fname, parse_dates=True)
-    if resolution == '1w':
+    if resolution == '1M':
         power_t = power_t.iloc[1:]
 
     details = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / 'details.csv',index_col=0)
 
     with st.container():
-        # TEMPORARY UNTIL WE HAVE RESOLUTION 1m
-        power_t['time'] = pd.to_datetime(power_t['snapshot'])
-        power_t['year_month'] = power_t['time'].dt.to_period('M')
-        power_t = power_t.groupby('year_month')[generator].mean().reset_index()
-        power_t.columns = ['snapshot', generator]
-        # END TEMPORARY
-
         _plot_metrics_and_bar(
             TEXTS["Nominal effect"], round_and_prefix(details.loc['p_nom_opt'][generator],'M','W'),
             TEXTS["Units required"], round_and_prettify(details.loc['mod_units'][generator],generator),
