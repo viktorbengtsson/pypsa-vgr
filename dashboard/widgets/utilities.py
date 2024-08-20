@@ -45,5 +45,8 @@ def full_palette():
         'biogas_market': "#EF476F",
         'backstop': "#B7B5B3",
         'battery': "#BDFFB5",
-        'h2': "#C18EFF"
+        'h2': "#C18EFF",
+        'demand': "#010101",
+        "ON": "#61AC52",
+        "OFF": "#D12D45",
     }

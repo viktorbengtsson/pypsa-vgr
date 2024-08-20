@@ -4,7 +4,7 @@ from library.config import set_data_root, clear_cache, get_default_variables
 from map_selector.map_selector import streamlit_map_selector
 from widgets.geo import main_geo_selector
 from widgets.production import big_chart_widget
-from widgets.sufficiency import sufficiency_widget
+from dashboard.widgets.performance import performance_widget
 from widgets.comparison import comparison_widget
 from widgets.price import price_widget
 from widgets.energy import energy_widget, energy_max_value
@@ -80,10 +80,10 @@ with sidebar:
         variables = controls_widget(variables)
 
 with col1:
-    big_chart_widget(geo=geo, **variables, generators=['solar', 'onwind', 'offwind', 'backstop'])
+    big_chart_widget(geo=geo, **variables)
     col11, col12 = col1.columns(2)
     with col11:
-        sufficiency_widget()
+        performance_widget(geo=geo, **variables)
     with col12:
         comparison_widget()
         price_widget()
