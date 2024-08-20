@@ -157,6 +157,8 @@ def create_and_store_results(config):
         print("Results files already exist, continue")
         return
     
+    use_offwind = bool(config["scenario"]["offwind"])
+
     ## Copy config to output
     shutil.copy(paths.generator_path / 'configs' / f"{config['config-name']}.json", paths.output_path / 'scenarios.json')
     
@@ -183,17 +185,22 @@ def create_and_store_results(config):
     generators['mod_units'] = generators['p_nom_opt']/generators['p_nom_mod']
     generators['total_energy'] = network.generators_t.p.sum().round(9) * 3
 
+    if use_offwind:
+        renewable_generators = ['solar', 'onwind', 'offwind']
+    else:
+        renewable_generators = ['solar', 'onwind']
+
     generators_power_t_3h = network.generators_t.p.round(9) *3
     generators_power_t_1d = generators_power_t_3h.resample('1d').sum()
     generators_power_t_1w = generators_power_t_3h.resample('1W').sum()
     generators_power_t_1M = generators_power_t_3h.resample('1ME').sum()
 
-    curtailment_power_t_3h = (network.generators_t.p_max_pu[['solar', 'onwind', 'offwind']].round(9) * network.generators.loc[['solar', 'onwind', 'offwind']]['p_nom_opt'] - network.generators_t.p[['solar', 'onwind', 'offwind']].round(9)) * 3
+    curtailment_power_t_3h = (network.generators_t.p_max_pu[renewable_generators].round(9) * network.generators.loc[renewable_generators]['p_nom_opt'] - network.generators_t.p[renewable_generators].round(9)) * 3
     curtailment_power_t_1d = curtailment_power_t_3h.resample('1d').sum()
     curtailment_power_t_1w = curtailment_power_t_3h.resample('1W').sum()
     curtailment_power_t_1M = curtailment_power_t_3h.resample('1ME').sum()
 
-    annual_curtailment = 1 - network.generators_t.p[['solar', 'onwind', 'offwind']].sum()/(network.generators_t.p_max_pu[['solar', 'onwind', 'offwind']].sum() * network.generators.loc[['solar', 'onwind', 'offwind']]['p_nom_opt'])
+    annual_curtailment = 1 - network.generators_t.p[renewable_generators].sum()/(network.generators_t.p_max_pu[renewable_generators].sum() * network.generators.loc[renewable_generators]['p_nom_opt'])
     annual_curtailment.replace([np.inf, -np.inf], 0, inplace=True)
     generators['curtailment'] = annual_curtailment
 
@@ -206,7 +213,7 @@ def create_and_store_results(config):
         generators_power_t_1w[generator].to_csv(generator_path / 'power_t_1w.csv')
         generators_power_t_1M[generator].to_csv(generator_path / 'power_t_1M.csv')
 
-        if generator in ['solar', 'onwind', 'offwind']:
+        if generator in renewable_generators:
             curtailment_power_t_3h[generator].to_csv(generator_path / 'curtailment_t_3h.csv')
             curtailment_power_t_1d[generator].to_csv(generator_path / 'curtailment_t_1d.csv')
             curtailment_power_t_1w[generator].to_csv(generator_path / 'curtailment_t_1w.csv')
@@ -266,10 +273,10 @@ def create_and_store_results(config):
     load_1w = load_3h.resample('1W').sum().squeeze()
     load_1M = load_3h.resample('1ME').sum().squeeze()
 
-    sufficiency_3h = 1 - backstop_3h/load_3h
-    sufficiency_1d = 1 - backstop_1d/load_1d
-    sufficiency_1w = 1 - backstop_1w/load_1w
-    sufficiency_1M = 1 - backstop_1M/load_1M
+    sufficiency_3h = (1 - backstop_3h/load_3h).round(4)
+    sufficiency_1d = (1 - backstop_1d/load_1d).round(4)
+    sufficiency_1w = (1 - backstop_1w/load_1w).round(4)
+    sufficiency_1M = (1 - backstop_1M/load_1M).round(4)
 
     performance_path = data_path / 'performance'
     performance_path.mkdir(parents=True, exist_ok=True)
@@ -280,22 +287,22 @@ def create_and_store_results(config):
 
     ## Create performance metrics
     performance = pd.DataFrame(columns=['Value'])
-    performance.loc['Total energy'] = (network.loads_t.p.sum().iloc[0] - network.generators_t.p['backstop'].sum()) * 3
-    performance.loc['Backstop energy'] = network.generators_t.p['backstop'].sum() * 3
-    performance.loc['Sufficiency'] = (network.loads_t.p.sum().iloc[0] - network.generators_t.p['backstop'].sum()) / network.loads_t.p.sum().iloc[0]
-    performance.loc['Shortfall'] = network.generators_t.p['backstop'].sum() / network.loads_t.p.sum().iloc[0]
+    performance.loc['Total energy'] = round((network.loads_t.p.sum().iloc[0] - network.generators_t.p['backstop'].sum()) * 3,2)
+    performance.loc['Backstop energy'] = network.generators_t.p['backstop'].sum().round(2) * 3
+    performance.loc['Sufficiency'] = round((network.loads_t.p.sum().iloc[0] - network.generators_t.p['backstop'].sum()) / network.loads_t.p.sum().iloc[0],4)
+    performance.loc['Shortfall'] = round(network.generators_t.p['backstop'].sum() / network.loads_t.p.sum().iloc[0],4)
 
     performance.to_csv(performance_path / 'performance_metrics.csv')
 
     worst = pd.DataFrame(columns=['Time', 'Sufficiency'])
-    worst.loc['1d'] = [sufficiency_1d.nsmallest(1).index[0], sufficiency_1d.nsmallest(1).iloc[0]]
-    worst.loc['1w'] = [sufficiency_1w.nsmallest(1).index[0], sufficiency_1w.nsmallest(1).iloc[0]]
-    worst.loc['1M'] = [sufficiency_1M.nsmallest(1).index[0], sufficiency_1M.nsmallest(1).iloc[0]]
+    worst.loc['1d'] = [sufficiency_1d.nsmallest(1).index[0], sufficiency_1d.nsmallest(1).iloc[0].round(4)]
+    worst.loc['1w'] = [sufficiency_1w.nsmallest(1).index[0], sufficiency_1w.nsmallest(1).iloc[0].round(4)]
+    worst.loc['1M'] = [sufficiency_1M.nsmallest(1).index[0], sufficiency_1M.nsmallest(1).iloc[0].round(4)]
 
     worst.to_csv(performance_path / 'worst.csv')
 
     days_below = pd.DataFrame(columns=['Days'])
-    for threshold in np.arange(0.95, 0, -0.05):
+    for threshold in np.arange(0.95, 0, -0.05).round(2):
         days_below.loc[threshold] = (sufficiency_1d < threshold).sum()
 
     days_below.to_csv(performance_path / 'days_below.csv')
