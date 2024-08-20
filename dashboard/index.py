@@ -80,7 +80,7 @@ with sidebar:
         variables = controls_widget(variables)
 
 with col1:
-    big_chart_widget(geo=geo, **variables, generators=['solar', 'onwind', 'offwind', 'backstop'])
+    big_chart_widget(geo=geo, **variables)
     col11, col12 = col1.columns(2)
     with col11:
         sufficiency_widget()
