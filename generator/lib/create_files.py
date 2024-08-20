@@ -180,45 +180,6 @@ def create_and_store_results(config):
     network = pypsa.Network()
     network.import_from_netcdf(data_path / 'network.nc')
 
-    ## Create generators data and curtailment data (renewable generators only)
-    generators = network.generators[['p_nom_mod', 'p_nom_opt', 'capital_cost', 'marginal_cost']].copy()
-    generators['mod_units'] = generators['p_nom_opt']/generators['p_nom_mod']
-    generators['total_energy'] = network.generators_t.p.sum().round(9) * 3
-
-    if use_offwind:
-        renewable_generators = ['solar', 'onwind', 'offwind']
-    else:
-        renewable_generators = ['solar', 'onwind']
-
-    generators_power_t_3h = network.generators_t.p.round(9) *3
-    generators_power_t_1d = generators_power_t_3h.resample('1d').sum()
-    generators_power_t_1w = generators_power_t_3h.resample('1W').sum()
-    generators_power_t_1M = generators_power_t_3h.resample('1ME').sum()
-
-    curtailment_power_t_3h = (network.generators_t.p_max_pu[renewable_generators].round(9) * network.generators.loc[renewable_generators]['p_nom_opt'] - network.generators_t.p[renewable_generators].round(9)) * 3
-    curtailment_power_t_1d = curtailment_power_t_3h.resample('1d').sum()
-    curtailment_power_t_1w = curtailment_power_t_3h.resample('1W').sum()
-    curtailment_power_t_1M = curtailment_power_t_3h.resample('1ME').sum()
-
-    annual_curtailment = 1 - network.generators_t.p[renewable_generators].sum()/(network.generators_t.p_max_pu[renewable_generators].sum() * network.generators.loc[renewable_generators]['p_nom_opt'])
-    annual_curtailment.replace([np.inf, -np.inf], 0, inplace=True)
-    generators['curtailment'] = annual_curtailment
-
-    for generator in generators.index:
-        generator_path = data_path / 'generators' / generator
-        generator_path.mkdir(parents=True, exist_ok=True)
-        generators.loc[generator].to_csv(generator_path / 'details.csv')
-        generators_power_t_3h[generator].to_csv(generator_path / 'power_t_3h.csv')
-        generators_power_t_1d[generator].to_csv(generator_path / 'power_t_1d.csv')
-        generators_power_t_1w[generator].to_csv(generator_path / 'power_t_1w.csv')
-        generators_power_t_1M[generator].to_csv(generator_path / 'power_t_1M.csv')
-
-        if generator in renewable_generators:
-            curtailment_power_t_3h[generator].to_csv(generator_path / 'curtailment_t_3h.csv')
-            curtailment_power_t_1d[generator].to_csv(generator_path / 'curtailment_t_1d.csv')
-            curtailment_power_t_1w[generator].to_csv(generator_path / 'curtailment_t_1w.csv')
-            curtailment_power_t_1M[generator].to_csv(generator_path / 'curtailment_t_1M.csv')
-
     ## Add active links data (battery inverters, electrolysis, and gas turbines)
     links_charge = ['battery-charge']
     links_discharge = ['battery-discharge']
@@ -243,6 +204,58 @@ def create_and_store_results(config):
         links_power_t_1d[link].to_csv(link_path / 'power_t_1d.csv')
         links_power_t_1w[link].to_csv(link_path / 'power_t_1w.csv')
         links_power_t_1M[link].to_csv(link_path / 'power_t_1M.csv')
+
+    ## Create generators data and curtailment data (renewable generators only)
+    generators = network.generators[['p_nom_mod', 'p_nom_opt', 'capital_cost', 'marginal_cost']].copy()
+    generators['mod_units'] = generators['p_nom_opt']/generators['p_nom_mod']
+    generators['total_energy'] = network.generators_t.p.sum().round(9) * 3
+
+    if use_offwind:
+        renewable_generators = ['solar', 'onwind', 'offwind']
+    else:
+        renewable_generators = ['solar', 'onwind']
+
+    generators_power_t_3h = network.generators_t.p.round(9) * 3
+    generators_power_t_1d = generators_power_t_3h.resample('1d').sum()
+    generators_power_t_1w = generators_power_t_3h.resample('1W').sum()
+    generators_power_t_1M = generators_power_t_3h.resample('1ME').sum()
+
+    generators_power_to_load_t_3h = (network.generators_t.p[renewable_generators] - network.generators_t.p[renewable_generators].div(
+    network.generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(
+        network.links_t.p0[links_charge].sum(axis=1), axis=0)).round(9) * 3
+    generators_power_to_load_t_1d = generators_power_to_load_t_3h.resample('1d').sum()
+    generators_power_to_load_t_1w = generators_power_to_load_t_3h.resample('1W').sum()
+    generators_power_to_load_t_1M = generators_power_to_load_t_3h.resample('1ME').sum()
+
+    curtailment_power_t_3h = (network.generators_t.p_max_pu[renewable_generators].round(9) * network.generators.loc[renewable_generators]['p_nom_opt'] - network.generators_t.p[renewable_generators].round(9)) * 3
+    curtailment_power_t_1d = curtailment_power_t_3h.resample('1d').sum()
+    curtailment_power_t_1w = curtailment_power_t_3h.resample('1W').sum()
+    curtailment_power_t_1M = curtailment_power_t_3h.resample('1ME').sum()
+
+    annual_curtailment = 1 - network.generators_t.p[renewable_generators].sum()/(network.generators_t.p_max_pu[renewable_generators].sum() * network.generators.loc[renewable_generators]['p_nom_opt'])
+    annual_curtailment.replace([np.inf, -np.inf], 0, inplace=True)
+    generators['curtailment'] = annual_curtailment
+
+    for generator in generators.index:
+        generator_path = data_path / 'generators' / generator
+        generator_path.mkdir(parents=True, exist_ok=True)
+        generators.loc[generator].to_csv(generator_path / 'details.csv')
+        generators_power_t_3h[generator].to_csv(generator_path / 'power_t_3h.csv')
+        generators_power_t_1d[generator].to_csv(generator_path / 'power_t_1d.csv')
+        generators_power_t_1w[generator].to_csv(generator_path / 'power_t_1w.csv')
+        generators_power_t_1M[generator].to_csv(generator_path / 'power_t_1M.csv')
+
+        # Write data specific to solar, onwind, and offwind
+        if generator in renewable_generators:
+            generators_power_to_load_t_3h[generator].to_csv(generator_path / 'power_to_load_t_3h.csv')
+            generators_power_to_load_t_1d[generator].to_csv(generator_path / 'power_to_load_t_1d.csv')
+            generators_power_to_load_t_1w[generator].to_csv(generator_path / 'power_to_load_t_1w.csv')
+            generators_power_to_load_t_1M[generator].to_csv(generator_path / 'power_to_load_t_1M.csv')
+
+            curtailment_power_t_3h[generator].to_csv(generator_path / 'curtailment_t_3h.csv')
+            curtailment_power_t_1d[generator].to_csv(generator_path / 'curtailment_t_1d.csv')
+            curtailment_power_t_1w[generator].to_csv(generator_path / 'curtailment_t_1w.csv')
+            curtailment_power_t_1M[generator].to_csv(generator_path / 'curtailment_t_1M.csv')
 
     ## Create stores data
     stores = network.stores[['e_nom_mod', 'e_nom_opt', 'capital_cost', 'marginal_cost']].copy()
