@@ -47,4 +47,6 @@ def full_palette():
         'battery': "#BDFFB5",
         'h2': "#C18EFF",
         'demand': "#010101",
+        "ON": "#61AC52",
+        "OFF": "#D12D45",
     }
