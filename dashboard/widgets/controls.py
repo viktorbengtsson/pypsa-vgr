@@ -36,10 +36,11 @@ def controls_widget(variables):
        h2 = st.toggle(TEXTS["h2"], disabled=(len(SCENARIOS["h2"]) == 1))
     
     # OFFWIND
-    if 'is_loaded_offwind' not in st.session_state:
-        offwind = st.toggle(TEXTS["Offshore"], value=(variables["offwind"]), disabled=(len(SCENARIOS["offwind"]) == 1), on_change=lambda: _is_loaded("offwind"))
-    else:
-        offwind = st.toggle(TEXTS["Offshore"], disabled=(len(SCENARIOS["offwind"]) == 1))
+    offwind=True
+    #if 'is_loaded_offwind' not in st.session_state:
+    #    offwind = st.toggle(TEXTS["Offshore"], value=(variables["offwind"]), disabled=(len(SCENARIOS["offwind"]) == 1), on_change=lambda: _is_loaded("offwind"))
+    #else:
+    #    offwind = st.toggle(TEXTS["Offshore"], disabled=(len(SCENARIOS["offwind"]) == 1))
 
     # BIOGAS
     if len(SCENARIOS["biogas-limit"]) > 1:
@@ -50,7 +51,7 @@ def controls_widget(variables):
     else:
         biogas = SCENARIOS["biogas-limit"][0]
 
-    variables["target_year"] = 2035 # Controls for this?
+    variables["target_year"] = 2030 # Controls for this?
     variables["floor"] = 0.5 # Controls for this?
     variables["load_target"] = load_target
     variables["h2"] = h2

@@ -2,7 +2,10 @@ LANGUAGE = "sv"
 
 ALL_TEXTS = {
     "Nominal effect": { "sv": "Nominell effekt" },
-    "Units required": { "sv": "Antal enheter" },
+    "units_required_solar": { "en": "Area (ha)", "sv": "Yta (ha)"},
+    "units_required_onwind": { "en": "Turbines", "sv": "Turbiner"},
+    "units_required_offwind": { "en": "Turbines", "sv": "Turbiner"},
+    "units_required_biogas_market": { "en": "Turbines", "sv": "Gas turbiner"},
 
     "solar": { "sv": "Solkraft", "en": "Solar" },
     "onwind": { "sv": "Vindkraft (land)", "en": "Onshore wind" },
@@ -23,6 +26,31 @@ ALL_TEXTS = {
     "Close compare": { "sv": "Stäng jämförelse" },
     "Generator types": { "sv": "Generatorer" },
     "Storage types": { "sv": "Lagring" },
+    "demand_metric_text": { 
+        "en": "Demand is fully met in {fully_length} months: {fully_months}. Average for the remaining months is {average_percentage}%. The worst month is {min_months} where {min_percentage}% of the demand is met.",
+        "sv": "Behov uppfyllt till fullo i {fully_length} månader: {fully_months}. Övriga månader är behovet uppfyllt till {average_percentage}%. Den sämsta månader är {min_months} där {min_percentage}% av behovet är uppfyllt."
+    },
+    "Performance": { "sv": "Prestanda" },
+    "Sufficiency": { "sv": "Tillförlitlighet" },
+    "Days below": { "sv": "Otillräckliga dagar" },
+    "Number of days": { "sv": "Antal dagar" }
+}
+
+ALL_MONTHS = {
+    "January": { "sv": "Januari" },
+    "February": { "sv": "Februari" },
+    "March": { "sv": "Mars" },
+    "April": { "sv": "April" },
+    "May": { "sv": "Maj" },
+    "June": { "sv": "Juni" },
+    "July": { "sv": "Juli" },
+    "August": { "sv": "August" },
+    "September": { "sv": "September" },
+    "October": { "sv": "Oktober" },
+    "November": { "sv": "November" },
+    "December": { "sv": "December" },
 }
 
 TEXTS = {key: value.get(LANGUAGE, key) for key, value in ALL_TEXTS.items()}
+
+MONTHS = [value.get(LANGUAGE, key) for key, value in ALL_MONTHS.items()]
