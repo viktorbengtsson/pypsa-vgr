@@ -28,6 +28,14 @@ def round_and_prettify(value, type):
     else:
         return f"{round(value,0):,.0f} {units[type]}"
 
+def round_and_format(value):
+    if math.isinf(value):
+        return '-'
+    elif value == 0:
+        return '-'
+    else:
+        return f"{round(value,0):,.0f}"
+
 def scenario(geo, year, floor, load, h2, offwind, biogas):
     return f"geography={geo},target-year={year},floor={floor},load-target={load},h2={h2},offwind={offwind},biogas-limit={biogas}"
 

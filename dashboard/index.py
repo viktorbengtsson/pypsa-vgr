@@ -81,7 +81,7 @@ with sidebar:
 
 with col1:
     big_chart_widget(geo=geo, **variables)
-    col11, col12 = col1.columns(2)
+    col11, col12 = col1.columns([2,3])
     with col11:
         performance_widget(geo=geo, **variables)
     with col12:

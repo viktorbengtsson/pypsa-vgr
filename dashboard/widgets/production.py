@@ -130,7 +130,7 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
     demand = demand.rename(columns={"timestamp": 'snapshot'})
     demand['type'] = "demand"
 
-    col1, col2 = st.columns([8, 1], gap="small")
+    col1, col2 = st.columns([10, 2], gap="small")
     with col1:
         _big_chart(power, store, demand)
 
