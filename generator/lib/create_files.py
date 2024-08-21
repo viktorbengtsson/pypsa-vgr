@@ -158,6 +158,11 @@ def create_and_store_results(config):
         return
     
     use_offwind = bool(config["scenario"]["offwind"])
+    use_h2 = bool(config['scenario']['h2'])
+    use_biogas = config['scenario']['biogas-limit'] > 0
+
+    resolution = 3
+
 
     ## Copy config to output
     shutil.copy(paths.generator_path / 'configs' / f"{config['config-name']}.json", paths.output_path / 'scenarios.json')
@@ -320,6 +325,86 @@ def create_and_store_results(config):
 
     days_below.to_csv(performance_path / 'days_below.csv')
 
+    ## Create LCOE data
+    # Calculate renewables distribution and cost distribution (helper for the LCOE further down)
+    energy = pd.DataFrame(columns=['energy_to_load', 'cost_to_load', 'energy_to_battery', 'cost_to_battery', 'energy_to_h2', 'cost_to_h2', 'total_energy', 'total_cost'])
+
+    energy['total_energy'] = network.generators_t.p[renewable_generators].sum() * 3
+    energy['total_cost'] = network.generators.loc[renewable_generators]['p_nom_opt']*network.generators.loc[renewable_generators]['capital_cost'] + energy['total_energy'] * network.generators.loc[renewable_generators]['marginal_cost']
+
+    energy['energy_to_load'] = (network.generators_t.p[renewable_generators] - network.generators_t.p[renewable_generators].div(
+    network.generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(
+        network.links_t.p0[links_charge].sum(axis=1), axis=0)).sum() * 3
+    energy['cost_to_load'] = energy['energy_to_load'] / energy['total_energy'] * energy['total_cost']
+
+    energy['energy_to_battery'] = network.generators_t.p[renewable_generators].div(network.generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(network.links_t.p0['battery-charge'], axis=0).sum() * 3
+    energy['cost_to_battery'] = energy['energy_to_battery'] / energy['total_energy'] * energy['total_cost']
+
+    if use_h2:
+        energy['energy_to_h2'] = network.generators_t.p[renewable_generators].div(network.generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(network.links_t.p0['h2-electrolysis'], axis=0).sum() * 3
+        energy['cost_to_h2'] = energy['energy_to_h2'] / energy['total_energy'] * energy['total_cost']
+
+    # Define the LCOE data frame
+    lcoe = pd.DataFrame(columns=['total_energy', 'total_cost', 'lcoe', 'curtailment'], index=['solar', 'onwind', 'offwind', 'battery', 'biogas', 'h2'])
+
+    # Add renewables to load (calculated above)
+    lcoe['total_energy'] = energy['energy_to_load']
+    lcoe['total_cost'] = energy['cost_to_load']
+
+    # Battery calculations
+    # Add total energy output
+    lcoe.loc['battery', 'total_energy'] = -network.links_t.p1['battery-discharge'].sum() * 3
+
+    # Add electricity input cost
+    lcoe.loc['battery', 'total_cost'] = energy['cost_to_battery'].sum()
+    # Add inverter (modelled as links) capital costs (for now these have no marginal costs)
+    lcoe.loc['battery', 'total_cost'] += (network.links.loc[['battery-charge', 'battery-discharge']]['capital_cost']*network.links.loc[['battery-charge', 'battery-discharge']]['p_nom_opt']).sum()
+    # Add storage capital costs
+    lcoe.loc['battery', 'total_cost'] += network.stores.loc['battery', 'capital_cost'] * network.stores.loc['battery', 'e_nom_opt']
+
+    #H2 calculations
+
+    if use_h2:
+        if use_biogas:
+            h2_gas_fraction = network.links_t.p0['H2 pipeline'].sum() / (network.generators_t.p[['biogas-market']].sum().values[0] + network.links_t.p0['H2 pipeline'].sum())
+        else:
+            h2_gas_fraction = 1
+
+        # Add total energy output
+        lcoe.loc['h2', 'total_energy'] = -network.links_t.p1['gas-turbine'].sum() * 3 * h2_gas_fraction
+
+        # Add electricity input cost
+        lcoe.loc['h2', 'total_cost'] = energy['cost_to_h2'].sum()
+        # Add electrolysis (modelled as link) capital cost (for now this has no marginal costs)
+        lcoe.loc['h2', 'total_cost'] += network.links.loc['h2-electrolysis', 'capital_cost'] * network.links.loc['h2-electrolysis','p_nom_opt']
+        # Add storage capical cost (for not there is not marginal cost)
+        lcoe.loc['h2', 'total_cost'] += network.stores.loc['h2', 'capital_cost'] * network.stores.loc['h2','e_nom_opt']
+        # Add gas turbine (modelled as link) fractional capital cost (fraction of h2 in total gas)
+        lcoe.loc['h2', 'total_cost'] += network.links.loc['gas-turbine', 'capital_cost'] * network.links.loc['gas-turbine','p_nom_opt'] * h2_gas_fraction
+        # Add gas turbine (modelled as link) marginal cost
+        lcoe.loc['h2', 'total_cost'] += network.links.loc['gas-turbine', 'marginal_cost'] * lcoe.loc['h2', 'total_energy']
+
+    # Biogas calculations
+
+    if use_biogas:
+        # Add total energy output
+        lcoe.loc['biogas', 'total_energy'] = -network.links_t.p1['gas-turbine'].sum() * 3 * (1 - h2_gas_fraction)
+
+        # Add biogas input cost
+        lcoe.loc['biogas', 'total_cost'] = network.generators_t.p[['biogas-market']].sum().iloc[0] * network.generators.loc['biogas-market', 'marginal_cost'] * resolution
+        # Add gas turbine (modelled as link) fractional capital cost (fraction of h2 in total gas)
+        lcoe.loc['biogas', 'total_cost'] += network.links.loc['gas-turbine', 'capital_cost'] * network.links.loc['gas-turbine','p_nom_opt'] * (1 - h2_gas_fraction)
+        # Add gas turbine (modelled as link) marginal cost
+        lcoe.loc['biogas', 'total_cost'] += network.links.loc['gas-turbine', 'marginal_cost'] * lcoe.loc['biogas', 'total_energy']
+
+    # Calculate LCOE per energy type
+    lcoe = lcoe.round(9)
+    lcoe['lcoe'] = (lcoe['total_cost']/lcoe['total_energy']) / 1_000
+
+    price_path = data_path / 'price'
+    price_path.mkdir(parents=True, exist_ok=True)
+
+    lcoe.to_csv(price_path / 'lcoe.csv')
 
     ## Create overall network data
 
