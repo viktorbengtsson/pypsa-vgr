@@ -14,22 +14,24 @@ def _text_sufficiency(data):
     average = data[data["Value"] < 1.0]["Value"].mean()
     min = data.loc[data['Value'].idxmin()]
     
-    st.divider()
-    st.subheader(f'Demand is fully met in {len(fully)} months: {", ".join(fully["Months"])}')
-    st.divider()
-    st.subheader(f'Average for the remaining months is {"{0:.2f}".format(average * 100)}%')
-    st.divider()
-    st.subheader(f'The worst month is {min["Months"]} where {"{0:.2f}".format(min["Value"] * 100)}% of the demand is met')
+    text = TEXTS["demand_metric_text"].format(
+        fully_length=f"{len(fully)}",
+        fully_months=", ".join(fully["Months"]),
+        average_percentage="{0:.2f}".format(average * 100),
+        min_months=min["Months"],
+        min_percentage="{0:.2f}".format(min["Value"] * 100)
+    )
+    st.markdown(f'<p style="font-size:14px;">{text}</p>', unsafe_allow_html=True)
 
-def _big_chart(total_data, days_below):
+def _big_chart(total_data, days_below, days_sufficient):
     color_mapping = full_palette()
 
-    fig = make_subplots(rows=1, cols=2, column_widths=[0.7, 0.3])
+    fig = make_subplots(rows=1, cols=3, column_widths=[0.2, 0.2, 0.6], subplot_titles = [TEXTS["Sufficiency"], None, TEXTS["Days below"]])
 
     fig.add_trace(
         go.Bar(
             y=total_data[total_data["type"] == "Sufficiency"]["Value"] * 100,
-            marker_color=color_mapping["ON"]
+            marker_color=color_mapping["ON"],
         ),
         row=1, col=1
     )
@@ -45,18 +47,36 @@ def _big_chart(total_data, days_below):
         go.Bar(
             x=days_below["Days"],
             y=days_below["Percentage"] * 100,
-            marker_color=color_mapping["ON"],
+            marker_color=color_mapping["OFF"],
             orientation='h'
         ),
-        row=1, col=2
+        row=1, col=3
     )
+    #fig.add_trace(
+    #    go.Bar(
+    #        x=[days_sufficient],
+    #        y=[100],
+    #        marker_color=color_mapping["ON"],
+    #        orientation='h'
+    #    ),
+    #    row=1, col=3
+    #)
+
+    fig.update_annotations(font_size=16, font_color="black", height=60)
+    fig.update_xaxes(showticklabels=False, showgrid=False, zeroline=False, row=1, col=1)
+    fig.update_xaxes(title=TEXTS["Number of days"], row=1, col=3)
+    fig.update_yaxes(dict(
+        title=None,
+        range=[0, 100],
+        tickmode='array',
+        tickvals=[0, 25, 50, 75, 100]
+    ))
 
     fig.update_layout(
         height=240,
         barmode='stack',
         showlegend=False,
-        yaxis=dict(title=None),
-        margin=dict(t=0, b=40, l=40, r=40)
+        margin=dict(t=40, b=40, l=40, r=40)
     )
 
     st.plotly_chart(fig, config={'displayModeBar': False})
@@ -80,11 +100,13 @@ def performance_widget(geo, target_year, floor, load_target, h2, offwind, biogas
         days_below = pd.read_csv(fname)
         days_below.rename(columns={'Unnamed: 0': 'Percentage'}, inplace=True)
 
+    days_sufficient = 365 - sum(days_below["Days"])
+
     fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'performance' / f"sufficiency_t_{resolution}.csv"
     if fname.is_file():
         sufficiency = pd.read_csv(fname)
         sufficiency.rename(columns={'0': 'Value'}, inplace=True)
 
-    _big_chart(data, days_below)
+    _big_chart(data, days_below, days_sufficient)
 
     _text_sufficiency(sufficiency)
