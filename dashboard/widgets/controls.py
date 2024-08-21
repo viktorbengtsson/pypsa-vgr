@@ -50,7 +50,7 @@ def controls_widget(variables):
     else:
         biogas = SCENARIOS["biogas-limit"][0]
 
-    variables["target_year"] = 2035 # Controls for this?
+    variables["target_year"] = 2030 # Controls for this?
     variables["floor"] = 0.5 # Controls for this?
     variables["load_target"] = load_target
     variables["h2"] = h2
