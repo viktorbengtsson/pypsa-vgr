@@ -5,9 +5,11 @@ from map_selector.map_selector import streamlit_map_selector
 from widgets.geo import main_geo_selector
 from widgets.production import big_chart_widget
 from dashboard.widgets.performance import performance_widget
-from widgets.comparison import comparison_widget
+#from widgets.comparison import comparison_widget
+from widgets.stores import stores_widget
 from widgets.price import price_widget
-from widgets.energy import energy_widget, energy_max_value
+from widgets.legends import legends
+from widgets.energy import energy_widget, energy_max_value, store_widget
 from widgets.controls import controls_widget, controls_readonly_widget
 from library.language import TEXTS
 
@@ -81,20 +83,23 @@ with sidebar:
 
 with col1:
     big_chart_widget(geo=geo, **variables)
-    col11, col12 = col1.columns([2,3])
+    col11, col12 = col1.columns([5,6])
     with col11:
         performance_widget(geo=geo, **variables)
     with col12:
-        comparison_widget()
-        price_widget()
+        #comparison_widget()
+        price_widget(geo=geo, **variables)
+        stores_widget(geo=geo, **variables)
 
 
 with col2:
-    max_value = energy_max_value(geo=geo, **variables, generators=['solar', 'onwind', 'offwind', 'biogas_market'])
+    legends()
+    max_value = energy_max_value(geo=geo, **variables, generators=['solar', 'onwind', 'offwind', 'biogas-market'])
     energy_widget(geo=geo, **variables, max_value=max_value, generator='solar')
     energy_widget(geo=geo, **variables, max_value=max_value, generator='onwind')
     energy_widget(geo=geo, **variables, max_value=max_value, generator='offwind')
-    energy_widget(geo=geo, **variables, max_value=max_value, generator='biogas_market')
+    energy_widget(geo=geo, **variables, max_value=max_value, generator='biogas-market')
+    store_widget(geo=geo, **variables, max_value=max_value, stores=['battery', 'h2'])
 
 # The right-side column holds energy widgets
 

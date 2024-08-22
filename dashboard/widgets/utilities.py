@@ -29,7 +29,9 @@ def round_and_prettify(value, type):
         return f"{round(value,0):,.0f} {units[type]}"
 
 def round_and_format(value):
-    if math.isinf(value):
+    if math.isnan(value):
+        return '-'
+    elif math.isinf(value):
         return '-'
     elif value == 0:
         return '-'
@@ -42,18 +44,23 @@ def scenario(geo, year, floor, load, h2, offwind, biogas):
 def gen_palette(generator):
     return full_palette().get(generator, "#000000")
 
-def stor_palette(storage):
-    return full_palette().get(storage, "#000000")
+def stor_palette(store):
+    return full_palette().get(store, "#000000")
 
 def full_palette():
     return {
         'solar': '#FCE849',
         'onwind': "#84B082",
         'offwind': "#60BFFF",
-        'biogas_market': "#EF476F",
+        'biogas-market': "#EF476F",
+        'biogas': "#EF476F",
+        'gas-turbine': "#EF476F",
         'backstop': "#B7B5B3",
-        'battery': "#BDFFB5",
-        'h2': "#C18EFF",
+        'battery': "#E3813D",
+        'battery-charge': "#E3813D",
+        'battery-discharge': "#E3813D",
+        'h2': "#8763B3",
+        'h2-electrolysis': "#8763B3",
         'demand': "#010101",
         "ON": "#61AC52",
         "OFF": "#D12D45",
