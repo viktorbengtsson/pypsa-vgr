@@ -26,10 +26,10 @@ def _plot_metrics_and_bar(
 
     for idx, metric in enumerate(metrics):
         ax = plt.subplot(gs[0, idx])
-        nameStyle = { "fontsize":33, "color": 'gray', "ha": 'center', "va": 'center' }
-        metricStyle = { "fontsize":60, "color": 'black', "ha": 'center', "va": 'center' }
-        ax.text(0.5, 1.0, metric["key"], **nameStyle)
-        ax.text(0.5, 0.0, metric["value"], **metricStyle)
+        nameStyle = { "fontsize":33, "color": 'gray', "ha": 'left', "va": 'center' }
+        metricStyle = { "fontsize":60, "color": 'black', "ha": 'left', "va": 'center' }
+        ax.text(0.15, 1.0, metric["key"], **nameStyle)
+        ax.text(0.15, 0.0, metric["value"], **metricStyle)
         ax.axis('off')
 
     plt.tight_layout()
