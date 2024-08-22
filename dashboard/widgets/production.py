@@ -20,6 +20,8 @@ def _big_chart(power, store, demand):
                 x=filtered_data["snapshot"], 
                 y=filtered_data["value"], 
                 marker_color=color_mapping[type],
+                hovertemplate=str(type + ': %{x}<br>%{y}'),
+                name=type
             ),
             secondary_y=False
         )
@@ -32,7 +34,9 @@ def _big_chart(power, store, demand):
                 x=filtered_data["snapshot"], 
                 y=filtered_data["value"], 
                 marker_color=color_mapping[type],
-                yaxis="y2"
+                yaxis="y2",
+                hovertemplate=str(type + ': %{x}<br>%{y}'),
+                name=type
             ),
             secondary_y=True
         )
@@ -41,11 +45,11 @@ def _big_chart(power, store, demand):
         go.Scatter(
             x=demand["snapshot"],
             y=demand["value"],
-            name="Demand",
+            name=TEXTS["Demand"],
             mode="lines+markers",
-            marker_color=color_mapping["demand"]
+            marker_color=color_mapping["demand"],
         ),
-        secondary_y=False,
+        secondary_y=False
     )
 
     fig.update_layout(
@@ -71,8 +75,8 @@ def _big_chart(power, store, demand):
         showticklabels=False
     ), secondary_y=True)
 
-    min_y = min(pd.concat([power["value"], store["value"], demand["value"]]))
-    max_y = max(pd.concat([power["value"], store["value"], demand["value"]]))
+    min_y = min(pd.concat([power["value"], store["value"], demand["value"]])) * 1.1
+    max_y = max(pd.concat([power["value"], store["value"], demand["value"]])) * 1.1
     fig.update_layout(
         yaxis=dict(
             range=[min_y, max_y]
@@ -93,12 +97,12 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
     resolution = '1w'
 
     generators=['solar', 'onwind', 'offwind', 'backstop']
-    stores=["h2", "battery"]
     charge_converters=["battery-charge", "h2-electrolysis"]
     discharge_converters=["battery-discharge", "gas-turbine"]
 
     for generator in generators:
-        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv"
+        power_type = "power_t_" if generator == "backstop" else "power_to_load_t_"
+        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"{power_type}{resolution}.csv"
         if fname.is_file():
             generator_data = pd.read_csv(fname, parse_dates=True)
             generator_data = generator_data.rename(columns={generator: 'value'})

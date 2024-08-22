@@ -44,7 +44,8 @@ ALL_TEXTS = {
     "Store capacity": { "sv": "Lagringskapacitet" },
     "Production": { "sv": "Produktion" },
     "Overall": { "sv": "Total" },
-    "Stores": { "sv": "Lagring" }
+    "Stores": { "sv": "Lagring" },
+    "Demand": { "sv": "Behov" }
 }
 
 ALL_MONTHS = {
