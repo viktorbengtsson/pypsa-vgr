@@ -364,6 +364,7 @@ def create_and_store_results(config):
 
     #H2 calculations
 
+    h2_gas_fraction = 0
     if use_h2:
         if use_biogas:
             h2_gas_fraction = network.links_t.p0['H2 pipeline'].sum() / (network.generators_t.p[['biogas-market']].sum().values[0] + network.links_t.p0['H2 pipeline'].sum())

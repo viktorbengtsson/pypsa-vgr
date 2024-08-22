@@ -1,35 +1,10 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from library.config import set_data_root
 from widgets.utilities import scenario, full_palette
 from library.language import TEXTS
-
-def _legend():
-    color_mapping = full_palette()
-
-    generators = ['solar', 'onwind', 'offwind', 'backstop','biogas_market']
-    gen_legends = alt.Chart(None).mark_circle(size=0).encode(
-        color=alt.Color('any:N', scale=alt.Scale(
-            domain=[TEXTS[key] for key in generators if key in TEXTS],
-            range=[color_mapping[key] for key in generators if key in color_mapping])
-        ).legend(title=TEXTS["Generator types"], fillColor="#FFFFFF", symbolOpacity=1, symbolType="square", orient='left'),
-    ).configure_view(strokeWidth=0
-    ).properties( width=100, height=120, title='')
-
-    stores = ['h2', 'battery']
-    stor_legends = alt.Chart(None).mark_circle(size=0).encode(
-        color=alt.Color('any:N', scale=alt.Scale(
-            domain=[TEXTS[key] for key in stores if key in TEXTS],
-            range=[color_mapping[key] for key in stores if key in color_mapping])
-        ).legend(title=TEXTS["Storage types"], fillColor="#FFFFFF", symbolOpacity=1, symbolType="square", orient='left'),
-    ).configure_view(strokeWidth=0
-    ).properties( width=100, height=60, title='')
-
-    st.altair_chart(gen_legends, use_container_width=True)
-    st.altair_chart(stor_legends, use_container_width=True)
 
 def _big_chart(power, store, demand):
     color_mapping = full_palette()
@@ -74,17 +49,27 @@ def _big_chart(power, store, demand):
     )
 
     fig.update_layout(
-        height=240,
+        height=340,
         barmode='stack',
         showlegend=False,
         yaxis=dict(title=None),
-        yaxis2=dict(title=None, overlaying='y', side='right'),  # Secondary y-axis
-        margin=dict(t=0, b=40, l=40, r=40)
+        yaxis2=dict(title=None, overlaying='y', side='right'),
+        margin=dict(t=0, b=40, l=0, r=0)
     )
-    fig.update_xaxes(
+    fig.update_xaxes(dict(
+        title=None,
         dtick='M1',
-        tickformat='%b'
-    )
+        tickformat='%b',
+        range=[min(filtered_data["snapshot"]), max(filtered_data["snapshot"])]
+    ))
+
+    # FIXA SÅ DET ÄR BARA ENA...
+    fig.update_yaxes(dict(
+        title=None,
+        showgrid=False,
+        ticks='',
+        showticklabels=False
+    ), secondary_y=True)
 
     min_y = min(pd.concat([power["value"], store["value"], demand["value"]]))
     max_y = max(pd.concat([power["value"], store["value"], demand["value"]]))
@@ -109,6 +94,8 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
 
     generators=['solar', 'onwind', 'offwind', 'backstop']
     stores=["h2", "battery"]
+    charge_converters=["battery-charge", "h2-electrolysis"]
+    discharge_converters=["battery-discharge", "gas-turbine"]
 
     for generator in generators:
         fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv"
@@ -117,22 +104,27 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
             generator_data = generator_data.rename(columns={generator: 'value'})
             generator_data['type'] = generator
             power = pd.concat([power, generator_data], axis=0)
-    for store_key in stores:
-        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'stores' / store_key / f"power_t_{resolution}.csv"
-        print(fname)
+    for discharger in discharge_converters:
+        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'converters' / discharger / f"power_t_{resolution}.csv"
         if fname.is_file():
-            stores_data = pd.read_csv(fname, parse_dates=True)
-            stores_data = stores_data.rename(columns={store_key: 'value'})
-            stores_data['type'] = store_key
-            store = pd.concat([store, stores_data], axis=0)
+            discharger_data = pd.read_csv(fname, parse_dates=True)
+            discharger_data = discharger_data.rename(columns={discharger: 'value'})
+            discharger_data['type'] = discharger
+            power = pd.concat([power, discharger_data], axis=0)
+
+    for charger in charge_converters:
+        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'converters' / charger / f"power_t_{resolution}.csv"
+        if fname.is_file():
+            charger_data = pd.read_csv(fname, parse_dates=True)
+            charger_data = charger_data.rename(columns={charger: 'value'})
+            charger_data['type'] = charger
+            charger_data['value'] = charger_data['value']
+            store = pd.concat([store, charger_data], axis=0)
 
     demand = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'demand' / f"demand_t_{resolution}.csv")
     demand = demand.rename(columns={"timestamp": 'snapshot'})
     demand['type'] = "demand"
 
-    col1, col2 = st.columns([10, 2], gap="small")
-    with col1:
+    with st.container(border=True):
+        st.markdown(f'<p style="font-size:16px;">{TEXTS["Production"]}</p>', unsafe_allow_html=True)
         _big_chart(power, store, demand)
-
-    with col2:
-        _legend()
