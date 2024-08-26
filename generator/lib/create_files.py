@@ -185,6 +185,7 @@ def create_and_store_results(config):
     network = pypsa.Network()
     network.import_from_netcdf(data_path / 'network.nc')
 
+
     ## Add active links data (battery inverters, electrolysis, and gas turbines)
     links_charge = ['battery-charge']
     links_discharge = ['battery-discharge']
@@ -195,8 +196,8 @@ def create_and_store_results(config):
     links = network.links.loc[links_charge + links_discharge][['p_nom_opt', 'p_nom_mod', 'capital_cost', 'marginal_cost']].copy()
     links['mod_units'] = links['p_nom_opt']/links['p_nom_mod']
 
-    links_power_t_3h = -network.links_t.p0[links_charge].round(9)
-    links_power_t_3h[links_discharge] = -network.links_t.p1[links_discharge]
+    links_power_t_3h = -network.links_t.p0[links_charge].round(9) * resolution
+    links_power_t_3h[links_discharge] = -network.links_t.p1[links_discharge] * resolution
     links_power_t_1d = links_power_t_3h.resample('1d').sum()
     links_power_t_1w = links_power_t_3h.resample('1W').sum()
     links_power_t_1M = links_power_t_3h.resample('1ME').sum()
