@@ -14,7 +14,8 @@ sys.path.append(str(root_path))
 import paths
 from library.assumptions import read_assumptions
 from library.network import build_network
-from generator.lib.tools import delete_file
+from generator.library.tools import delete_file
+from generator.library.output_files import create_and_store_demand, create_and_store_links, create_and_store_generators, create_and_store_stores, create_and_store_sufficiency, create_and_store_performance_metrics, create_and_store_worst, create_and_store_days_below, list_renewables, list_links
 
 def _get_geo(config):
     keys = config['scenario']['geography'].split(":", 1)
@@ -63,7 +64,7 @@ def check_renewables_files(config):
 
 
 # Store demand/load time series
-def create_and_store_demand(config):
+def create_and_store_demand_input(config):
     data_path = paths.output_path / config['scenario']['data-path']
     data_path.mkdir(parents=True, exist_ok=True)
 
@@ -163,172 +164,38 @@ def create_and_store_results(config):
 
     resolution = 3
 
+    # Load the results from the pypsa network
+    network = pypsa.Network()
+    network.import_from_netcdf(data_path / 'network.nc')
 
     ## Copy config to output
     shutil.copy(paths.generator_path / 'configs' / f"{config['config-name']}.json", paths.output_path / 'scenarios.json')
     
     ## Create files for demand data
-    demand_t_3h = pd.read_csv(data_path / 'demand.csv', index_col=0, parse_dates=True) * 3
-    demand_t_1d = demand_t_3h.resample('1d').sum()
-    demand_t_1w = demand_t_3h.resample('1W').sum()
-    demand_t_1M = demand_t_3h.resample('1ME').sum()
-
-    demand_path = data_path / 'demand'
-    demand_path.mkdir(parents=True, exist_ok=True)
-    demand_t_3h.to_csv(demand_path / 'demand_t_3h.csv')
-    demand_t_1d.to_csv(demand_path / 'demand_t_1d.csv')
-    demand_t_1w.to_csv(demand_path / 'demand_t_1w.csv')
-    demand_t_1M.to_csv(demand_path / 'demand_t_1M.csv')
-
-    
-    # Load the results from the pypsa network
-    network = pypsa.Network()
-    network.import_from_netcdf(data_path / 'network.nc')
-
+    create_and_store_demand(data_path / 'demand.csv', data_path / 'demand', resolution)
 
     ## Add active links data (battery inverters, electrolysis, and gas turbines)
-    links_charge = ['battery-charge']
-    links_discharge = ['battery-discharge']
-    if config['scenario']['h2']:
-        links_charge += ['h2-electrolysis']
-    if config['scenario']['h2'] or config['scenario']['biogas-limit'] > 0:
-        links_discharge += ['gas-turbine']
-    links = network.links.loc[links_charge + links_discharge][['p_nom_opt', 'p_nom_mod', 'capital_cost', 'marginal_cost']].copy()
-    links['mod_units'] = links['p_nom_opt']/links['p_nom_mod']
-
-    links_power_t_3h = -network.links_t.p0[links_charge].round(9) * resolution
-    links_power_t_3h[links_discharge] = -network.links_t.p1[links_discharge] * resolution
-    links_power_t_1d = links_power_t_3h.resample('1d').sum()
-    links_power_t_1w = links_power_t_3h.resample('1W').sum()
-    links_power_t_1M = links_power_t_3h.resample('1ME').sum()
-
-    for link in links_charge+links_discharge:
-        link_path = data_path / 'converters' / link
-        link_path.mkdir(parents=True, exist_ok=True)
-        links.loc[link].to_csv(link_path / 'details.csv')
-        links_power_t_3h[link].to_csv(link_path / 'power_t_3h.csv')
-        links_power_t_1d[link].to_csv(link_path / 'power_t_1d.csv')
-        links_power_t_1w[link].to_csv(link_path / 'power_t_1w.csv')
-        links_power_t_1M[link].to_csv(link_path / 'power_t_1M.csv')
+    create_and_store_links(data_path / 'converters', use_h2, use_biogas, network.links, network.links_t, resolution)
 
     ## Create generators data and curtailment data (renewable generators only)
-    generators = network.generators[['p_nom_mod', 'p_nom_opt', 'capital_cost', 'marginal_cost']].copy()
-    generators['mod_units'] = generators['p_nom_opt']/generators['p_nom_mod']
-    generators['total_energy'] = network.generators_t.p.sum().round(9) * 3
-
-    if use_offwind:
-        renewable_generators = ['solar', 'onwind', 'offwind']
-    else:
-        renewable_generators = ['solar', 'onwind']
-
-    generators_power_t_3h = network.generators_t.p.round(9) * 3
-    generators_power_t_1d = generators_power_t_3h.resample('1d').sum()
-    generators_power_t_1w = generators_power_t_3h.resample('1W').sum()
-    generators_power_t_1M = generators_power_t_3h.resample('1ME').sum()
-
-    generators_power_to_load_t_3h = (network.generators_t.p[renewable_generators] - network.generators_t.p[renewable_generators].div(
-    network.generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(
-        network.links_t.p0[links_charge].sum(axis=1), axis=0)).round(9) * 3
-    generators_power_to_load_t_1d = generators_power_to_load_t_3h.resample('1d').sum()
-    generators_power_to_load_t_1w = generators_power_to_load_t_3h.resample('1W').sum()
-    generators_power_to_load_t_1M = generators_power_to_load_t_3h.resample('1ME').sum()
-
-    curtailment_power_t_3h = (network.generators_t.p_max_pu[renewable_generators].round(9) * network.generators.loc[renewable_generators]['p_nom_opt'] - network.generators_t.p[renewable_generators].round(9)) * 3
-    curtailment_power_t_1d = curtailment_power_t_3h.resample('1d').sum()
-    curtailment_power_t_1w = curtailment_power_t_3h.resample('1W').sum()
-    curtailment_power_t_1M = curtailment_power_t_3h.resample('1ME').sum()
-
-    annual_curtailment = 1 - network.generators_t.p[renewable_generators].sum()/(network.generators_t.p_max_pu[renewable_generators].sum() * network.generators.loc[renewable_generators]['p_nom_opt'])
-    annual_curtailment.replace([np.inf, -np.inf], 0, inplace=True)
-    generators['curtailment'] = annual_curtailment
-
-    for generator in generators.index:
-        generator_path = data_path / 'generators' / generator
-        generator_path.mkdir(parents=True, exist_ok=True)
-        generators.loc[generator].to_csv(generator_path / 'details.csv')
-        generators_power_t_3h[generator].to_csv(generator_path / 'power_t_3h.csv')
-        generators_power_t_1d[generator].to_csv(generator_path / 'power_t_1d.csv')
-        generators_power_t_1w[generator].to_csv(generator_path / 'power_t_1w.csv')
-        generators_power_t_1M[generator].to_csv(generator_path / 'power_t_1M.csv')
-
-        # Write data specific to solar, onwind, and offwind
-        if generator in renewable_generators:
-            generators_power_to_load_t_3h[generator].to_csv(generator_path / 'power_to_load_t_3h.csv')
-            generators_power_to_load_t_1d[generator].to_csv(generator_path / 'power_to_load_t_1d.csv')
-            generators_power_to_load_t_1w[generator].to_csv(generator_path / 'power_to_load_t_1w.csv')
-            generators_power_to_load_t_1M[generator].to_csv(generator_path / 'power_to_load_t_1M.csv')
-
-            curtailment_power_t_3h[generator].to_csv(generator_path / 'curtailment_t_3h.csv')
-            curtailment_power_t_1d[generator].to_csv(generator_path / 'curtailment_t_1d.csv')
-            curtailment_power_t_1w[generator].to_csv(generator_path / 'curtailment_t_1w.csv')
-            curtailment_power_t_1M[generator].to_csv(generator_path / 'curtailment_t_1M.csv')
+    create_and_store_generators(data_path / 'generators', use_offwind, use_h2, use_biogas, network.generators, network.generators_t, network.links_t, resolution)
 
     ## Create stores data
-    stores = network.stores[['e_nom_mod', 'e_nom_opt', 'capital_cost', 'marginal_cost']].copy()
-    stores['mod_units'] = stores['e_nom_opt']/stores['e_nom_mod']
-
-    stores_power_t_3h = network.stores_t.p.round(9) * 3
-    stores_power_t_1d = stores_power_t_3h.resample('1d').sum()
-    stores_power_t_1w = stores_power_t_3h.resample('1W').sum()
-    stores_power_t_1M = stores_power_t_3h.resample('1ME').sum()
-    
-    for store in stores.index:
-        store_path = data_path / 'stores' / store
-        store_path.mkdir(parents=True, exist_ok=True)
-        stores.loc[store].to_csv(store_path / 'details.csv')
-        stores_power_t_3h[store].to_csv(store_path / 'power_t_3h.csv')
-        stores_power_t_1d[store].to_csv(store_path / 'power_t_1d.csv')
-        stores_power_t_1w[store].to_csv(store_path / 'power_t_1w.csv')
-        stores_power_t_1M[store].to_csv(store_path / 'power_t_1M.csv')
+    create_and_store_stores(data_path / 'stores', network.stores, network.stores_t.p, resolution)
 
     ## Create sufficiency data
-    backstop_3h = network.generators_t.p['backstop'] * 3
-    backstop_1d = backstop_3h.resample('1d').sum()
-    backstop_1w = backstop_3h.resample('1W').sum()
-    backstop_1M = backstop_3h.resample('1ME').sum()
-
-    load_3h = network.loads_t.p.squeeze() * 3
-    load_1d = load_3h.resample('1d').sum().squeeze()
-    load_1w = load_3h.resample('1W').sum().squeeze()
-    load_1M = load_3h.resample('1ME').sum().squeeze()
-
-    sufficiency_3h = (1 - backstop_3h/load_3h).round(4)
-    sufficiency_1d = (1 - backstop_1d/load_1d).round(4)
-    sufficiency_1w = (1 - backstop_1w/load_1w).round(4)
-    sufficiency_1M = (1 - backstop_1M/load_1M).round(4)
-
-    performance_path = data_path / 'performance'
-    performance_path.mkdir(parents=True, exist_ok=True)
-    sufficiency_3h.to_csv(performance_path / 'sufficiency_t_3h.csv')
-    sufficiency_1d.to_csv(performance_path / 'sufficiency_t_1d.csv')
-    sufficiency_1w.to_csv(performance_path / 'sufficiency_t_1w.csv')
-    sufficiency_1M.to_csv(performance_path / 'sufficiency_t_1M.csv')
+    create_and_store_sufficiency(data_path / 'performance', network.generators_t.p['backstop'], network.loads_t.p, resolution)
 
     ## Create performance metrics
-    performance = pd.DataFrame(columns=['Value'])
-    performance.loc['Total energy'] = round((network.loads_t.p.sum().iloc[0] - network.generators_t.p['backstop'].sum()) * 3,2)
-    performance.loc['Backstop energy'] = network.generators_t.p['backstop'].sum().round(2) * 3
-    performance.loc['Sufficiency'] = round((network.loads_t.p.sum().iloc[0] - network.generators_t.p['backstop'].sum()) / network.loads_t.p.sum().iloc[0],4)
-    performance.loc['Shortfall'] = round(network.generators_t.p['backstop'].sum() / network.loads_t.p.sum().iloc[0],4)
-
-    performance.to_csv(performance_path / 'performance_metrics.csv')
-
-    worst = pd.DataFrame(columns=['Time', 'Sufficiency'])
-    worst.loc['1d'] = [sufficiency_1d.nsmallest(1).index[0], sufficiency_1d.nsmallest(1).iloc[0].round(4)]
-    worst.loc['1w'] = [sufficiency_1w.nsmallest(1).index[0], sufficiency_1w.nsmallest(1).iloc[0].round(4)]
-    worst.loc['1M'] = [sufficiency_1M.nsmallest(1).index[0], sufficiency_1M.nsmallest(1).iloc[0].round(4)]
-
-    worst.to_csv(performance_path / 'worst.csv')
-
-    days_below = pd.DataFrame(columns=['Days'])
-    for threshold in np.arange(0.95, 0, -0.05).round(2):
-        days_below.loc[threshold] = (sufficiency_1d < threshold).sum()
-
-    days_below.to_csv(performance_path / 'days_below.csv')
+    create_and_store_performance_metrics(data_path / 'performance', network.loads_t.p, network.generators_t.p['backstop'], resolution)
+    create_and_store_worst(data_path / 'performance', data_path / 'performance')
+    create_and_store_days_below(data_path / 'performance', data_path / 'performance')
 
     ## Create LCOE data
     # Calculate renewables distribution and cost distribution (helper for the LCOE further down)
     energy = pd.DataFrame(columns=['energy_to_load', 'cost_to_load', 'energy_to_battery', 'cost_to_battery', 'energy_to_h2', 'cost_to_h2', 'total_energy', 'total_cost'])
+    renewable_generators = list_renewables(use_offwind)
+    links_charge, links_discharge = list_links(use_h2, use_biogas)
 
     energy['total_energy'] = network.generators_t.p[renewable_generators].sum() * 3
     energy['total_cost'] = network.generators.loc[renewable_generators]['p_nom_opt']*network.generators.loc[renewable_generators]['capital_cost'] + energy['total_energy'] * network.generators.loc[renewable_generators]['marginal_cost']

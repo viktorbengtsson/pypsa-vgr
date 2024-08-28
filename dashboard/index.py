@@ -16,22 +16,20 @@ from library.language import TEXTS
 # State management
 data_root = set_data_root()
 default_main_geo = "14" #VGR
-default_geo_level = "0" #Län
 
 if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
     clear_cache()
 
 initial_load = False
-if 'main_geo' not in st.session_state or 'geo_level' not in st.session_state or 'geo' not in st.session_state or 'variables' not in st.session_state:
+if 'main_geo' not in st.session_state or 'geo' not in st.session_state or 'variables' not in st.session_state:
     initial_load = True
+
     st.session_state['main_geo'] = default_main_geo if not "main_geo" in st.query_params or st.query_params.main_geo is None or st.query_params.main_geo == "" else st.query_params.main_geo
-    st.session_state['geo_level'] = default_geo_level if not "geo_level" in st.query_params or st.query_params.geo_level is None or st.query_params.geo_level == "" else st.query_params.geo_level
     st.session_state['geo'] = "" if not "geo" in st.query_params or st.query_params.geo is None or st.query_params.geo == "" else st.query_params.geo
-    st.session_state['variables'] = get_default_variables(data_root)
+    st.session_state['variables'] = get_default_variables(data_root, st.query_params)
     st.session_state['compare_variables'] = None
 
 main_geo = st.session_state['main_geo']
-geo_level = st.session_state['geo_level']
 geo = st.session_state['geo']
 variables = st.session_state['variables']
 compare_variables = st.session_state['compare_variables']
@@ -55,10 +53,10 @@ col1, col2 = st.columns([3, 1], gap="small")
 # Show map selector and selection widget in sidebar
 with sidebar:
     available_geo, main_geo = main_geo_selector(main_geo)
-    if initial_load:
-        geo = streamlit_map_selector(main_geo=main_geo, available_geo=available_geo, initial_geo=geo)
-    else:
-        geo = streamlit_map_selector(main_geo=main_geo, available_geo=available_geo, initial_geo=None)
+    #if initial_load:
+    geo = streamlit_map_selector(main_geo=main_geo, available_geo=available_geo, initial_geo=None)
+    #else:
+    #    geo = streamlit_map_selector(main_geo=main_geo, available_geo=available_geo, initial_geo=None)
 
     if geo is None:
         st.stop()   # Not sure why map_selector returns None on the initial render
@@ -66,17 +64,17 @@ with sidebar:
     controls = st.container()
     with controls:
         tmp = st.empty()
-        compare = tmp.button(TEXTS["Compare"])
-        if compare:
-            tmp.empty()
-            close_compare = tmp.button(TEXTS["Close compare"])
-            compare_variables = variables
-            colA, colB = st.columns([1,4], gap="small")
-            controls = colB
-            with colA:
-                controls_readonly_widget(compare_variables)
-        else:
-            compare_variables = None
+        #compare = tmp.button(TEXTS["Compare"])
+        #if compare:
+        #    tmp.empty()
+        #    close_compare = tmp.button(TEXTS["Close compare"])
+        #    compare_variables = variables
+        #    colA, colB = st.columns([1,4], gap="small")
+        #    controls = colB
+        #    with colA:
+        #        controls_readonly_widget(compare_variables)
+        #else:
+        compare_variables = None
 
     with controls:
         variables = controls_widget(variables)
@@ -89,7 +87,7 @@ with col1:
     with col12:
         #comparison_widget()
         price_widget(geo=geo, **variables)
-        stores_widget(geo=geo, **variables)
+        # stores_widget(geo=geo, **variables)
 
 
 with col2:
@@ -106,12 +104,18 @@ with col2:
 
 # Persist session values and query string
 st.query_params["main_geo"] = main_geo
-st.query_params["geo_level"] = geo_level
 st.query_params["geo"] = geo
-st.query_params["variables"] = ','.join(map(str, variables))
+for key in variables:
+    st.query_params[key] = str(variables[key])
 
-st.session_state['geo_level'] = geo_level
 st.session_state['main_geo'] = main_geo
 st.session_state['geo'] = geo
 st.session_state['variables'] = variables
 st.session_state['compare_variables'] = compare_variables
+
+#cookieState = {
+#    "main_geo": main_geo,
+#    "geo": geo,
+#    "variables": variables,
+#    "compare_variables": compare_variables
+#}

@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
 from library.config import set_data_root
 from widgets.utilities import scenario, full_palette
@@ -25,6 +26,7 @@ def _bar_chart(data):
         margin=dict(t=0, b=40, l=40, r=40)
     )
     fig.update_annotations(font_size=16, font_color="black", height=60)
+    
     #fig.update_traces(textposition='outside', textfont=dict(size=12))
     fig.update_yaxes(dict(
         showgrid=False,
@@ -55,6 +57,8 @@ def price_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit
     total_cost = sum(data["total_cost"].fillna(0))
     total_lcoe = total_cost / total_energy / 1000
     data.loc[6] = [TEXTS["Overall"], total_energy, total_cost, total_lcoe, None, color_mapping["ON"], '{0:.2f}'.format(total_lcoe)] 
+
+    data["lcoe"].apply(pd.to_numeric, errors='coerce').replace([np.inf, -np.inf], np.nan)
 
     with st.container(border=True):
         _bar_chart(data)

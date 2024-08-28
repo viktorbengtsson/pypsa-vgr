@@ -3,7 +3,7 @@ import json
 import time
 import shutil
 import itertools
-from store_data import store_data
+from library.orchestrate import run_scenario
 import paths
 import os.path
 from time import sleep
@@ -81,7 +81,7 @@ def _create_scenario(config, scenario, keys, tidy):
         with (data_path / 'config.json').open('w') as fp:
             json.dump(config, fp, indent=4)
 
-        store_data(config, tidy)
+        run_scenario(config, tidy)
 
 if __name__ == "__main__":
     action = str(sys.argv[1])

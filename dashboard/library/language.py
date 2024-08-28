@@ -1,4 +1,4 @@
-LANGUAGE = "en"
+LANGUAGE = "sv"
 
 ALL_TEXTS = {
     "Effect": { "sv": "Effekt" },
@@ -45,7 +45,10 @@ ALL_TEXTS = {
     "Production": { "sv": "Produktion" },
     "Overall": { "sv": "Total" },
     "Stores": { "sv": "Lagring" },
-    "Demand": { "sv": "Behov" }
+    "Demand": { "sv": "Behov" },
+    "Met need": { "sv": "Uppfyllt behov" },
+    "Unmet need": { "sv": "Ej uppfyllt behov" },
+    "days_below_hover": { "sv": "I %{x} dagar täcktes %{y} ej", "en": "In %{x} days %{y} wasn't met" }
 }
 
 ALL_MONTHS = {

@@ -5,7 +5,7 @@ import numpy as np
 def read_assumptions(path, base_year, target_year, base_currency, exchange_rates, discount_rate):
     df = pd.read_csv(path, index_col=list(range(2))).sort_index()
     convert_currency(df, exchange_rates, base_currency)
-    present_values(df, base_year, discount_rate)
+    # present_values(df, base_year, discount_rate) TODO: We temporarily remove the recalculation of (mostly) 2020 money to 2024 values.
     output = calculate_means(df, base_year, target_year, "linear")
     return output
 

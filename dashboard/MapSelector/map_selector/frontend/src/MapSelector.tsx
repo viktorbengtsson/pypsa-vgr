@@ -25,9 +25,19 @@ class MapSelector extends StreamlitComponentBase<State> {
   public constructor(props: ComponentProps) {
     super(props)
 
-    const initial_geo = this.props.args["initial_geo"] as string
+    let initial_geo: string | undefined = this.props.args["initial_geo"] as string
     const country = this.props.args["country"] as string
     let available_geo = (this.props.args["available_geo"] as string[])
+    if (!initial_geo) {
+      try {
+        const urlParams = new URLSearchParams((window.top || window).location.search);
+        debugger;
+        initial_geo = urlParams.get('geo') ?? undefined;
+      }
+      catch {
+        console.log("Could not access parent window")
+      }
+    }
     
     switch(country) {
       case "sweden":

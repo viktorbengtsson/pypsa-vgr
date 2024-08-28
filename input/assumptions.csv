@@ -161,7 +161,7 @@ nuclear_smr,VOM,"",50.33,SEK/MWh,"","https://www.lazard.com/media/xemfey0k/lazar
 nuclear_smr,fuel,"",93.62,SEK/MWh,"","https://www.lazard.com/media/xemfey0k/lazards-lcoeplus-june-2024-_vf.pdf (same as nuclear_conv)","REVISIT: I will stop using these figures for now"
 nuclear_smr,lifetime,"",60,years,"","https://www.gevernova.com/nuclear/carbon-free-power/bwrx-300-small-modular-reactor","REVISIT: I will stop using these figures for now"
 nuclear_smr,p_nom,"",300,MW,"","Taking the top range of numbers from Vattenfall https://www.vattenfall.se/fokus/trender-och-innovation/sma-karnkraftsreaktorer/ (GE Hitachi BWRX-300 shortlisted)","REVISIT: I will stop using these figures for now"
-biogas,cost,"",90,EUR/MWhth,2020,"Source: Viktor Walter","REVISIT: should decrease over time"
+biogas,cost,"",55,EUR/MWhth,2020,"Source: Viktor Walter","REVISIT: should decrease over time"
 biogas,efficiency,2030,0.58,factor,"","The efficiency of biogas estimated to 58%",""
 h2,efficiency,2030,0.6,factor,"","The efficiency of hydrogen estimated to 60%",""
 backstop,capital_cost,2030,0,EUR/MW,"","",""
