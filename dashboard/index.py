@@ -23,9 +23,10 @@ if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true"
 initial_load = False
 if 'main_geo' not in st.session_state or 'geo' not in st.session_state or 'variables' not in st.session_state:
     initial_load = True
+
     st.session_state['main_geo'] = default_main_geo if not "main_geo" in st.query_params or st.query_params.main_geo is None or st.query_params.main_geo == "" else st.query_params.main_geo
     st.session_state['geo'] = "" if not "geo" in st.query_params or st.query_params.geo is None or st.query_params.geo == "" else st.query_params.geo
-    st.session_state['variables'] = get_default_variables(data_root)
+    st.session_state['variables'] = get_default_variables(data_root, st.query_params)
     st.session_state['compare_variables'] = None
 
 main_geo = st.session_state['main_geo']
@@ -104,10 +105,17 @@ with col2:
 # Persist session values and query string
 st.query_params["main_geo"] = main_geo
 st.query_params["geo"] = geo
-st.query_params["variables"] = ','.join(map(str, variables))
-print(f"C: {geo}")
+for key in variables:
+    st.query_params[key] = str(variables[key])
 
 st.session_state['main_geo'] = main_geo
 st.session_state['geo'] = geo
 st.session_state['variables'] = variables
 st.session_state['compare_variables'] = compare_variables
+
+#cookieState = {
+#    "main_geo": main_geo,
+#    "geo": geo,
+#    "variables": variables,
+#    "compare_variables": compare_variables
+#}
