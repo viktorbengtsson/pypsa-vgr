@@ -2,8 +2,8 @@
     "config-name": "full",
     "base-currency": "SEK",
     "exchange-rates": {
-        "EUR": 11.68,
-        "USD": 10.70
+        "EUR": 11.40,
+        "USD": 10.20
     },
     "base-year": 2024,
     "discount-rate": 0.05,

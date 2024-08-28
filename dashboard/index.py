@@ -89,7 +89,7 @@ with col1:
     with col12:
         #comparison_widget()
         price_widget(geo=geo, **variables)
-        stores_widget(geo=geo, **variables)
+        # stores_widget(geo=geo, **variables)
 
 
 with col2:

@@ -25,6 +25,7 @@ def _bar_chart(data):
         margin=dict(t=0, b=40, l=40, r=40)
     )
     fig.update_annotations(font_size=16, font_color="black", height=60)
+    
     #fig.update_traces(textposition='outside', textfont=dict(size=12))
     fig.update_yaxes(dict(
         showgrid=False,
