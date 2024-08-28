@@ -1,6 +1,6 @@
-from lib.create_files import create_and_store_parameters, check_weather_files, check_renewables_files, create_and_store_demand, create_and_store_network, create_and_store_optimize, create_and_store_results, clear_working_files
+from library.steps import create_and_store_parameters, check_weather_files, check_renewables_files, create_and_store_demand_input, create_and_store_network, create_and_store_optimize, create_and_store_results, clear_working_files
 
-def store_data(config, tidy):
+def run_scenario(config, tidy):
 
     # Files: assumptions.csv
     print("Create and store parameters")
@@ -16,7 +16,7 @@ def store_data(config, tidy):
 
     # Files: demand.csv
     print("Create and store demand")
-    create_and_store_demand(config)
+    create_and_store_demand_input(config)
 
     # Files: network.nc
     print("Create and store network")

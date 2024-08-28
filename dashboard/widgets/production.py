@@ -25,6 +25,7 @@ def _big_chart(power, store, demand):
             ),
             secondary_y=False
         )
+    '''
     for type in store['type'].unique():
         filtered_data = store[store['type'] == type]
         if type not in color_mapping:
@@ -40,7 +41,7 @@ def _big_chart(power, store, demand):
             ),
             secondary_y=True
         )
-
+    '''
     fig.add_trace(
         go.Scatter(
             x=demand["snapshot"],
@@ -75,8 +76,10 @@ def _big_chart(power, store, demand):
         showticklabels=False
     ), secondary_y=True)
 
-    min_y = min(pd.concat([power["value"], store["value"], demand["value"]])) * 1.1
-    max_y = max(pd.concat([power["value"], store["value"], demand["value"]])) * 1.1
+    #min_y = min(pd.concat([power["value"], store["value"], demand["value"]])) * 1.1
+    #max_y = max(pd.concat([power["value"], store["value"], demand["value"]])) * 1.1
+    min_y = min(pd.concat([power["value"], demand["value"]])) * 1.1
+    max_y = max(pd.concat([power["value"], demand["value"]])) * 1.1
     fig.update_layout(
         yaxis=dict(
             range=[min_y, max_y]
@@ -115,7 +118,7 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
             discharger_data = discharger_data.rename(columns={discharger: 'value'})
             discharger_data['type'] = discharger
             power = pd.concat([power, discharger_data], axis=0)
-
+    '''
     for charger in charge_converters:
         fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'converters' / charger / f"power_t_{resolution}.csv"
         if fname.is_file():
@@ -124,11 +127,12 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
             charger_data['type'] = charger
             charger_data['value'] = charger_data['value']
             store = pd.concat([store, charger_data], axis=0)
-
+    '''
     demand = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'demand' / f"demand_t_{resolution}.csv")
     demand = demand.rename(columns={"timestamp": 'snapshot'})
     demand['type'] = "demand"
 
     with st.container(border=True):
         st.markdown(f'<p style="font-size:16px;">{TEXTS["Production"]}</p>', unsafe_allow_html=True)
-        _big_chart(power, store, demand)
+        # _big_chart(power, store, demand) TODO: Removed on request of client
+        _big_chart(power, '', demand)
