@@ -30,15 +30,19 @@ def _big_chart(total_data, days_below, days_sufficient):
 
     fig.add_trace(
         go.Bar(
-            y=total_data[total_data["type"] == "Sufficiency"]["Value"] * 100,
+            y=total_data[total_data["type"] == "Sufficiency"]["Value"],
             marker_color=color_mapping["ON"],
+            name=TEXTS["Met need"],
+            hovertemplate="%{y}"
         ),
         row=1, col=1
     )
     fig.add_trace(
         go.Bar(
-            y=total_data[total_data["type"] == "Shortfall"]["Value"] * 100,
-            marker_color=color_mapping["OFF"]
+            y=total_data[total_data["type"] == "Shortfall"]["Value"],
+            marker_color=color_mapping["NEUTRAL"],
+            name=TEXTS["Unmet need"],
+            hovertemplate="%{y}"
         ),
         row=1, col=1
     )
@@ -46,9 +50,11 @@ def _big_chart(total_data, days_below, days_sufficient):
     fig.add_trace(
         go.Bar(
             x=days_below["Days"],
-            y=days_below["Percentage"] * 100,
+            y=days_below["Percentage"],
             marker_color=color_mapping["OFF"],
-            orientation='h'
+            orientation='h',
+            name="",
+            hovertemplate=TEXTS["days_below_hover"]
         ),
         row=1, col=3
     )
@@ -67,9 +73,10 @@ def _big_chart(total_data, days_below, days_sufficient):
     fig.update_xaxes(title=TEXTS["Number of days"], row=1, col=3)
     fig.update_yaxes(dict(
         title=None,
-        range=[0, 100],
+        range=[0, 1],
         tickmode='array',
-        tickvals=[0, 25, 50, 75, 100]
+        tickvals=[0, 0.25, 0.50, 0.75, 1],
+        tickformat='.0%',
     ))
 
     fig.update_layout(
