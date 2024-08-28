@@ -64,17 +64,17 @@ with sidebar:
     controls = st.container()
     with controls:
         tmp = st.empty()
-        compare = tmp.button(TEXTS["Compare"])
-        if compare:
-            tmp.empty()
-            close_compare = tmp.button(TEXTS["Close compare"])
-            compare_variables = variables
-            colA, colB = st.columns([1,4], gap="small")
-            controls = colB
-            with colA:
-                controls_readonly_widget(compare_variables)
-        else:
-            compare_variables = None
+        #compare = tmp.button(TEXTS["Compare"])
+        #if compare:
+        #    tmp.empty()
+        #    close_compare = tmp.button(TEXTS["Close compare"])
+        #    compare_variables = variables
+        #    colA, colB = st.columns([1,4], gap="small")
+        #    controls = colB
+        #    with colA:
+        #        controls_readonly_widget(compare_variables)
+        #else:
+        compare_variables = None
 
     with controls:
         variables = controls_widget(variables)
