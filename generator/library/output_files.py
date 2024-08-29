@@ -172,7 +172,6 @@ def create_and_store_days_below(input_path, output_path):
         days_below.loc[threshold] = (sufficiency_1d < threshold).sum()
 
     days_below.to_csv(output_path / 'days_below.csv')
-<<<<<<< HEAD
 
 def create_and_store_lcoe(output_path, use_offwind, use_h2, use_biogas, generators, generators_t, links, links_t, stores, resolution):
     # Calculate renewables distribution and cost distribution (helper for the LCOE further down)
@@ -255,5 +254,3 @@ def create_and_store_lcoe(output_path, use_offwind, use_h2, use_biogas, generato
 
     output_path.mkdir(parents=True, exist_ok=True)
     lcoe.to_csv(output_path / 'lcoe.csv')
-=======
->>>>>>> origin/main
