@@ -15,7 +15,7 @@ import paths
 from library.assumptions import read_assumptions
 from library.network import build_network
 from generator.library.tools import delete_file
-from generator.library.output_files import create_and_store_demand, create_and_store_links, create_and_store_generators, create_and_store_stores, create_and_store_sufficiency, create_and_store_performance_metrics, create_and_store_worst, create_and_store_days_below, list_renewables, list_links
+from generator.library.output_files import create_and_store_demand, create_and_store_links, create_and_store_generators, create_and_store_stores, create_and_store_sufficiency, create_and_store_performance_metrics, create_and_store_worst, create_and_store_days_below, create_and_store_lcoe
 
 def _get_geo(config):
     keys = config['scenario']['geography'].split(":", 1)
@@ -161,6 +161,7 @@ def create_and_store_results(config):
     use_offwind = bool(config["scenario"]["offwind"])
     use_h2 = bool(config['scenario']['h2'])
     use_biogas = config['scenario']['biogas-limit'] > 0
+    gas_turbine_efficiency = network.links.loc['gas-turbine', 'efficiency'] if use_biogas else 0
 
     resolution = 3
 
@@ -178,7 +179,7 @@ def create_and_store_results(config):
     create_and_store_links(data_path / 'converters', use_h2, use_biogas, network.links, network.links_t, resolution)
 
     ## Create generators data and curtailment data (renewable generators only)
-    create_and_store_generators(data_path / 'generators', use_offwind, use_h2, use_biogas, network.generators, network.generators_t, network.links_t, resolution)
+    create_and_store_generators(data_path / 'generators', use_offwind, use_h2, use_biogas, network.generators, network.generators_t, network.links_t, gas_turbine_efficiency, resolution)
 
     ## Create stores data
     create_and_store_stores(data_path / 'stores', network.stores, network.stores_t.p, resolution)
@@ -192,88 +193,7 @@ def create_and_store_results(config):
     create_and_store_days_below(data_path / 'performance', data_path / 'performance')
 
     ## Create LCOE data
-    # Calculate renewables distribution and cost distribution (helper for the LCOE further down)
-    energy = pd.DataFrame(columns=['energy_to_load', 'cost_to_load', 'energy_to_battery', 'cost_to_battery', 'energy_to_h2', 'cost_to_h2', 'total_energy', 'total_cost'])
-    renewable_generators = list_renewables(use_offwind)
-    links_charge, links_discharge = list_links(use_h2, use_biogas)
-
-    energy['total_energy'] = network.generators_t.p[renewable_generators].sum() * 3
-    energy['total_cost'] = network.generators.loc[renewable_generators]['p_nom_opt']*network.generators.loc[renewable_generators]['capital_cost'] + energy['total_energy'] * network.generators.loc[renewable_generators]['marginal_cost']
-
-    energy['energy_to_load'] = (network.generators_t.p[renewable_generators] - network.generators_t.p[renewable_generators].div(
-    network.generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(
-        network.links_t.p0[links_charge].sum(axis=1), axis=0)).sum() * 3
-    energy['cost_to_load'] = energy['energy_to_load'] / energy['total_energy'] * energy['total_cost']
-
-    energy['energy_to_battery'] = network.generators_t.p[renewable_generators].div(network.generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(network.links_t.p0['battery-charge'], axis=0).sum() * 3
-    energy['cost_to_battery'] = energy['energy_to_battery'] / energy['total_energy'] * energy['total_cost']
-
-    if use_h2:
-        energy['energy_to_h2'] = network.generators_t.p[renewable_generators].div(network.generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(network.links_t.p0['h2-electrolysis'], axis=0).sum() * 3
-        energy['cost_to_h2'] = energy['energy_to_h2'] / energy['total_energy'] * energy['total_cost']
-
-    # Define the LCOE data frame
-    lcoe = pd.DataFrame(columns=['total_energy', 'total_cost', 'lcoe', 'curtailment'], index=['solar', 'onwind', 'offwind', 'battery', 'biogas', 'h2'])
-
-    # Add renewables to load (calculated above)
-    lcoe['total_energy'] = energy['energy_to_load']
-    lcoe['total_cost'] = energy['cost_to_load']
-
-    # Battery calculations
-    # Add total energy output
-    lcoe.loc['battery', 'total_energy'] = -network.links_t.p1['battery-discharge'].sum() * 3
-
-    # Add electricity input cost
-    lcoe.loc['battery', 'total_cost'] = energy['cost_to_battery'].sum()
-    # Add inverter (modelled as links) capital costs (for now these have no marginal costs)
-    lcoe.loc['battery', 'total_cost'] += (network.links.loc[['battery-charge', 'battery-discharge']]['capital_cost']*network.links.loc[['battery-charge', 'battery-discharge']]['p_nom_opt']).sum()
-    # Add storage capital costs
-    lcoe.loc['battery', 'total_cost'] += network.stores.loc['battery', 'capital_cost'] * network.stores.loc['battery', 'e_nom_opt']
-
-    #H2 calculations
-
-    h2_gas_fraction = 0
-    if use_h2:
-        if use_biogas:
-            h2_gas_fraction = network.links_t.p0['H2 pipeline'].sum() / (network.generators_t.p[['biogas-market']].sum().values[0] + network.links_t.p0['H2 pipeline'].sum())
-        else:
-            h2_gas_fraction = 1
-
-        # Add total energy output
-        lcoe.loc['h2', 'total_energy'] = -network.links_t.p1['gas-turbine'].sum() * 3 * h2_gas_fraction
-
-        # Add electricity input cost
-        lcoe.loc['h2', 'total_cost'] = energy['cost_to_h2'].sum()
-        # Add electrolysis (modelled as link) capital cost (for now this has no marginal costs)
-        lcoe.loc['h2', 'total_cost'] += network.links.loc['h2-electrolysis', 'capital_cost'] * network.links.loc['h2-electrolysis','p_nom_opt']
-        # Add storage capical cost (for not there is not marginal cost)
-        lcoe.loc['h2', 'total_cost'] += network.stores.loc['h2', 'capital_cost'] * network.stores.loc['h2','e_nom_opt']
-        # Add gas turbine (modelled as link) fractional capital cost (fraction of h2 in total gas)
-        lcoe.loc['h2', 'total_cost'] += network.links.loc['gas-turbine', 'capital_cost'] * network.links.loc['gas-turbine','p_nom_opt'] * h2_gas_fraction
-        # Add gas turbine (modelled as link) marginal cost
-        lcoe.loc['h2', 'total_cost'] += network.links.loc['gas-turbine', 'marginal_cost'] * lcoe.loc['h2', 'total_energy']
-
-    # Biogas calculations
-
-    if use_biogas:
-        # Add total energy output
-        lcoe.loc['biogas', 'total_energy'] = -network.links_t.p1['gas-turbine'].sum() * 3 * (1 - h2_gas_fraction)
-
-        # Add biogas input cost
-        lcoe.loc['biogas', 'total_cost'] = network.generators_t.p[['biogas-market']].sum().iloc[0] * network.generators.loc['biogas-market', 'marginal_cost'] * resolution
-        # Add gas turbine (modelled as link) fractional capital cost (fraction of h2 in total gas)
-        lcoe.loc['biogas', 'total_cost'] += network.links.loc['gas-turbine', 'capital_cost'] * network.links.loc['gas-turbine','p_nom_opt'] * (1 - h2_gas_fraction)
-        # Add gas turbine (modelled as link) marginal cost
-        lcoe.loc['biogas', 'total_cost'] += network.links.loc['gas-turbine', 'marginal_cost'] * lcoe.loc['biogas', 'total_energy']
-
-    # Calculate LCOE per energy type
-    lcoe = lcoe.round(9)
-    lcoe['lcoe'] = (lcoe['total_cost']/lcoe['total_energy']) / 1_000
-
-    price_path = data_path / 'price'
-    price_path.mkdir(parents=True, exist_ok=True)
-
-    lcoe.to_csv(price_path / 'lcoe.csv')
+    create_and_store_lcoe(data_path / 'price', use_offwind, use_h2, use_biogas, network.generators, network.generators_t.p, network.links, network.links_t, network.stores, resolution)
 
     ## Create overall network data
 
@@ -301,52 +221,3 @@ def clear_working_files(config):
     data_path = paths.output_path / config['scenario']['data-path']
     delete_file(data_path / 'demand.csv')
     delete_file(data_path / 'network.nc')
-
-
-'''
-def create_and_store_data_analytics(config):
-    data_path = paths.output_path / config['scenario']['data-path']
-    network_data_path = paths.output_path / 'network' / config['scenario']['data-path']
-
-    if (data_path / 'network.pkl').is_file():
-        print("Analytics file already exists, continue")
-        return
-
-    if not data_path.exists():
-        data_path.mkdir(parents=True, exist_ok=True)
-    
-    if not network_data_path.exists():
-        network_data_path.mkdir(parents=True, exist_ok=True)
-
-    NETWORK = pypsa.Network()
-    NETWORK.import_from_netcdf(data_path / 'network.nc')
-    
-    with open(data_path / 'statistics.pkl', "rb") as fp:
-        STATISTICS = pickle.load(fp)
-
-    ASSUMPTIONS = pd.read_pickle(data_path / 'assumptions.pkl')
-
-    # Organize a data collection optimized for data analytics
-    data_collection = collect_data(NETWORK, STATISTICS, ASSUMPTIONS)
-    
-    #with (data_path / 'network.pkl').open('wb') as fp:
-    #    pickle.dump(data_collection, fp)
-    
-    for key, value in data_collection.items():
-        x = network_data_path / f"network_{key}.csv"
-        if key == "table":
-            value["data"].to_csv(network_data_path / f"network_{key}.csv")
-            value["totals"].to_csv(network_data_path / f"network_{key}_totals.csv")
-        elif key == "energy_compare":
-            value["data"].to_csv(network_data_path / f"network_{key}.csv")
-            value["series"].to_csv(network_data_path / f"network_{key}_series.csv")
-        else:
-            value.to_csv(network_data_path / f"network_{key}.csv")
-
-def copy_input_data(config_name):
-    if not (paths.output_path / 'assumptions.csv').is_file():
-        shutil.copyfile(paths.input_path / 'assumptions.csv', paths.output_path / 'assumptions.csv')
-
-    if not (paths.output_path / 'config.json').is_file():
-        shutil.copyfile(paths.generator_path / 'configs' / f"{config_name}.json", paths.output_path / 'config.json')
-'''
