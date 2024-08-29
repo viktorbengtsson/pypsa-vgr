@@ -2,6 +2,7 @@ import React from 'react';
 import { IMap, MapProps } from '../types';
 import { sections, main_areas, level1_areas } from "./sections"
 import MapComponent from "./MapComponent"
+import { debounce } from 'lodash';
 
 class MapSweden implements IMap {
   public Component: React.ComponentType<MapProps>;
@@ -35,8 +36,14 @@ class MapSweden implements IMap {
   
   getSelection (initial_geo: string | undefined, availableLevels: number[]) {
     if (initial_geo) {
-      const selection = [initial_geo]
-      return { selection, geo_level: selection.length === 0 ? (availableLevels[0] ?? 0) : selection[0].length > 7 ? 1 : 0 }
+      let geoLevel = availableLevels[0] ?? 0;
+      if (initial_geo.length > 7) {
+        geoLevel = 1;
+      } else if (initial_geo.length > 4) {
+        geoLevel = 2;
+      }
+      const selection = [initial_geo.length === 2 ? initial_geo : initial_geo.substring(3)]
+      return { selection, geo_level: geoLevel }
     }
     else {
       return { selection: [this.mainGeo], geo_level: 0 }

@@ -1,4 +1,5 @@
 import streamlit as st
+import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -6,6 +7,12 @@ from library.config import set_data_root
 from widgets.utilities import round_and_prefix, round_and_format, scenario, gen_palette
 import os.path
 from library.language import TEXTS
+from pathlib import Path
+
+root_path = Path(__file__).resolve().parent.parent.parent
+sys.path.append(str(root_path))
+
+import paths
 
 def _plot_metrics_and_bar(
     name,
@@ -37,6 +44,25 @@ def _plot_metrics_and_bar(
 
     st.pyplot(fig)
     st.write("")
+
+def _plot_metrics_and_bar2(
+    name,
+    metrics,
+    x, y,
+    max_value, color
+):
+    fname = paths.dashboard_path / 'widgets' / "energy.html"
+
+    with open(fname, 'r') as file:
+        html = file.read()
+
+    html = html.replace('{name}', name)
+    for idx, metric in enumerate(metrics):
+        html = html.replace(f'{{metric_{idx}_key}}', metric["key"])
+        html = html.replace(f'{{metric_{idx}_value}}', metric["value"])
+        html = html.replace('{color}', color)
+
+    st.markdown(html, unsafe_allow_html=True)
 
 def _energy_max_value(geo, target_year, floor, load_target, h2, offwind, biogas_limit, generator):
     # State management
@@ -89,7 +115,7 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
             { "key": TEXTS[f"units_required_{generator}"], "value": round_and_format(details.loc['mod_units'][generator]) },
             { "key": TEXTS["curtailment"], "value": round_and_format(details.loc['curtailment'][generator] * 100) }
         ]
-        _plot_metrics_and_bar(
+        _plot_metrics_and_bar2(
             TEXTS[generator],
             metrics,
             power_t['snapshot'].astype('str'), power_t[generator],
