@@ -97,21 +97,21 @@ def performance_widget(geo, target_year, floor, load_target, h2, offwind, biogas
     sufficiency = pd.DataFrame()
     resolution = '1M'
 
-    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'performance' / "performance_metrics.csv"
+    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'performance' / "performance_metrics.csv.gz"
     if fname.is_file():
-        data = pd.read_csv(fname)
+        data = pd.read_csv(fname, compression='gzip')
         data.rename(columns={'Unnamed: 0': 'type'}, inplace=True)
 
-    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'performance' / "days_below.csv"
+    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'performance' / "days_below.csv.gz"
     if fname.is_file():
-        days_below = pd.read_csv(fname)
+        days_below = pd.read_csv(fname, compression='gzip')
         days_below.rename(columns={'Unnamed: 0': 'Percentage'}, inplace=True)
 
     days_sufficient = 365 - sum(days_below["Days"])
 
-    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'performance' / f"sufficiency_t_{resolution}.csv"
+    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'performance' / f"sufficiency_t_{resolution}.csv.gz"
     if fname.is_file():
-        sufficiency = pd.read_csv(fname)
+        sufficiency = pd.read_csv(fname, compression='gzip')
         sufficiency.rename(columns={'0': 'Value'}, inplace=True)
 
     _big_chart(data, days_below, days_sufficient)

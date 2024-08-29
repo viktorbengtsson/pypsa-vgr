@@ -105,30 +105,30 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
 
     for generator in generators:
         power_type = "power_t_" if generator == "backstop" else "power_to_load_t_"
-        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"{power_type}{resolution}.csv"
+        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"{power_type}{resolution}.csv.gz"
         if fname.is_file():
-            generator_data = pd.read_csv(fname, parse_dates=True)
+            generator_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
             generator_data = generator_data.rename(columns={generator: 'value'})
             generator_data['type'] = generator
             power = pd.concat([power, generator_data], axis=0)
     for discharger in discharge_converters:
-        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'converters' / discharger / f"power_t_{resolution}.csv"
+        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'converters' / discharger / f"power_t_{resolution}.csv.gz"
         if fname.is_file():
-            discharger_data = pd.read_csv(fname, parse_dates=True)
+            discharger_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
             discharger_data = discharger_data.rename(columns={discharger: 'value'})
             discharger_data['type'] = discharger
             power = pd.concat([power, discharger_data], axis=0)
     '''
     for charger in charge_converters:
-        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'converters' / charger / f"power_t_{resolution}.csv"
+        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'converters' / charger / f"power_t_{resolution}.csv.gz"
         if fname.is_file():
-            charger_data = pd.read_csv(fname, parse_dates=True)
+            charger_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
             charger_data = charger_data.rename(columns={charger: 'value'})
             charger_data['type'] = charger
             charger_data['value'] = charger_data['value']
             store = pd.concat([store, charger_data], axis=0)
     '''
-    demand = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'demand' / f"demand_t_{resolution}.csv")
+    demand = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'demand' / f"demand_t_{resolution}.csv.gz", compression='gzip')
     demand = demand.rename(columns={"timestamp": 'snapshot'})
     demand['type'] = "demand"
 

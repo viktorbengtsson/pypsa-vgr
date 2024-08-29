@@ -69,9 +69,9 @@ def _energy_max_value(geo, target_year, floor, load_target, h2, offwind, biogas_
     data_root = set_data_root()
 
     resolution = '1M'
-    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv"
+    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv.gz"
     if os.path.isfile(fname):
-        power_t = pd.read_csv(fname, parse_dates=True)
+        power_t = pd.read_csv(fname, compression='gzip', parse_dates=True)
         if resolution == '1M':
             power_t = power_t.iloc[1:]
         return power_t[generator].max()
@@ -88,7 +88,7 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
     data_root = set_data_root()
 
     resolution = '1M'
-    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv"
+    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"power_t_{resolution}.csv.gz"
     if not os.path.isfile(fname):
         with st.container(border=True):
             metrics = [
@@ -103,11 +103,11 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
                 max_value, gen_palette(generator))
         return
 
-    power_t = pd.read_csv(fname, parse_dates=True)
+    power_t = pd.read_csv(fname, compression='gzip', parse_dates=True)
     if resolution == '1M':
         power_t = power_t.iloc[1:]
 
-    details = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / 'details.csv',index_col=0)
+    details = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / 'details.csv.gz', compression='gzip', index_col=0)
 
     with st.container(border=True):
         metrics = [
@@ -128,12 +128,13 @@ def store_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit
 
     metrics = []
     for store in stores:
-        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'stores' / store / 'details.csv'
+        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'stores' / store / 'details.csv.gz'
         if not os.path.isfile(fname):
             return
         else:
-            details = pd.read_csv(fname,index_col=0)
-            metrics.append({ "key": TEXTS[store], "value": round_and_prefix(details.loc['e_nom_opt'][store],'M','Wh') })
+            details = pd.read_csv(fname, compression='gzip', index_col=0)
+            print(details.loc['e_nom_opt'][store])
+            metrics.append({ "key": TEXTS[store], "value": round_and_prefix(float(details.loc['e_nom_opt'][store]),'M','Wh') })
 
     with st.container(border=True):
         _plot_metrics_and_bar(
