@@ -75,12 +75,8 @@ def _big_chart(total_data, days_below, days_sufficient):
         title=None,
         range=[0, 1],
         tickmode='array',
-<<<<<<< HEAD
-        tickvals=[0, 25, 50, 75, 100]
-=======
         tickvals=[0, 0.25, 0.50, 0.75, 1],
         tickformat='.0%',
->>>>>>> origin/main
     ))
 
     fig.update_layout(
