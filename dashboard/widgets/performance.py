@@ -40,7 +40,7 @@ def _big_chart(total_data, days_below, days_sufficient):
     fig.add_trace(
         go.Bar(
             y=total_data[total_data["type"] == "Shortfall"]["Value"],
-            marker_color=color_mapping["NEUTRAL"],
+            marker_color=color_mapping["OFF"],
             name=TEXTS["Unmet need"],
             hovertemplate="%{y}"
         ),
@@ -51,7 +51,7 @@ def _big_chart(total_data, days_below, days_sufficient):
         go.Bar(
             x=days_below["Days"],
             y=days_below["Percentage"],
-            marker_color=color_mapping["OFF"],
+            marker_color=color_mapping["NEUTRAL"],
             orientation='h',
             name="",
             hovertemplate=TEXTS["days_below_hover"]

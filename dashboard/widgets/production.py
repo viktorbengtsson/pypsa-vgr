@@ -20,7 +20,7 @@ def _big_chart(power, store, demand):
                 x=filtered_data["snapshot"], 
                 y=filtered_data["value"], 
                 marker_color=color_mapping[type],
-                hovertemplate=str(type + ': %{x}<br>%{y}'),
+                hovertemplate=str(TEXTS[type] + ': %{x}<br>%{y}'),
                 name=type
             ),
             secondary_y=False
@@ -82,11 +82,13 @@ def _big_chart(power, store, demand):
     max_y = max(pd.concat([power["value"], demand["value"]])) * 1.1
     fig.update_layout(
         yaxis=dict(
+            tickformat=".2f",
+            ticksuffix=' MWh',
             range=[min_y, max_y]
         ),
         yaxis2=dict(
             range=[min_y, max_y]
-        )
+        ),
     )
 
     st.plotly_chart(fig, config={'displayModeBar': False})
@@ -131,6 +133,9 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
     demand = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'demand' / f"demand_t_{resolution}.csv.gz", compression='gzip')
     demand = demand.rename(columns={"timestamp": 'snapshot'})
     demand['type'] = "demand"
+
+    power["value"] = power["value"] / 1000000
+    demand["value"] = demand["value"] / 1000000
 
     with st.container(border=True):
         st.markdown(f'<p style="font-size:16px;">{TEXTS["Production"]}</p>', unsafe_allow_html=True)
