@@ -179,7 +179,7 @@ def create_and_store_results(config):
     create_and_store_links(data_path / 'converters', use_h2, use_biogas, network.links, network.links_t, resolution)
 
     ## Create generators data and curtailment data (renewable generators only)
-    create_and_store_generators(data_path / 'generators', use_offwind, use_h2, use_biogas, network.generators, network.generators_t, network.links_t, gas_turbine_efficiency, resolution)
+    create_and_store_generators(data_path / 'generators', use_offwind, use_h2, use_biogas, network.generators, network.generators_t, network.links, network.links_t, gas_turbine_efficiency, resolution)
 
     ## Create stores data
     create_and_store_stores(data_path / 'stores', network.stores, network.stores_t.p, resolution)
