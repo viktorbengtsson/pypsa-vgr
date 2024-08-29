@@ -64,5 +64,5 @@ def full_palette():
         'demand': "#010101",
         "ON": "#61AC52",
         "OFF": "#D12D45",
-        "NEUTRAL": "#5574F7"
+        "NEUTRAL": "#697CCC"
     }

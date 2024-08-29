@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from library.config import set_data_root
-from widgets.utilities import round_and_prefix, round_and_format, scenario, gen_palette
+from widgets.utilities import round_and_prefix, round_and_format, scenario, stor_palette, gen_palette
 import os.path
 from library.language import TEXTS
 from pathlib import Path
@@ -20,47 +20,21 @@ def _plot_metrics_and_bar(
     x, y,
     max_value, color
 ):
-    st.markdown(f'<p style="font-size:16px;">{name}</p>', unsafe_allow_html=True)
-    fig = plt.figure(figsize=(12, 2))
-
-    #gs = gridspec.GridSpec(3, 2, height_ratios=[1, 1, 1], width_ratios=[3,1])
-    #ax0 = plt.subplot(gs[:3, 0])
-    #ax0.bar(x, y, color=color)
-    #ax0.set_ylim(0, max_value)
-    #ax0.axis('off')
-
-    gs = gridspec.GridSpec(1, len(metrics))
-
-    for idx, metric in enumerate(metrics):
-        ax = plt.subplot(gs[0, idx])
-        nameStyle = { "fontsize":33, "color": 'gray', "ha": 'left', "va": 'center' }
-        metricStyle = { "fontsize":60, "color": 'black', "ha": 'left', "va": 'center' }
-        ax.text(0.15, 1.0, metric["key"], **nameStyle)
-        ax.text(0.15, 0.0, metric["value"], **metricStyle)
-        ax.axis('off')
-
-    plt.tight_layout()
-    plt.subplots_adjust(hspace=0.0)
-
-    st.pyplot(fig)
-    st.write("")
-
-def _plot_metrics_and_bar2(
-    name,
-    metrics,
-    x, y,
-    max_value, color
-):
     fname = paths.dashboard_path / 'widgets' / "energy.html"
 
     with open(fname, 'r') as file:
         html = file.read()
 
     html = html.replace('{name}', name)
-    for idx, metric in enumerate(metrics):
-        html = html.replace(f'{{metric_{idx}_key}}', metric["key"])
-        html = html.replace(f'{{metric_{idx}_value}}', metric["value"])
-        html = html.replace('{color}', color)
+    html = html.replace('{color}', color)
+    for idx in range(0,3):
+        if len(metrics) > idx:
+            metric = metrics[idx]
+            html = html.replace(f'{{metric_{idx}_key}}', metric["key"])
+            html = html.replace(f'{{metric_{idx}_value}}', metric["value"])
+        else:
+            html = html.replace(f'{{metric_{idx}_key}}', "")
+            html = html.replace(f'{{metric_{idx}_value}}', "")
 
     st.markdown(html, unsafe_allow_html=True)
 
@@ -113,9 +87,9 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
         metrics = [
             { "key": TEXTS["Effect"], "value": round_and_prefix(details.loc['p_nom_opt'][generator],'M','W') },
             { "key": TEXTS[f"units_required_{generator}"], "value": round_and_format(details.loc['mod_units'][generator]) },
-            { "key": TEXTS["curtailment"], "value": round_and_format(details.loc['curtailment'][generator] * 100) }
+            { "key": TEXTS["curtailment"], "value": round_and_format(details.loc['fraction_energy'][generator] * 100) }
         ]
-        _plot_metrics_and_bar2(
+        _plot_metrics_and_bar(
             TEXTS[generator],
             metrics,
             power_t['snapshot'].astype('str'), power_t[generator],
@@ -126,20 +100,55 @@ def store_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit
     # State management
     data_root = set_data_root()
 
-    metrics = []
     for store in stores:
-        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'stores' / store / 'details.csv.gz'
-        if not os.path.isfile(fname):
-            return
-        else:
-            details = pd.read_csv(fname, compression='gzip', index_col=0)
-            print(details.loc['e_nom_opt'][store])
-            metrics.append({ "key": TEXTS[store], "value": round_and_prefix(float(details.loc['e_nom_opt'][store]),'M','Wh') })
+        with st.container(border=True):
+            metrics = []
+            fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'stores' / store / 'details.csv.gz'
+            if not os.path.isfile(fname):
+                return
+            else:
+                details = pd.read_csv(fname, compression='gzip', index_col=0)
+                print(details.loc['e_nom_opt'][store])
+                metrics.append({ "key": TEXTS["Capacity"], "value": round_and_prefix(float(details.loc['e_nom_opt'][store]),'M','Wh') })
+
+            _plot_metrics_and_bar(
+                TEXTS[store],
+                metrics,
+                None, None,
+                None, stor_palette(store)
+            )
+
+def backstop_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit):
+    # State management
+    data_root = set_data_root()
+
+    resolution = '1M'
+    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / 'backstop' / f"power_t_{resolution}.csv.gz"
+    if not os.path.isfile(fname):
+        with st.container(border=True):
+            metrics = [
+                { "key": TEXTS["Effect"], "value": "-" }
+            ]
+            _plot_metrics_and_bar(
+                TEXTS["backstop"],
+                metrics,
+                [], [], 
+                None, gen_palette("backstop"))
+        return
+
+    power_t = pd.read_csv(fname, compression='gzip', parse_dates=True)
+    if resolution == '1M':
+        power_t = power_t.iloc[1:]
+
+    details = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / "backstop" / 'details.csv.gz', compression='gzip', index_col=0)
 
     with st.container(border=True):
+        metrics = [
+            { "key": TEXTS["Effect"], "value": round_and_prefix(details.loc['p_nom_opt']["backstop"],'M','W') },
+        ]
         _plot_metrics_and_bar(
-            TEXTS["Stores"],
+            TEXTS["backstop"],
             metrics,
-            None, None,
-            None, None
+            power_t['snapshot'].astype('str'), power_t["backstop"],
+            None, gen_palette("backstop")
         )

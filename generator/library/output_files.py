@@ -98,6 +98,9 @@ def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, ge
     generators['curtailment'] = annual_curtailment
 
     for generator in generators.index:
+        if not use_biogas and generator == 'biogas-turbine':
+            continue
+
         generator_path = output_path / generator
         generator_path.mkdir(parents=True, exist_ok=True)
         generators.loc[generator].to_csv(generator_path / 'details.csv.gz', compression='gzip')
@@ -196,7 +199,7 @@ def create_and_store_days_below(input_path, output_path):
     sufficiency_1d = pd.read_csv(input_path / 'sufficiency_t_1d.csv.gz', compression='gzip', parse_dates=True, index_col='snapshot')
     days_below = pd.DataFrame(columns=['Days'])
     for threshold in np.arange(0.95, 0, -0.05).round(2):
-        days_below.loc[threshold] = (sufficiency_1d < threshold).sum()
+        days_below.loc[threshold] = (sufficiency_1d['0'] < threshold).sum()
 
     days_below.to_csv(output_path / 'days_below.csv.gz', compression='gzip')
 

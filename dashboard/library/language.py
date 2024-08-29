@@ -8,6 +8,7 @@ ALL_TEXTS = {
     "units_required_biogas-market": { "en": "Turbines", "sv": "Gas turbiner"},
     "units_required_battery": { "en": "Something", "sv": "Nåt"},
     "units_required_h2": { "en": "Something", "sv": "Nåt"},
+    "units_required_backstop": { "en": "Something", "sv": "Nåt"},
     "curtailment": { "en": "Curtailment (%)", "sv": "Spill (%)"},
 
     "solar": { "sv": "Solkraft", "en": "Solar" },
@@ -15,11 +16,12 @@ ALL_TEXTS = {
     "offwind": { "sv": "Vindkraft (hav)", "en": "Offshore wind" },
     "biogas-market": { "sv": "Biogas", "en": "Biogas" },
     "biogas": { "sv": "Biogas", "en": "Biogas" },
-    "backstop": { "sv": "Tillförlitlighet", "en": "Backstop" },
+    "backstop": { "sv": "Underskott", "en": "Shortfall" },
     "battery": { "sv": "Batteri", "en": "Battery" },
     "battery-discharge": { "sv": "Batteri", "en": "Battery" },
     "battery-charge": { "sv": "Batteri", "en": "Battery" },
     "h2": { "sv": "Vätgas", "en": "Hydrogen" },
+    "gas-turbine": { "sv": "Gas turbin", "en": "Gas turbine" },
 
     "turbines": { "sv": "turbiner" },
 
@@ -48,7 +50,8 @@ ALL_TEXTS = {
     "Demand": { "sv": "Behov" },
     "Met need": { "sv": "Uppfyllt behov" },
     "Unmet need": { "sv": "Ej uppfyllt behov" },
-    "days_below_hover": { "sv": "I %{x} dagar täcktes %{y} ej", "en": "In %{x} days %{y} wasn't met" }
+    "days_below_hover": { "sv": "I %{x} dagar täcktes endast %{y} av behovet", "en": "In %{x} days only %{y} of need was met" },
+    "Capacity": { "sv": "Kapacitet" }
 }
 
 ALL_MONTHS = {

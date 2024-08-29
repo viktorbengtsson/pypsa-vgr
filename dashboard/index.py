@@ -9,7 +9,7 @@ from dashboard.widgets.performance import performance_widget
 from widgets.stores import stores_widget
 from widgets.price import price_widget
 from widgets.legends import legends
-from widgets.energy import energy_widget, energy_max_value, store_widget
+from widgets.energy import energy_widget, energy_max_value, store_widget, backstop_widget
 from widgets.controls import controls_widget, controls_readonly_widget
 from library.language import TEXTS
 
@@ -91,13 +91,14 @@ with col1:
 
 
 with col2:
-    legends()
+    #legends()
     max_value = energy_max_value(geo=geo, **variables, generators=['solar', 'onwind', 'offwind', 'biogas-market'])
     energy_widget(geo=geo, **variables, max_value=max_value, generator='solar')
     energy_widget(geo=geo, **variables, max_value=max_value, generator='onwind')
     energy_widget(geo=geo, **variables, max_value=max_value, generator='offwind')
     energy_widget(geo=geo, **variables, max_value=max_value, generator='biogas-market')
     store_widget(geo=geo, **variables, max_value=max_value, stores=['battery', 'h2'])
+    backstop_widget(geo=geo, **variables)
 
 # The right-side column holds energy widgets
 
