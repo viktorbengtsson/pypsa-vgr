@@ -182,7 +182,7 @@ def create_and_store_results(config):
     create_and_store_generators(data_path / 'generators', use_offwind, use_h2, use_biogas, network.generators, network.generators_t, network.links, network.links_t, gas_turbine_efficiency, resolution)
 
     ## Create stores data
-    create_and_store_stores(data_path / 'stores', network.stores, network.stores_t.p, resolution)
+    create_and_store_stores(data_path / 'stores', use_offwind, use_h2, network.stores, network.stores_t.p, network.links, network.links_t, network.loads_t, network.generators_t, gas_turbine_efficiency, resolution)
 
     ## Create sufficiency data
     create_and_store_sufficiency(data_path / 'performance', network.generators_t.p['backstop'], network.loads_t.p, resolution)
