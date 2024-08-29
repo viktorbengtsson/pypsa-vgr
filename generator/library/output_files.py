@@ -50,24 +50,40 @@ def create_and_store_links(output_path, use_h2, use_biogas, links, links_t, reso
         links_power_t_1w[link].to_csv(link_path / 'power_t_1w.csv.gz', compression='gzip')
         links_power_t_1M[link].to_csv(link_path / 'power_t_1M.csv.gz', compression='gzip')
 
-def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, generators, generators_t, links_t, biogas_efficiency, resolution):
+def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, generators, generators_t, links, links_t, biogas_efficiency, resolution):
     links_charge, links_discharge = list_links(use_h2, use_biogas)
     renewable_generators = list_renewables(use_offwind)
 
+    # Load generators table (add gas turbine if it exists)
     generators = generators[['p_nom_mod', 'p_nom_opt', 'capital_cost', 'marginal_cost']].copy()
+    if use_h2 or use_biogas:
+        generators.loc['biogas-turbine'] = links.loc['gas-turbine'][['p_nom_mod', 'p_nom_opt', 'capital_cost', 'marginal_cost']]
+
+    print(generators)
+    # Add number of units
     generators['mod_units'] = generators['p_nom_opt']/generators['p_nom_mod']
+
+    print(generators)
+
+    # Calculate 
     generators['total_energy'] = generators_t.p.sum().round(9) * resolution
     if use_biogas:
-        generators.loc['biogas-market', 'total_energy'] *= biogas_efficiency # Convert thermal energy of biogas to electrical energy
+        generators.loc['biogas-turbine', 'total_energy'] = generators.loc['biogas-market', 'total_energy'] * biogas_efficiency # Convert thermal energy of biogas to electrical energy
         generators['fraction_energy'] = generators['total_energy'] / (generators_t.p[renewable_generators].sum().sum()*resolution + generators_t.p[['biogas-market']].sum().sum()*biogas_efficiency*resolution) # Divisor is total energy produced in system
     else:
         generators['fraction_energy'] = generators['total_energy'] / (generators_t.p[renewable_generators].sum().sum()*resolution)
 
+    print(generators)
+
+    # Calculate power 
     generators_power_t_3h = generators_t.p.round(9) * resolution
+    if use_biogas:
+        generators_power_t_3h['biogas-turbine'] = generators_power_t_3h['biogas-market'] * biogas_efficiency
     generators_power_t_1d = generators_power_t_3h.resample('1d').sum()
     generators_power_t_1w = generators_power_t_3h.resample('1W').sum()
     generators_power_t_1M = generators_power_t_3h.resample('1ME').sum()
 
+    # Calculate power to load for renewable generators
     generators_power_to_load_t_3h = (generators_t.p[renewable_generators] - generators_t.p[renewable_generators].div(
     generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(
         links_t.p0[links_charge].sum(axis=1), axis=0)).round(9) * resolution
@@ -75,11 +91,13 @@ def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, ge
     generators_power_to_load_t_1w = generators_power_to_load_t_3h.resample('1W').sum()
     generators_power_to_load_t_1M = generators_power_to_load_t_3h.resample('1ME').sum()
 
+    # Calculate curtailment timeseries and resample
     curtailment_power_t_3h = (generators_t.p_max_pu[renewable_generators].round(9) * generators.loc[renewable_generators]['p_nom_opt'] - generators_t.p[renewable_generators].round(9)) * resolution
     curtailment_power_t_1d = curtailment_power_t_3h.resample('1d').sum()
     curtailment_power_t_1w = curtailment_power_t_3h.resample('1W').sum()
     curtailment_power_t_1M = curtailment_power_t_3h.resample('1ME').sum()
 
+    # Add total/annual curtailment to generators df
     annual_curtailment = 1 - generators_t.p[renewable_generators].sum()/(generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators]['p_nom_opt'])
     annual_curtailment.replace([np.inf, -np.inf], 0, inplace=True)
     generators['curtailment'] = annual_curtailment
