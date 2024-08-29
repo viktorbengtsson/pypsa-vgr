@@ -45,9 +45,9 @@ def price_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit
     color_mapping = full_palette()
     data = pd.DataFrame()
 
-    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'price' / "lcoe.csv"
+    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'price' / "lcoe.csv.gz"
     if fname.is_file():
-        data = pd.read_csv(fname, parse_dates=True)
+        data = pd.read_csv(fname, compression='gzip', parse_dates=True)
         data.rename(columns={'Unnamed: 0': 'generator'}, inplace=True)
         data["color"] = data["generator"].map(color_mapping)
         data["generator"] = data["generator"].map(TEXTS)

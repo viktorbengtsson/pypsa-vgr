@@ -25,10 +25,10 @@ def create_and_store_demand(source_path, output_path, resolution):
     demand_t_1M = demand_t_3h.resample('1ME').sum()
 
     output_path.mkdir(parents=True, exist_ok=True)
-    demand_t_3h.to_csv(output_path / 'demand_t_3h.csv')
-    demand_t_1d.to_csv(output_path / 'demand_t_1d.csv')
-    demand_t_1w.to_csv(output_path / 'demand_t_1w.csv')
-    demand_t_1M.to_csv(output_path / 'demand_t_1M.csv')
+    demand_t_3h.to_csv(output_path / 'demand_t_3h.csv.gz', compression='gzip')
+    demand_t_1d.to_csv(output_path / 'demand_t_1d.csv.gz', compression='gzip')
+    demand_t_1w.to_csv(output_path / 'demand_t_1w.csv.gz', compression='gzip')
+    demand_t_1M.to_csv(output_path / 'demand_t_1M.csv.gz', compression='gzip')
 
 def create_and_store_links(output_path, use_h2, use_biogas, links, links_t, resolution):
     links_charge, links_discharge = list_links(use_h2, use_biogas)
@@ -44,11 +44,11 @@ def create_and_store_links(output_path, use_h2, use_biogas, links, links_t, reso
     for link in links_charge+links_discharge:
         link_path = output_path / link
         link_path.mkdir(parents=True, exist_ok=True)
-        links.loc[link].to_csv(link_path / 'details.csv')
-        links_power_t_3h[link].to_csv(link_path / 'power_t_3h.csv')
-        links_power_t_1d[link].to_csv(link_path / 'power_t_1d.csv')
-        links_power_t_1w[link].to_csv(link_path / 'power_t_1w.csv')
-        links_power_t_1M[link].to_csv(link_path / 'power_t_1M.csv')
+        links.loc[link].to_csv(link_path / 'details.csv.gz', compression='gzip')
+        links_power_t_3h[link].to_csv(link_path / 'power_t_3h.csv.gz', compression='gzip')
+        links_power_t_1d[link].to_csv(link_path / 'power_t_1d.csv.gz', compression='gzip')
+        links_power_t_1w[link].to_csv(link_path / 'power_t_1w.csv.gz', compression='gzip')
+        links_power_t_1M[link].to_csv(link_path / 'power_t_1M.csv.gz', compression='gzip')
 
 def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, generators, generators_t, links_t, biogas_efficiency, resolution):
     links_charge, links_discharge = list_links(use_h2, use_biogas)
@@ -87,23 +87,23 @@ def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, ge
     for generator in generators.index:
         generator_path = output_path / generator
         generator_path.mkdir(parents=True, exist_ok=True)
-        generators.loc[generator].to_csv(generator_path / 'details.csv')
-        generators_power_t_3h[generator].to_csv(generator_path / 'power_t_3h.csv')
-        generators_power_t_1d[generator].to_csv(generator_path / 'power_t_1d.csv')
-        generators_power_t_1w[generator].to_csv(generator_path / 'power_t_1w.csv')
-        generators_power_t_1M[generator].to_csv(generator_path / 'power_t_1M.csv')
+        generators.loc[generator].to_csv(generator_path / 'details.csv.gz', compression='gzip')
+        generators_power_t_3h[generator].to_csv(generator_path / 'power_t_3h.csv.gz', compression='gzip')
+        generators_power_t_1d[generator].to_csv(generator_path / 'power_t_1d.csv.gz', compression='gzip')
+        generators_power_t_1w[generator].to_csv(generator_path / 'power_t_1w.csv.gz', compression='gzip')
+        generators_power_t_1M[generator].to_csv(generator_path / 'power_t_1M.csv.gz', compression='gzip')
 
         # Write data specific to solar, onwind, and offwind
         if generator in renewable_generators:
-            generators_power_to_load_t_3h[generator].to_csv(generator_path / 'power_to_load_t_3h.csv')
-            generators_power_to_load_t_1d[generator].to_csv(generator_path / 'power_to_load_t_1d.csv')
-            generators_power_to_load_t_1w[generator].to_csv(generator_path / 'power_to_load_t_1w.csv')
-            generators_power_to_load_t_1M[generator].to_csv(generator_path / 'power_to_load_t_1M.csv')
+            generators_power_to_load_t_3h[generator].to_csv(generator_path / 'power_to_load_t_3h.csv.gz', compression='gzip')
+            generators_power_to_load_t_1d[generator].to_csv(generator_path / 'power_to_load_t_1d.csv.gz', compression='gzip')
+            generators_power_to_load_t_1w[generator].to_csv(generator_path / 'power_to_load_t_1w.csv.gz', compression='gzip')
+            generators_power_to_load_t_1M[generator].to_csv(generator_path / 'power_to_load_t_1M.csv.gz', compression='gzip')
 
-            curtailment_power_t_3h[generator].to_csv(generator_path / 'curtailment_t_3h.csv')
-            curtailment_power_t_1d[generator].to_csv(generator_path / 'curtailment_t_1d.csv')
-            curtailment_power_t_1w[generator].to_csv(generator_path / 'curtailment_t_1w.csv')
-            curtailment_power_t_1M[generator].to_csv(generator_path / 'curtailment_t_1M.csv')
+            curtailment_power_t_3h[generator].to_csv(generator_path / 'curtailment_t_3h.csv.gz', compression='gzip')
+            curtailment_power_t_1d[generator].to_csv(generator_path / 'curtailment_t_1d.csv.gz', compression='gzip')
+            curtailment_power_t_1w[generator].to_csv(generator_path / 'curtailment_t_1w.csv.gz', compression='gzip')
+            curtailment_power_t_1M[generator].to_csv(generator_path / 'curtailment_t_1M.csv.gz', compression='gzip')
 
 def create_and_store_stores(output_path, stores, stores_t, resolution):
     stores['mod_units'] = stores['e_nom_opt']/stores['e_nom_mod']
@@ -116,11 +116,11 @@ def create_and_store_stores(output_path, stores, stores_t, resolution):
     for store in stores.index:
         store_path = output_path / store
         store_path.mkdir(parents=True, exist_ok=True)
-        stores.loc[store].to_csv(store_path / 'details.csv')
-        stores_power_t_3h[store].to_csv(store_path / 'power_t_3h.csv')
-        stores_power_t_1d[store].to_csv(store_path / 'power_t_1d.csv')
-        stores_power_t_1w[store].to_csv(store_path / 'power_t_1w.csv')
-        stores_power_t_1M[store].to_csv(store_path / 'power_t_1M.csv')
+        stores.loc[store].to_csv(store_path / 'details.csv.gz', compression='gzip')
+        stores_power_t_3h[store].to_csv(store_path / 'power_t_3h.csv.gz', compression='gzip')
+        stores_power_t_1d[store].to_csv(store_path / 'power_t_1d.csv.gz', compression='gzip')
+        stores_power_t_1w[store].to_csv(store_path / 'power_t_1w.csv.gz', compression='gzip')
+        stores_power_t_1M[store].to_csv(store_path / 'power_t_1M.csv.gz', compression='gzip')
 
 def create_and_store_sufficiency(output_path, backstop_t, loads_t, resolution):
     backstop_3h = backstop_t * resolution
@@ -139,10 +139,10 @@ def create_and_store_sufficiency(output_path, backstop_t, loads_t, resolution):
     sufficiency_1M = (1 - backstop_1M/load_1M).round(4)
 
     output_path.mkdir(parents=True, exist_ok=True)
-    sufficiency_3h.to_csv(output_path / 'sufficiency_t_3h.csv')
-    sufficiency_1d.to_csv(output_path / 'sufficiency_t_1d.csv')
-    sufficiency_1w.to_csv(output_path / 'sufficiency_t_1w.csv')
-    sufficiency_1M.to_csv(output_path / 'sufficiency_t_1M.csv')
+    sufficiency_3h.to_csv(output_path / 'sufficiency_t_3h.csv.gz', compression='gzip')
+    sufficiency_1d.to_csv(output_path / 'sufficiency_t_1d.csv.gz', compression='gzip')
+    sufficiency_1w.to_csv(output_path / 'sufficiency_t_1w.csv.gz', compression='gzip')
+    sufficiency_1M.to_csv(output_path / 'sufficiency_t_1M.csv.gz', compression='gzip')
 
 def create_and_store_performance_metrics(output_path, loads_t, backstop_t, resolution):
     performance = pd.DataFrame(columns=['Value'])
@@ -151,27 +151,27 @@ def create_and_store_performance_metrics(output_path, loads_t, backstop_t, resol
     performance.loc['Sufficiency'] = round((loads_t.sum().iloc[0] - backstop_t.sum()) / loads_t.sum().iloc[0],4)
     performance.loc['Shortfall'] = round(backstop_t.sum() / loads_t.sum().iloc[0],4)
 
-    performance.to_csv(output_path / 'performance_metrics.csv')
+    performance.to_csv(output_path / 'performance_metrics.csv.gz', compression='gzip')
 
 def create_and_store_worst(input_path, output_path):
-    sufficiency_1d = pd.read_csv(input_path / 'sufficiency_t_1d.csv', parse_dates=True, index_col='snapshot')
-    sufficiency_1w = pd.read_csv(input_path / 'sufficiency_t_1w.csv', parse_dates=True, index_col='snapshot')
-    sufficiency_1M = pd.read_csv(input_path / 'sufficiency_t_1M.csv', parse_dates=True, index_col='snapshot')
+    sufficiency_1d = pd.read_csv(input_path / 'sufficiency_t_1d.csv.gz', compression='gzip', parse_dates=True, index_col='snapshot')
+    sufficiency_1w = pd.read_csv(input_path / 'sufficiency_t_1w.csv.gz', compression='gzip', parse_dates=True, index_col='snapshot')
+    sufficiency_1M = pd.read_csv(input_path / 'sufficiency_t_1M.csv.gz', compression='gzip', parse_dates=True, index_col='snapshot')
 
     worst = pd.DataFrame(columns=['Time', 'Sufficiency'])
     worst.loc['1d'] = [sufficiency_1d.squeeze().nsmallest(1).index[0], sufficiency_1d.squeeze().nsmallest(1).iloc[0].round(4)]
     worst.loc['1w'] = [sufficiency_1w.squeeze().nsmallest(1).index[0], sufficiency_1w.squeeze().nsmallest(1).iloc[0].round(4)]
     worst.loc['1M'] = [sufficiency_1M.squeeze().nsmallest(1).index[0], sufficiency_1M.squeeze().nsmallest(1).iloc[0].round(4)]
 
-    worst.to_csv(output_path / 'worst.csv')
+    worst.to_csv(output_path / 'worst.csv.gz', compression='gzip')
 
 def create_and_store_days_below(input_path, output_path):
-    sufficiency_1d = pd.read_csv(input_path / 'sufficiency_t_1d.csv', parse_dates=True, index_col='snapshot')
+    sufficiency_1d = pd.read_csv(input_path / 'sufficiency_t_1d.csv.gz', compression='gzip', parse_dates=True, index_col='snapshot')
     days_below = pd.DataFrame(columns=['Days'])
     for threshold in np.arange(0.95, 0, -0.05).round(2):
         days_below.loc[threshold] = (sufficiency_1d < threshold).sum()
 
-    days_below.to_csv(output_path / 'days_below.csv')
+    days_below.to_csv(output_path / 'days_below.csv.gz', compression='gzip')
 
 def create_and_store_lcoe(output_path, use_offwind, use_h2, use_biogas, generators, generators_t, links, links_t, stores, resolution):
     # Calculate renewables distribution and cost distribution (helper for the LCOE further down)
@@ -242,7 +242,7 @@ def create_and_store_lcoe(output_path, use_offwind, use_h2, use_biogas, generato
         lcoe.loc['biogas', 'total_energy'] = -links_t.p1['gas-turbine'].sum() * resolution * (1 - h2_gas_fraction)
 
         # Add biogas input cost
-        lcoe.loc['biogas', 'total_cost'] = generators_t.p[['biogas-market']].sum().iloc[0] * generators.loc['biogas-market', 'marginal_cost'] * resolution
+        lcoe.loc['biogas', 'total_cost'] = generators_t[['biogas-market']].sum().iloc[0] * generators.loc['biogas-market', 'marginal_cost'] * resolution
         # Add gas turbine (modelled as link) fractional capital cost (fraction of h2 in total gas)
         lcoe.loc['biogas', 'total_cost'] += links.loc['gas-turbine', 'capital_cost'] * links.loc['gas-turbine','p_nom_opt'] * (1 - h2_gas_fraction)
         # Add gas turbine (modelled as link) marginal cost
@@ -253,4 +253,4 @@ def create_and_store_lcoe(output_path, use_offwind, use_h2, use_biogas, generato
     lcoe['lcoe'] = (lcoe['total_cost']/lcoe['total_energy']) / 1_000
 
     output_path.mkdir(parents=True, exist_ok=True)
-    lcoe.to_csv(output_path / 'lcoe.csv')
+    lcoe.to_csv(output_path / 'lcoe.csv.gz', compression='gzip')

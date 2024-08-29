@@ -35,7 +35,7 @@ def create_and_store_parameters(config):
     assumptions = read_assumptions(paths.input_path / 'assumptions.csv', 
                                    config["base-year"], config["scenario"]["target-year"], config["base-currency"], config["exchange-rates"], config["discount-rate"]
                                    )
-    assumptions.to_csv(data_path / 'assumptions.csv')
+    assumptions.to_csv(data_path / 'assumptions.csv.gz', compression='gzip')
 
 
 # Check that weather files exist (if not see /input/weather/generate-weather.ipynb)
@@ -101,7 +101,7 @@ def create_and_store_network(config):
     resolution = 3
     geography = gpd.read_file(weather_path / f"selection-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}.shp").total_bounds
     demand = pd.read_csv(data_path / 'demand.csv', index_col=0).values.flatten()
-    assumptions = pd.read_csv(data_path / 'assumptions.csv', index_col=[0,1])
+    assumptions = pd.read_csv(data_path / 'assumptions.csv.gz', compression='gzip', index_col=[0,1])
 
     capacity_factor_solar = xr.open_dataarray(renewables_path / f"capacity-factor-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}-solar.nc").values.flatten()
     capacity_factor_onwind = xr.open_dataarray(renewables_path / f"capacity-factor-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}-onwind.nc").values.flatten()
@@ -157,17 +157,17 @@ def create_and_store_results(config):
     if (paths.output_path / 'config.json').is_file():
         print("Results files already exist, continue")
         return
-    
+
+    # Load the results from the pypsa network
+    network = pypsa.Network()
+    network.import_from_netcdf(data_path / 'network.nc')
+
     use_offwind = bool(config["scenario"]["offwind"])
     use_h2 = bool(config['scenario']['h2'])
     use_biogas = config['scenario']['biogas-limit'] > 0
     gas_turbine_efficiency = network.links.loc['gas-turbine', 'efficiency'] if use_biogas else 0
 
     resolution = 3
-
-    # Load the results from the pypsa network
-    network = pypsa.Network()
-    network.import_from_netcdf(data_path / 'network.nc')
 
     ## Copy config to output
     shutil.copy(paths.generator_path / 'configs' / f"{config['config-name']}.json", paths.output_path / 'scenarios.json')

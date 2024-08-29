@@ -22,8 +22,8 @@
         "load-target": [
             15
         ],
-        "h2": [false],
-        "offwind": [false],
-        "biogas-limit": [0]
+        "h2": [true],
+        "offwind": [true],
+        "biogas-limit": [5000]
     }
 }
