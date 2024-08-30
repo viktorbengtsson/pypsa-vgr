@@ -1,0 +1,24 @@
+{
+    "config-name": "default",
+    "base-currency": "SEK",
+    "exchange-rates": {
+        "EUR": 11.4,
+        "USD": 10.2
+    },
+    "base-year": 2024,
+    "discount-rate": 0.05,
+    "h2-initial": 1000,
+    "offwind-ratio": 0.5,
+    "scenario": {
+        "geography": "14:1401",
+        "target-year": 2030,
+        "floor": 0.5,
+        "load-target": 7.5,
+        "h2": false,
+        "offwind": true,
+        "biogas-limit": 500,
+        "data-path": "geography=14-1401,target-year=2030,floor=0.5,load-target=7.5,h2=False,offwind=True,biogas-limit=500",
+        "geography_lan_code": "14",
+        "geography_kom_code": "1401"
+    }
+}
