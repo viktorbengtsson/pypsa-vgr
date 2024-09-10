@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import plotly.express as px
+import math
 from library.config import set_data_root
 from widgets.utilities import scenario, round_and_prefix
 from library.language import TEXTS, LANGUAGE, MONTHS
@@ -28,8 +27,6 @@ def sufficiency_metrics(data):
     data['value'] = data['value'].round(2)
     return ", ".join(data[data['value'] == 1.0]['month']), f"{data[data['value'] < 1.0]['value'].mean():.1%}"
 
-
-
 def explainer_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, modal):
     data_root = set_data_root()
     resolution = '1M'
@@ -50,6 +47,7 @@ def explainer_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
 
     sufficient_months, average_outside_full = sufficiency_metrics(sufficiency)
 
+
     if solar_path.is_file():
         solar_details = pd.read_csv(solar_path, compression='gzip', index_col=0)
     if onwind_path.is_file():
@@ -67,14 +65,14 @@ def explainer_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
     text_path = Path(__file__).parent / f"explainer_{LANGUAGE}.md"
     body = (text_path).read_text(encoding='utf-8').format(
         #sufficiency_target = f"{floor:.0%}",
-        sufficiency_target = f"{load_target/15:.0%}", # TODO: Remove this temporary fix
+        #sufficiency_target = f"{load_target/15:.0%}", # TODO: Remove this temporary fix
         demand_target = load_target,
         year = target_year,
-        ambition_level = ambition_level(floor),
-        import_level = import_level(performance.loc['Shortfall', 'Value']),
+        #ambition_level = ambition_level(floor),
+        #import_level = import_level(performance.loc['Shortfall', 'Value']),
         suffciency = f"{performance.loc['Sufficiency', 'Value']:.1%}",
         full_months = sufficient_months,
-        average_sufficiency_outside_full = average_outside_full,
+        average_sufficiency_outside_full = average_outside_full if average_outside_full != 'nan%' else '100%',
         super_power = round_and_prefix(performance.loc['Curtailed energy', 'Value'], 'M', 'Wh', 0),
         total_area = f"{total_land:,.0f} ha",
         built_area = f"{built_land:,.0f} ha",
