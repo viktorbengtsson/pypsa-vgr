@@ -87,6 +87,14 @@ with sidebar:
     with controls:
         variables = controls_widget(variables)
 
+    footer = st.container()
+
+    with footer:
+        content_path = Path(__file__).parent / 'content'
+        footer = (content_path / f"footer_{LANGUAGE}.md").read_text(encoding='utf-8')
+        st.divider()
+        st.markdown(footer)
+
 with col1:
     big_chart_widget(geo=geo, **variables, modal=help)
     col11, col12 = col1.columns([1,1])
