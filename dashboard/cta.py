@@ -1,5 +1,12 @@
 import streamlit as st
+from pathlib import Path
+from library.language import TEXTS, LANGUAGE
 
-# Page content
+# Load page data
+content_path = Path(__file__).parent / 'content'
+body = (content_path / f"cta_{LANGUAGE}.md").read_text(encoding='utf-8')
 
-st.write("This page has no content.")
+# Page layout and content
+st.title(TEXTS["CTA"])
+
+st.markdown(body)

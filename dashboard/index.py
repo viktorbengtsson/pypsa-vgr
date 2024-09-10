@@ -1,17 +1,16 @@
 import streamlit as st
+from pathlib import Path
 from library.config import set_data_root, clear_cache, get_default_variables
 #from MapSelector.map_selector.map_selector import streamlit_map_selector
 from map_selector.map_selector import streamlit_map_selector
 from widgets.geo import main_geo_selector
-from widgets.production import big_chart_widget
-from dashboard.widgets.performance import performance_widget
-#from widgets.comparison import comparison_widget
-from widgets.stores import stores_widget
+from widgets.consumption import big_chart_widget
+from widgets.performance import performance_widget
+from widgets.explainer import explainer_widget
 from widgets.price import price_widget
-from widgets.legends import legends
-from widgets.energy import energy_widget, energy_max_value, store_widget, backstop_widget
+from widgets.cards import energy_widget, store_widget, backstop_widget
 from widgets.controls import controls_widget, controls_readonly_widget
-from library.language import TEXTS
+from library.language import TEXTS, LANGUAGE
 
 # State management
 data_root = set_data_root()
@@ -46,6 +45,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+
+# The help modal dialog
+@st.dialog(TEXTS["explainer_heading"])
+def help(location):
+    # Load page data
+    content_path = Path(__file__).parent / 'content/help'
+    body = (content_path / f"{location}_{LANGUAGE}.md").read_text(encoding='utf-8')
+    st.markdown(body)
+
 # Define columns
 sidebar = st.sidebar
 col1, col2 = st.columns([3, 1], gap="small")
@@ -79,26 +87,35 @@ with sidebar:
     with controls:
         variables = controls_widget(variables)
 
+    footer = st.container()
+
+    with footer:
+        content_path = Path(__file__).parent / 'content'
+        footer = (content_path / f"footer_{LANGUAGE}.md").read_text(encoding='utf-8')
+        st.divider()
+        st.markdown(footer)
+
 with col1:
-    big_chart_widget(geo=geo, **variables)
-    col11, col12 = col1.columns([5,6])
+    big_chart_widget(geo=geo, **variables, modal=help)
+    col11, col12 = col1.columns([1,1])
     with col11:
-        performance_widget(geo=geo, **variables)
+        performance_widget(geo=geo, **variables, modal=help)
+        price_widget(geo=geo, **variables, modal=help)
     with col12:
-        #comparison_widget()
-        price_widget(geo=geo, **variables)
+        explainer_widget(geo=geo, **variables, modal=help)
+        #comparison_widget(geo=geo, **variables, modal=help)
         # stores_widget(geo=geo, **variables)
 
 
 with col2:
     #legends()
-    max_value = energy_max_value(geo=geo, **variables, generators=['solar', 'onwind', 'offwind', 'biogas-market'])
-    energy_widget(geo=geo, **variables, max_value=max_value, generator='solar')
-    energy_widget(geo=geo, **variables, max_value=max_value, generator='onwind')
-    energy_widget(geo=geo, **variables, max_value=max_value, generator='offwind')
-    energy_widget(geo=geo, **variables, max_value=max_value, generator='biogas-market')
-    store_widget(geo=geo, **variables, max_value=max_value, stores=['battery', 'h2'])
-    backstop_widget(geo=geo, **variables)
+    energy_widget(geo=geo, **variables, generator='solar', modal=help)
+    energy_widget(geo=geo, **variables, generator='onwind', modal=help)
+    energy_widget(geo=geo, **variables, generator='offwind', modal=help)
+    energy_widget(geo=geo, **variables, generator='biogas-turbine', modal=help)
+    store_widget(geo=geo, **variables, store='battery', modal=help)
+    store_widget(geo=geo, **variables, store='h2', modal=help)
+    backstop_widget(geo=geo, **variables, modal=help)
 
 # The right-side column holds energy widgets
 

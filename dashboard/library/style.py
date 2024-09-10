@@ -13,6 +13,17 @@ def set_app_style():
                 border-radius: 5px;  /* Rounded corners */
                 box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);  /* More defined shadow for depth */
             }}
+            [data-testid=stButton] {{
+                position: relative;
+                overflow: visible;
+            }}
+            [data-testid="stBaseButton-secondary"] {{
+                float: right;
+                border: 0;
+            }}
+            [aria-label="help icon"] {{
+                font-size: 1.35rem;
+            }}
 
         </style>
         """,

@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+from datetime import timedelta
 from library.config import set_data_root
 from widgets.utilities import scenario, full_palette
 from library.language import TEXTS
@@ -9,7 +10,8 @@ from library.language import TEXTS
 def _big_chart(power, store, demand):
     color_mapping = full_palette()
 
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    #fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig = make_subplots()
 
     for type in power['type'].unique():
         filtered_data = power[power['type'] == type]
@@ -20,11 +22,20 @@ def _big_chart(power, store, demand):
                 x=filtered_data["snapshot"], 
                 y=filtered_data["value"], 
                 marker_color=color_mapping[type],
-                hovertemplate=str(TEXTS[type] + ': %{x}<br>%{y}'),
+                opacity=color_mapping['opacity'],
+                hovertemplate=(
+                    "<b>" + TEXTS[type] + "</b><br>" 
+                    "<b>" + TEXTS["consumption"] + "</b>: %{y}<br>"
+                    "<b>" + TEXTS["week"] + "</b>: %{x|%V}<extra></extra>" #TODO: Change this to display a more informative date
+                ),
                 name=type
             ),
             secondary_y=False
         )
+
+    min_date = pd.to_datetime(min(filtered_data["snapshot"])) - timedelta(days=4)
+    max_date = pd.to_datetime(max(filtered_data["snapshot"])) + timedelta(days=4)
+
     '''
     for type in store['type'].unique():
         filtered_data = store[store['type'] == type]
@@ -65,7 +76,7 @@ def _big_chart(power, store, demand):
         title=None,
         dtick='M1',
         tickformat='%b',
-        range=[min(filtered_data["snapshot"]), max(filtered_data["snapshot"])]
+        range=[min_date, max_date]
     ))
 
     # FIXA SÅ DET ÄR BARA ENA...
@@ -82,8 +93,8 @@ def _big_chart(power, store, demand):
     max_y = max(pd.concat([power["value"], demand["value"]])) * 1.1
     fig.update_layout(
         yaxis=dict(
-            tickformat=".2f",
-            ticksuffix=' MWh',
+            tickformat=".0f",
+            ticksuffix=' GWh',
             range=[min_y, max_y]
         ),
         yaxis2=dict(
@@ -93,16 +104,16 @@ def _big_chart(power, store, demand):
 
     st.plotly_chart(fig, config={'displayModeBar': False})
 
-def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit):
+def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, modal):
     # State management
     data_root = set_data_root()
 
     power = pd.DataFrame()
-    store = pd.DataFrame()
+    # store = pd.DataFrame()
     resolution = '1w'
 
     generators=['solar', 'onwind', 'offwind', 'backstop']
-    charge_converters=["battery-charge", "h2-electrolysis"]
+    # charge_converters=["battery-charge", "h2-electrolysis"]
     discharge_converters=["battery-discharge", "gas-turbine"]
 
     for generator in generators:
@@ -110,6 +121,7 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
         fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / f"{power_type}{resolution}.csv.gz"
         if fname.is_file():
             generator_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
+            generator_data = generator_data[:-1]
             generator_data = generator_data.rename(columns={generator: 'value'})
             generator_data['type'] = generator
             power = pd.concat([power, generator_data], axis=0)
@@ -117,6 +129,7 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
         fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'converters' / discharger / f"power_t_{resolution}.csv.gz"
         if fname.is_file():
             discharger_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
+            discharger_data = discharger_data[:-1]
             discharger_data = discharger_data.rename(columns={discharger: 'value'})
             discharger_data['type'] = discharger
             power = pd.concat([power, discharger_data], axis=0)
@@ -131,13 +144,18 @@ def big_chart_widget(geo, target_year, floor, load_target, h2, offwind, biogas_l
             store = pd.concat([store, charger_data], axis=0)
     '''
     demand = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'demand' / f"demand_t_{resolution}.csv.gz", compression='gzip')
+    
     demand = demand.rename(columns={"timestamp": 'snapshot'})
+    demand = demand[:-1]
     demand['type'] = "demand"
-
-    power["value"] = power["value"] / 1000000
-    demand["value"] = demand["value"] / 1000000
+    power["value"] = power["value"] / 1000
+    demand["value"] = demand["value"] / 1000
 
     with st.container(border=True):
-        st.markdown(f'<p style="font-size:16px;">{TEXTS["Production"]}</p>', unsafe_allow_html=True)
+        col1, col2 = st.columns([3,1])
+        col1.markdown(f'<p style="font-size:16px;">{TEXTS["Consumption"]}</p>', unsafe_allow_html=True)
+        if col2.button(":material/help:", key='consumption'):
+            modal('consumption')
+
         # _big_chart(power, store, demand) TODO: Removed on request of client
         _big_chart(power, '', demand)

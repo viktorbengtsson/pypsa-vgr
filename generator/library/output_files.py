@@ -21,7 +21,7 @@ def list_renewables(use_offwind):
 def create_and_store_demand(source_path, output_path, resolution):
     demand_t_3h = pd.read_csv(source_path, index_col=0, parse_dates=True) * resolution
     demand_t_1d = demand_t_3h.resample('1d').sum()
-    demand_t_1w = demand_t_3h.resample('1W').sum()
+    demand_t_1w = demand_t_3h.resample('7D', origin='start').sum()
     demand_t_1M = demand_t_3h.resample('1ME').sum()
 
     output_path.mkdir(parents=True, exist_ok=True)
@@ -38,7 +38,7 @@ def create_and_store_links(output_path, use_h2, use_biogas, links, links_t, reso
     links_power_t_3h = -links_t.p0[links_charge].round(9) * resolution
     links_power_t_3h[links_discharge] = -links_t.p1[links_discharge] * resolution
     links_power_t_1d = links_power_t_3h.resample('1d').sum()
-    links_power_t_1w = links_power_t_3h.resample('1W').sum()
+    links_power_t_1w = links_power_t_3h.resample('7D', origin='start').sum()
     links_power_t_1M = links_power_t_3h.resample('1ME').sum()
 
     for link in links_charge+links_discharge:
@@ -75,7 +75,7 @@ def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, ge
     if use_biogas:
         generators_power_t_3h['biogas-turbine'] = generators_power_t_3h['biogas-market'] * biogas_efficiency
     generators_power_t_1d = generators_power_t_3h.resample('1d').sum()
-    generators_power_t_1w = generators_power_t_3h.resample('1W').sum()
+    generators_power_t_1w = generators_power_t_3h.resample('7D', origin='start').sum()
     generators_power_t_1M = generators_power_t_3h.resample('1ME').sum()
 
     # Calculate power to load for renewable generators
@@ -83,13 +83,13 @@ def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, ge
     generators_t.p[renewable_generators].sum(axis=1), axis=0).mul(
         links_t.p0[links_charge].sum(axis=1), axis=0)).round(9) * resolution
     generators_power_to_load_t_1d = generators_power_to_load_t_3h.resample('1d').sum()
-    generators_power_to_load_t_1w = generators_power_to_load_t_3h.resample('1W').sum()
+    generators_power_to_load_t_1w = generators_power_to_load_t_3h.resample('7D', origin='start').sum()
     generators_power_to_load_t_1M = generators_power_to_load_t_3h.resample('1ME').sum()
 
     # Calculate curtailment timeseries and resample
     curtailment_power_t_3h = (generators_t.p_max_pu[renewable_generators].round(9) * generators.loc[renewable_generators]['p_nom_opt'] - generators_t.p[renewable_generators].round(9)) * resolution
     curtailment_power_t_1d = curtailment_power_t_3h.resample('1d').sum()
-    curtailment_power_t_1w = curtailment_power_t_3h.resample('1W').sum()
+    curtailment_power_t_1w = curtailment_power_t_3h.resample('7D', origin='start').sum()
     curtailment_power_t_1M = curtailment_power_t_3h.resample('1ME').sum()
 
     # Add total/annual curtailment to generators df
@@ -129,18 +129,18 @@ def create_and_store_stores(output_path, use_offwind, use_h2, stores, stores_t, 
 
     stores_modified.loc['battery', 'p_nom_opt_charge'] = links.loc['battery-charge', 'p_nom_opt']
     stores_modified.loc['battery', 'p_nom_opt_discharge'] = links.loc['battery-discharge', 'p_nom_opt']
-    stores_modified.loc['battery', 'fraction_energy_in'] = -links_t.p0['battery-charge'].sum()/generators_t.p[['solar', 'onwind', 'offwind']].sum().sum()
-    stores_modified.loc['battery', 'fraction_energy_out'] = links_t.p1['battery-discharge'].sum() / (loads_t.p.sum().iloc[0] - generators_t.p['backstop'].sum())
+    stores_modified.loc['battery', 'fraction_energy_in'] = links_t.p0['battery-charge'].sum()/generators_t.p[renewable_generators].sum().sum()
+    stores_modified.loc['battery', 'fraction_energy_out'] = -links_t.p1['battery-discharge'].sum() / (loads_t.p.sum().iloc[0] - generators_t.p['backstop'].sum())
 
     if use_h2 and stores_modified.loc['h2', 'e_nom_opt'] > 0:
         stores_modified.loc['h2', 'p_nom_opt_charge'] = links.loc['h2-electrolysis', 'p_nom_opt']
         stores_modified.loc['h2', 'p_nom_opt_discharge'] = links.loc['gas-turbine', 'p_nom_opt']
-        stores.loc['h2', 'fraction_energy_in'] = links_t.p0['h2-electrolysis'].sum()/generators_t.p[['solar', 'onwind', 'offwind']].sum().sum()
-        stores_modified.loc['h2', 'fraction_energy_out'] = links_t.p1['H2 pipeline'].round(9).sum() * gas_turbine_efficiency / (loads_t.p.sum().iloc[0] - generators_t.p['backstop'].sum())
+        stores.loc['h2', 'fraction_energy_in'] = links_t.p0['h2-electrolysis'].sum()/generators_t.p[renewable_generators].sum().sum()
+        stores_modified.loc['h2', 'fraction_energy_out'] = -links_t.p1['H2 pipeline'].round(9).sum() * gas_turbine_efficiency / (loads_t.p.sum().iloc[0] - generators_t.p['backstop'].sum())
 
     stores_power_t_3h = stores_t.round(9) * resolution
     stores_power_t_1d = stores_power_t_3h.resample('1d').sum()
-    stores_power_t_1w = stores_power_t_3h.resample('1W').sum()
+    stores_power_t_1w = stores_power_t_3h.resample('7D', origin='start').sum()
     stores_power_t_1M = stores_power_t_3h.resample('1ME').sum()
     
     for store in stores_modified.index:
@@ -155,12 +155,12 @@ def create_and_store_stores(output_path, use_offwind, use_h2, stores, stores_t, 
 def create_and_store_sufficiency(output_path, backstop_t, loads_t, resolution):
     backstop_3h = backstop_t * resolution
     backstop_1d = backstop_3h.resample('1d').sum()
-    backstop_1w = backstop_3h.resample('1W').sum()
+    backstop_1w = backstop_3h.resample('7D', origin='start').sum()
     backstop_1M = backstop_3h.resample('1ME').sum()
 
     load_3h = loads_t.squeeze() * resolution
     load_1d = load_3h.resample('1d').sum().squeeze()
-    load_1w = load_3h.resample('1W').sum().squeeze()
+    load_1w = load_3h.resample('7D', origin='start').sum().squeeze()
     load_1M = load_3h.resample('1ME').sum().squeeze()
 
     sufficiency_3h = (1 - backstop_3h/load_3h).round(4)
@@ -174,12 +174,17 @@ def create_and_store_sufficiency(output_path, backstop_t, loads_t, resolution):
     sufficiency_1w.to_csv(output_path / 'sufficiency_t_1w.csv.gz', compression='gzip')
     sufficiency_1M.to_csv(output_path / 'sufficiency_t_1M.csv.gz', compression='gzip')
 
-def create_and_store_performance_metrics(output_path, loads_t, backstop_t, resolution):
+def create_and_store_performance_metrics(output_path, use_offwind, generators, generators_t, loads_t, backstop_t, resolution):
     performance = pd.DataFrame(columns=['Value'])
+    renewable_generators = list_renewables(use_offwind)
+
     performance.loc['Total energy'] = round((loads_t.sum().iloc[0] - backstop_t.sum()) * resolution, 2)
     performance.loc['Backstop energy'] = backstop_t.sum().round(2) * resolution
+    performance.loc['Curtailed energy'] = (generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators]['p_nom_opt']).sum() - generators_t.p[renewable_generators].sum().sum()
     performance.loc['Sufficiency'] = round((loads_t.sum().iloc[0] - backstop_t.sum()) / loads_t.sum().iloc[0],4)
     performance.loc['Shortfall'] = round(backstop_t.sum() / loads_t.sum().iloc[0],4)
+    performance.loc['Curtailment (of renewables)'] = 1 - generators_t.p[renewable_generators].sum().sum()/(generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators]['p_nom_opt']).sum()
+    performance.loc['Curtailment (of total)'] = performance.loc['Curtailed energy'] / performance.loc['Total energy']
 
     performance.to_csv(output_path / 'performance_metrics.csv.gz', compression='gzip')
 
@@ -281,6 +286,11 @@ def create_and_store_lcoe(output_path, use_offwind, use_h2, use_biogas, generato
     # Calculate LCOE per energy type
     lcoe = lcoe.round(9)
     lcoe['lcoe'] = (lcoe['total_cost']/lcoe['total_energy']) / 1_000
+    lcoe['lcoe'].replace([np.inf, -np.inf], np.nan, inplace=True)
 
     output_path.mkdir(parents=True, exist_ok=True)
     lcoe.to_csv(output_path / 'lcoe.csv.gz', compression='gzip')
+
+def select_and_store_land_use(land_path, land_file, data_path, geo):
+    land_use = pd.read_csv(land_path / land_file, compression='gzip', index_col='Kod')
+    land_use.loc[geo.split(':')[-1]].to_csv(data_path / 'landuse.csv.gz', compression='gzip')

@@ -15,7 +15,8 @@ import paths
 from library.assumptions import read_assumptions
 from library.network import build_network
 from generator.library.tools import delete_file
-from generator.library.output_files import create_and_store_demand, create_and_store_links, create_and_store_generators, create_and_store_stores, create_and_store_sufficiency, create_and_store_performance_metrics, create_and_store_worst, create_and_store_days_below, create_and_store_lcoe
+from generator.library.output_files import create_and_store_demand, create_and_store_links, create_and_store_generators, create_and_store_stores, create_and_store_sufficiency
+from generator.library.output_files import create_and_store_performance_metrics, create_and_store_worst, create_and_store_days_below, create_and_store_lcoe, select_and_store_land_use
 
 def _get_geo(config):
     keys = config['scenario']['geography'].split(":", 1)
@@ -162,6 +163,7 @@ def create_and_store_results(config):
     network = pypsa.Network()
     network.import_from_netcdf(data_path / 'network.nc')
 
+    geo = config["scenario"]["geography"]
     use_offwind = bool(config["scenario"]["offwind"])
     use_h2 = bool(config['scenario']['h2'])
     use_biogas = config['scenario']['biogas-limit'] > 0
@@ -169,8 +171,9 @@ def create_and_store_results(config):
 
     resolution = 3
 
-    ## Copy config to output
+    ## Copy config and assumptions to output
     shutil.copy(paths.generator_path / 'configs' / f"{config['config-name']}.json", paths.output_path / 'scenarios.json')
+    shutil.copy(paths.input_path / 'assumptions.csv', paths.output_path / 'assumptions.csv')
     
     ## Create files for demand data
     create_and_store_demand(data_path / 'demand.csv', data_path / 'demand', resolution)
@@ -188,12 +191,15 @@ def create_and_store_results(config):
     create_and_store_sufficiency(data_path / 'performance', network.generators_t.p['backstop'], network.loads_t.p, resolution)
 
     ## Create performance metrics
-    create_and_store_performance_metrics(data_path / 'performance', network.loads_t.p, network.generators_t.p['backstop'], resolution)
+    create_and_store_performance_metrics(data_path / 'performance', use_offwind, network.generators, network.generators_t, network.loads_t.p, network.generators_t.p['backstop'], resolution)
     create_and_store_worst(data_path / 'performance', data_path / 'performance')
     create_and_store_days_below(data_path / 'performance', data_path / 'performance')
 
     ## Create LCOE data
     create_and_store_lcoe(data_path / 'price', use_offwind, use_h2, use_biogas, network.generators, network.generators_t.p, network.links, network.links_t, network.stores, resolution)
+
+    ## Select and store land use data (Specific to VGR application)
+    select_and_store_land_use(paths.input_path / 'geo', 'markanvandning.csv.gz', data_path, geo)
 
     ## Create overall network data
 
