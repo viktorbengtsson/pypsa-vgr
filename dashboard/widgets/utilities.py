@@ -1,18 +1,19 @@
 import math
 from library.language import TEXTS
 
-def round_and_prefix(value, prefix, unit):
+def round_and_prefix(value, prefix, unit, decimals):
     prefixes = ['', 'k', 'M', 'G', 'T']
-    
-    if value >= 1_000_000:
-        return f"{round(value/1_000_000,0):.0f} {prefixes[prefixes.index(prefix)+2]}{unit}"
+    if round(value,9) == 0 or math.isnan(value):
+        return "-"
+    elif value >= 1_000_000:
+        return f"{round(value/1_000_000,decimals):.{decimals}f} {prefixes[prefixes.index(prefix)+2]}{unit}"
     elif value >= 1000:
-        return f"{round(value/1_000,0):.0f} {prefixes[prefixes.index(prefix)+1]}{unit}"
+        return f"{round(value/1_000,decimals):.{decimals}f} {prefixes[prefixes.index(prefix)+1]}{unit}"
     elif value < 1000:
-        return f"{round(value,0):.0f} {prefix}{unit}"
+        return f"{round(value,decimals):.{decimals}f} {prefix}{unit}"
     else:
-        return f"{round(value,0):.0f} {prefix}{unit}"
-    
+        return f"{round(value,decimals):.{decimals}f} {prefix}{unit}"
+
 def round_and_prettify(value, type):
     units = {
         "solar": 'ha',
@@ -38,6 +39,16 @@ def round_and_format(value):
     else:
         return f"{round(value,0):,.0f}"
 
+def round_and_percentage(value):
+    if math.isnan(value):
+        return '-'
+    elif math.isinf(value):
+        return '-'
+    elif value == 0:
+        return '-'
+    else:
+        return f"{round(value*100,0):,.0f}%"
+
 def scenario(geo, year, floor, load, h2, offwind, biogas):
     return f"geography={geo},target-year={year},floor={floor},load-target={load},h2={h2},offwind={offwind},biogas-limit={biogas}"
 
@@ -52,6 +63,7 @@ def full_palette():
         'solar': '#FCE849',
         'onwind': "#84B082",
         'offwind': "#60BFFF",
+        'biogas-turbine': "#EF476F",
         'biogas-market': "#EF476F",
         'biogas': "#EF476F",
         'gas-turbine': "#EF476F",
@@ -64,5 +76,12 @@ def full_palette():
         'demand': "#010101",
         "ON": "#61AC52",
         "OFF": "#D12D45",
-        "NEUTRAL": "#697CCC"
+        "NEUTRAL": "#697CCC",
+        "SUPER": "#42f5c8",
+        "Total land": "#4F5F43",
+        "Constructed land": "#565656",
+        "Housing": "#A0A0A0",
+        "Other buildings": "#98C379",
+        "Buildings": "#948169",
+        "opacity": 0.75
     }

@@ -17,13 +17,13 @@
             2030
         ],
         "floor": [
-            0.5
+            1
         ],
         "load-target": [
-            15
+            5, 10, 15
         ],
         "h2": [true],
         "offwind": [true],
-        "biogas-limit": [5000]
+        "biogas-limit": [2000]
     }
 }

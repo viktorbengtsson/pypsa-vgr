@@ -35,7 +35,7 @@ dependencies:
 - localtileserver
 - streamlit_folium
 - streamlit_js_eval
-
+- openpyxl
 
 # Dev
 - jupyterlab
