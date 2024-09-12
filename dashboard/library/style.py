@@ -8,6 +8,16 @@ def set_app_style():
                 margin: 0;
                 padding: 0;
             }}
+            [data-testid=stAppViewBlockContainer] {{
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }}
+            @media (min-width: 1500px) {{
+                [data-testid=stAppViewBlockContainer] {{
+                    padding-left: 6rem;
+                    padding-right: 6rem;
+                }}
+            }}
             [data-testid=stSidebar] {{
                 background-color: #ffffff;
                 border-radius: 5px;  /* Rounded corners */
