@@ -167,7 +167,8 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
     if use_h2 or biogas_limit > 0:
         network.add('Link', 'gas-turbine', carrier='mixedgas', bus0='turbine-bus', bus1='load-bus',
                     p_nom_extendable=True,
-                    p_nom_mod=assumptions.loc['combined_cycle_gas_turbine','unit_size'].value,
+                    p_nom_mod=assumptions.loc['combined_cycle_gas_turbine','min_size'].value, # New minimal size for generator
+                    #p_nom_mod=assumptions.loc['combined_cycle_gas_turbine','unit_size'].value,
                     capital_cost= annualized_capex('combined_cycle_gas_turbine'),
                     marginal_cost=assumptions.loc['combined_cycle_gas_turbine','VOM'].value,
                     lifetime=assumptions.loc['combined_cycle_gas_turbine','lifetime'].value,

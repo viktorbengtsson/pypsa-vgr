@@ -24,6 +24,6 @@
         ],
         "h2": [true],
         "offwind": [true],
-        "biogas-limit": [0, 300, 600, 1200, 1800]
+        "biogas-limit": [0, 5, 20, 300, 900, 1800]
     }
 }
