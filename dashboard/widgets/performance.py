@@ -86,7 +86,7 @@ def _performance_chart(data):
     ))
 
     fig.update_layout(
-        height=180,
+        height=220,
         barmode='stack',        
         margin=dict(t=0, b=20, l=10, r=10),
         legend=dict(

@@ -23,14 +23,14 @@ def _circles_chart(labels, values, cmap):
 
     radii = radii / max(radii) * 0.66 * height/2
 
-    x_positions = [0,1.5,2.5,3.3,4] # TODO: Make this more robus at some point
-
+    x_positions = [0,2.5,3,3.2,2] # TODO: Make this more robus at some point
+    y_positions = [0, 0, 0.8, -0.6, -0.8]
     # Create the scatter plot
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
         x=x_positions,  # Horizontal axis positions
-        y=[0] * len(labels),  # Set y to 0 to align all circles horizontally
+        y=y_positions,  # Set y to 0 to align all circles horizontally
         mode='markers+text',
         marker=dict(
             size=radii*2,  # Set marker sizes corresponding to the radii

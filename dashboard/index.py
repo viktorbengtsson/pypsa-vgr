@@ -97,7 +97,7 @@ with sidebar:
 
 with col1:
     big_chart_widget(geo=geo, **variables, modal=help)
-    col11, col12 = col1.columns([1,1])
+    col11, col12 = col1.columns([5,6])
     with col11:
         performance_widget(geo=geo, **variables, modal=help)
         price_widget(geo=geo, **variables, modal=help)
