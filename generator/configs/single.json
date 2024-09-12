@@ -20,7 +20,7 @@
             1
         ],
         "load-target": [
-            5, 10, 15
+            15
         ],
         "h2": [true],
         "offwind": [true],

@@ -34,7 +34,7 @@ def create_and_store_links(output_path, use_h2, use_biogas, links, links_t, reso
     links_charge, links_discharge = list_links(use_h2, use_biogas)
     links = links.loc[links_charge + links_discharge][['p_nom_opt', 'p_nom_mod', 'capital_cost', 'marginal_cost']].copy()
     links['mod_units'] = links['p_nom_opt']/links['p_nom_mod']
-
+    
     links_power_t_3h = -links_t.p0[links_charge].round(9) * resolution
     links_power_t_3h[links_discharge] = -links_t.p1[links_discharge] * resolution
     links_power_t_1d = links_power_t_3h.resample('1d').sum()
@@ -61,6 +61,7 @@ def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, ge
 
     # Add number of units
     generators['mod_units'] = generators['p_nom_opt']/generators['p_nom_mod']
+    generators.loc['biogas-turbine', 'mod_units'] = 0 # Currently we do not consider a typical size of gas turbine, just a minimal nominal power
 
     # Calculate 
     generators['total_energy'] = generators_t.p.sum().round(9) * resolution

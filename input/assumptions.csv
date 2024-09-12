@@ -94,6 +94,7 @@ combined_cycle_gas_turbine,efficiency,2020,0.56,factor,"","Danish Energy Agency 
 combined_cycle_gas_turbine,efficiency,2030,0.58,factor,"","Danish Energy Agency technology_data_for_el_and_dh.xlsx 05 Gas turb. CC steam extract",""
 combined_cycle_gas_turbine,efficiency,2050,0.60,factor,"","Danish Energy Agency technology_data_for_el_and_dh.xlsx 05 Gas turb. CC steam extract",""
 combined_cycle_gas_turbine,unit_size,"",300,MWe,"","Danish Energy Agency technology_data_for_el_and_dh.xlsx 05 Gas turb. CC steam extract, average of 100 and 500 MWe",""
+combined_cycle_gas_turbine,min_size,"",5,MWe,"","Internal assumption",""
 h2_electrolysis,capital_cost,2020,1300000,EUR/MWe,2020,"data_sheets_for_renewable_fuels.xslx - 86 PEMEC 100 MW",""
 h2_electrolysis,capital_cost,2025,975000,EUR/MWe,2020,"data_sheets_for_renewable_fuels.xslx - 86 PEMEC 100 MW",""
 h2_electrolysis,capital_cost,2030,650000,EUR/MWe,2020,"data_sheets_for_renewable_fuels.xslx - 86 PEMEC 100 MW",""

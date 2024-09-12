@@ -15,7 +15,7 @@ import paths
 color_mapping = full_palette()
 
 def _html_wrapper(name, metrics, color):
-    fname = paths.dashboard_path / 'widgets' / "energy.html"
+    fname = paths.dashboard_path / 'widgets' / "cards.html"
 
     with open(fname, 'r') as file:
         html = file.read()
