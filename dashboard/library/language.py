@@ -13,6 +13,8 @@ ALL_TEXTS = {
     "fraction_energy": { "en": "Part of production", "sv": "Produktionsandel"},
     "fraction_stored_energy": { "en": "Part of energy via", "sv": "Andel uttag"},
     "total_energy": { "en": "Total energy", "sv": "Total energi"},
+    "imported_energy": { "en": "Imported energy", "sv": "Planerad import"},
+    "shortfall_energy": { "en": "Shortfall energy", "sv": "Oplanerad import"},
     "total_cost": { "en": "Total cost", "sv": "Totalkostnad"},
     "currency": { "en": "USD", "sv": "SEK"},
     "week": { "en": "Week", "sv": "Vecka"},
@@ -24,8 +26,13 @@ ALL_TEXTS = {
     "Housing" : { "en": "Housing", "sv": "Bostäder" },
     "Other buildings": { "en": "Other buildings", "sv": "Andra byggnader" },
     "Buildings": { "en": "Buildings", "sv": "Byggnader" },
-    
 
+    "the demand is fully met": { "en": "the demand is fully met", "sv": " månad möts behovet helt" },
+    "The demand is not fully met during any month": { "sv": "Behovet möts inte helt under någon månad" },
+    "average_sufficiency_outside_full_text": { "en": ". Average self-sufficiency for the other months is ", "sv": ". Medelsjälvförsörjningsgraden för övriga månader är "},
+    "gas_turbine_text1": { "en": "", "sv": " Systemets gasturbiner producerar "},
+    "gas_turbine_text2": { "en": "", "sv": " av den energi som indikeras av deras nominella effekt."},
+    
     "Explorer": { "en": "Explorer", "sv": "Utforskaren" },
     "About": { "en": "About", "sv": "Om projektet" },
     "Assumptions": { "en": "Learn more", "sv": "Fördjupning" },
@@ -36,6 +43,7 @@ ALL_TEXTS = {
     "moderate": { "sv": "medelhögt" },
     "quite modest": { "sv": "konservativt" },
     "fairly low": { "sv": "ganska lågt" },
+    "very low": { "sv": "väldigt lågt" },
     "almost no": { "sv": "nästan ingen" },
     "extremely little": { "sv": "väldigt liten" },
     "a small amount": { "sv": "liten del" },
@@ -49,6 +57,7 @@ ALL_TEXTS = {
     "biogas-turbine": { "sv": "Biogas", "en": "Biogas" },
     "biogas": { "sv": "Biogas", "en": "Biogas" },
     "backstop": { "sv": "Import", "en": "Import" },
+    "market": { "sv": "Import", "en": "Import" },
     "battery": { "sv": "Batteri", "en": "Battery" },
     "battery-discharge": { "sv": "Batteri", "en": "Battery" },
     "battery-charge": { "sv": "Batteri", "en": "Battery" },
@@ -58,6 +67,7 @@ ALL_TEXTS = {
     "turbines": { "sv": "turbiner" },
 
     "Production target": { "sv": "Elproduktionsmål" },
+    "Self-sufficiency": {"sv": "Egenförsörjningsmål"},
 
     "Offshore": { "sv": "Havsvind" },
     "Biogas": { "sv": "Biogas" },

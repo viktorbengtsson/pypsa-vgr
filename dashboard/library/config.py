@@ -35,7 +35,7 @@ def _read_config_definition(DATA_ROOT):
 
 def all_keys():
     return [
-        "load-target",
+        "self-sufficiency",
         "h2",
         "offwind",
         "biogas-limit",
@@ -46,11 +46,10 @@ def get_default_variables(DATA_ROOT, query_params):
 
     defaults = {
         "target_year": int(SCENARIOS["target-year"][0]) if not "target_year" in query_params else int(query_params["target_year"]),
-        "floor": float(SCENARIOS["floor"][0]) if not "floor" in query_params else float(query_params["floor"]),
-        "load_target": float(SCENARIOS["load-target"][-1]) if not "load_target" in query_params else float(query_params["load_target"]),
+        "self_sufficiency": float(SCENARIOS["self-sufficiency"][0]) if not "self_sufficiency" in query_params else float(query_params["self_sufficiency"]),
         "h2": SCENARIOS["h2"][0] if not "h2" in query_params else (query_params["h2"] == "True"),
         "offwind": SCENARIOS["offwind"][0] if not "offwind" in query_params else (query_params["offwind"] == "True"),
-        "biogas_limit": int(SCENARIOS["biogas-limit"][0]) if not "biogas_limit" in query_params else int(query_params["biogas_limit"]),
+        "biogas_limit": float(SCENARIOS["biogas-limit"][0]) if not "biogas_limit" in query_params else float(query_params["biogas_limit"]),
     }
 
     return defaults

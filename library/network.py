@@ -1,12 +1,12 @@
 import pypsa
 
-def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_onwind, cf_offwind, use_offwind, use_h2, h2_initial, biogas_limit):
+def build_network(index, resolution, geography, load, assumptions, discount_rate, cf_solar, cf_onwind, cf_offwind, use_offwind, use_h2, h2_initial, biogas):
 
     def annuity(r, n):
         return r / (1.0 - 1.0 / (1.0 + r) ** n)
 
     def annualized_capex(asset):
-        return (annuity(float(assumptions.loc[('general', 'discount_rate'), 'value']), float(assumptions.loc[(asset, 'lifetime'), 'value'])) + float(assumptions.loc[(asset, 'FOM'), 'value'])) * float(assumptions.loc[(asset, 'capital_cost'), 'value'])
+        return (annuity(discount_rate, float(assumptions.loc[(asset, 'lifetime'), 'value'])) + float(assumptions.loc[(asset, 'FOM'), 'value'])) * float(assumptions.loc[(asset, 'capital_cost'), 'value'])
 
     # Initialize the network
     network = pypsa.Network()
@@ -24,10 +24,11 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
         'biogas',
         'mixedgas',
         'backstop',
+        'import',
         # 'nuclear',
         ]
 
-    carrier_colors = ['black', 'green', 'blue', 'red', 'lightblue', 'grey', 'brown', 'brown', 'white']#, 'mintgreen']
+    carrier_colors = ['black', 'green', 'blue', 'red', 'lightblue', 'grey', 'brown', 'brown', 'white', 'white']#, 'mintgreen']
 
     network.madd(
         'Carrier',
@@ -44,13 +45,10 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
     network.add('Bus', 'load-bus', carrier='AC', x=midx, y=midy)
     network.add('Bus', 'renewables-bus', x=midx+0.5, y=midy+0.25)
     network.add('Bus', 'battery-bus', carrier='li-ion', x=midx-0.5, y=midy)
-    if use_h2 or biogas_limit > 0:
+    if use_h2 or biogas > 0:
         network.add('Bus', 'turbine-bus', x=midx, y=midy+0.5)
     if use_h2:
         network.add('Bus', 'h2-bus', carrier='h2', x=midx-0.5, y=midy+0.5)
-    if biogas_limit > 0:
-        network.add('Bus', 'biogas-bus', x=midx, y=midy+0.9)
-
 
     # Add load and backstop to Load bus
     network.add('Load', 'load', bus='load-bus',
@@ -62,6 +60,13 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
                 capital_cost=assumptions.loc[('backstop', 'capital_cost'), 'value'],
                 marginal_cost=assumptions.loc[('backstop', 'marginal_cost'), 'value'],
                 lifetime=assumptions.loc[('backstop', 'lifetime'), 'value'],
+                )
+
+    network.add('Generator', 'market', carrier='import', bus='load-bus',
+                p_nom_extendable=True,
+                capital_cost=0,
+                marginal_cost=600,
+                lifetime=100
                 )
 
     # Add generators and links to Renewables bus
@@ -151,20 +156,16 @@ def build_network(index, resolution, geography, load, assumptions, cf_solar, cf_
 
     # Add biogas market (generator) and pipeline to gas turbine
 
-    if biogas_limit > 0:
-        network.add('Generator', 'biogas-market', carrier='biogas', bus='biogas-bus',
+    if biogas > 0:
+        network.add('Generator', 'biogas-market', carrier='biogas', bus='turbine-bus',
                     p_nom_extendable=True,
-                    p_nom_max=biogas_limit,
+                    p_nom_max=biogas,
                     marginal_cost=assumptions.loc['biogas','cost'].value,
                     lifetime=100,
                     )
 
-        network.add('Link', 'Biogas pipeline', carrier='biogas', bus0='biogas-bus', bus1='turbine-bus',
-                    p_nom_extendable=True,
-                    )
-
     # Add gas turbines (we only use the CC gas turbine for now)
-    if use_h2 or biogas_limit > 0:
+    if use_h2 or biogas > 0:
         network.add('Link', 'gas-turbine', carrier='mixedgas', bus0='turbine-bus', bus1='load-bus',
                     p_nom_extendable=True,
                     p_nom_mod=assumptions.loc['combined_cycle_gas_turbine','min_size'].value, # New minimal size for generator

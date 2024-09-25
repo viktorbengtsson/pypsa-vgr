@@ -19,7 +19,7 @@ def list_renewables(use_offwind):
 
 
 def create_and_store_demand(source_path, output_path, resolution):
-    demand_t_3h = pd.read_csv(source_path, index_col=0, parse_dates=True) * resolution
+    demand_t_3h = pd.read_csv(source_path, compression='gzip', index_col=0, parse_dates=True) * resolution
     demand_t_1d = demand_t_3h.resample('1d').sum()
     demand_t_1w = demand_t_3h.resample('7D', origin='start').sum()
     demand_t_1M = demand_t_3h.resample('1ME').sum()
@@ -94,7 +94,9 @@ def create_and_store_generators(output_path, use_offwind, use_h2, use_biogas, ge
     curtailment_power_t_1M = curtailment_power_t_3h.resample('1ME').sum()
 
     # Add total/annual curtailment to generators df
-    annual_curtailment = 1 - generators_t.p[renewable_generators].sum()/(generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators]['p_nom_opt'])
+    annual_curtailment = 1 - generators_t.p[renewable_generators].sum()/(generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators,'p_nom_opt'])
+    if use_biogas:
+        annual_curtailment['biogas-turbine'] = 1 - generators_power_t_3h['biogas-turbine'].sum()/(365*24/3 * generators.loc['biogas-turbine','p_nom_opt'])
     annual_curtailment.replace([np.inf, -np.inf], 0, inplace=True)
     generators['curtailment'] = annual_curtailment
 
@@ -148,26 +150,27 @@ def create_and_store_stores(output_path, use_offwind, use_h2, stores, stores_t, 
         store_path = output_path / store
         store_path.mkdir(parents=True, exist_ok=True)
         stores_modified.loc[store].to_csv(store_path / 'details.csv.gz', compression='gzip')
-        stores_power_t_3h[store].to_csv(store_path / 'power_t_3h.csv.gz', compression='gzip')
-        stores_power_t_1d[store].to_csv(store_path / 'power_t_1d.csv.gz', compression='gzip')
-        stores_power_t_1w[store].to_csv(store_path / 'power_t_1w.csv.gz', compression='gzip')
-        stores_power_t_1M[store].to_csv(store_path / 'power_t_1M.csv.gz', compression='gzip')
+        if len(stores_power_t_3h.columns) > 0:
+            stores_power_t_3h[store].to_csv(store_path / 'power_t_3h.csv.gz', compression='gzip')
+            stores_power_t_1d[store].to_csv(store_path / 'power_t_1d.csv.gz', compression='gzip')
+            stores_power_t_1w[store].to_csv(store_path / 'power_t_1w.csv.gz', compression='gzip')
+            stores_power_t_1M[store].to_csv(store_path / 'power_t_1M.csv.gz', compression='gzip')
 
-def create_and_store_sufficiency(output_path, backstop_t, loads_t, resolution):
-    backstop_3h = backstop_t * resolution
-    backstop_1d = backstop_3h.resample('1d').sum()
-    backstop_1w = backstop_3h.resample('7D', origin='start').sum()
-    backstop_1M = backstop_3h.resample('1ME').sum()
+def create_and_store_sufficiency(output_path, backstop_t, market_t, loads_t, resolution):
+    import_3h = (backstop_t + market_t) * resolution
+    import_1d = import_3h.resample('1d').sum()
+    import_1w = import_3h.resample('7D', origin='start').sum()
+    import_1M = import_3h.resample('1ME').sum()
 
     load_3h = loads_t.squeeze() * resolution
     load_1d = load_3h.resample('1d').sum().squeeze()
     load_1w = load_3h.resample('7D', origin='start').sum().squeeze()
     load_1M = load_3h.resample('1ME').sum().squeeze()
 
-    sufficiency_3h = (1 - backstop_3h/load_3h).round(4)
-    sufficiency_1d = (1 - backstop_1d/load_1d).round(4)
-    sufficiency_1w = (1 - backstop_1w/load_1w).round(4)
-    sufficiency_1M = (1 - backstop_1M/load_1M).round(4)
+    sufficiency_3h = (1 - import_3h/load_3h).round(4)
+    sufficiency_1d = (1 - import_1d/load_1d).round(4)
+    sufficiency_1w = (1 - import_1w/load_1w).round(4)
+    sufficiency_1M = (1 - import_1M/load_1M).round(4)
 
     output_path.mkdir(parents=True, exist_ok=True)
     sufficiency_3h.to_csv(output_path / 'sufficiency_t_3h.csv.gz', compression='gzip')
@@ -175,39 +178,20 @@ def create_and_store_sufficiency(output_path, backstop_t, loads_t, resolution):
     sufficiency_1w.to_csv(output_path / 'sufficiency_t_1w.csv.gz', compression='gzip')
     sufficiency_1M.to_csv(output_path / 'sufficiency_t_1M.csv.gz', compression='gzip')
 
-def create_and_store_performance_metrics(output_path, use_offwind, generators, generators_t, loads_t, backstop_t, resolution):
+def create_and_store_performance_metrics(output_path, use_offwind, generators, generators_t, loads_t, resolution):
     performance = pd.DataFrame(columns=['Value'])
     renewable_generators = list_renewables(use_offwind)
 
-    performance.loc['Total energy'] = round((loads_t.sum().iloc[0] - backstop_t.sum()) * resolution, 2)
-    performance.loc['Backstop energy'] = backstop_t.sum().round(2) * resolution
+    performance.loc['Total energy'] = round(loads_t.sum().iloc[0] * resolution, 2)
+    performance.loc['Produced energy'] = round((loads_t.sum().iloc[0] - generators_t.p['market'].sum() - generators_t.p['backstop'].sum()) * resolution, 2)
+    performance.loc['Imported energy'] = round((generators_t.p['backstop'].sum() + generators_t.p['market'].sum()) * resolution, 2)
     performance.loc['Curtailed energy'] = (generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators]['p_nom_opt']).sum() - generators_t.p[renewable_generators].sum().sum()
-    performance.loc['Sufficiency'] = round((loads_t.sum().iloc[0] - backstop_t.sum()) / loads_t.sum().iloc[0],4)
-    performance.loc['Shortfall'] = round(backstop_t.sum() / loads_t.sum().iloc[0],4)
+    performance.loc['Sufficiency'] = round((loads_t.sum().iloc[0] - generators_t.p['market'].sum() - generators_t.p['backstop'].sum()) / loads_t.sum().iloc[0],4)
+    performance.loc['Shortfall'] = round((generators_t.p['market'].sum() + generators_t.p['backstop'].sum()) / loads_t.sum().iloc[0],4)
     performance.loc['Curtailment (of renewables)'] = 1 - generators_t.p[renewable_generators].sum().sum()/(generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators]['p_nom_opt']).sum()
     performance.loc['Curtailment (of total)'] = performance.loc['Curtailed energy'] / performance.loc['Total energy']
 
     performance.to_csv(output_path / 'performance_metrics.csv.gz', compression='gzip')
-
-def create_and_store_worst(input_path, output_path):
-    sufficiency_1d = pd.read_csv(input_path / 'sufficiency_t_1d.csv.gz', compression='gzip', parse_dates=True, index_col='snapshot')
-    sufficiency_1w = pd.read_csv(input_path / 'sufficiency_t_1w.csv.gz', compression='gzip', parse_dates=True, index_col='snapshot')
-    sufficiency_1M = pd.read_csv(input_path / 'sufficiency_t_1M.csv.gz', compression='gzip', parse_dates=True, index_col='snapshot')
-
-    worst = pd.DataFrame(columns=['Time', 'Sufficiency'])
-    worst.loc['1d'] = [sufficiency_1d.squeeze().nsmallest(1).index[0], sufficiency_1d.squeeze().nsmallest(1).iloc[0].round(4)]
-    worst.loc['1w'] = [sufficiency_1w.squeeze().nsmallest(1).index[0], sufficiency_1w.squeeze().nsmallest(1).iloc[0].round(4)]
-    worst.loc['1M'] = [sufficiency_1M.squeeze().nsmallest(1).index[0], sufficiency_1M.squeeze().nsmallest(1).iloc[0].round(4)]
-
-    worst.to_csv(output_path / 'worst.csv.gz', compression='gzip')
-
-def create_and_store_days_below(input_path, output_path):
-    sufficiency_1d = pd.read_csv(input_path / 'sufficiency_t_1d.csv.gz', compression='gzip', parse_dates=True, index_col='snapshot')
-    days_below = pd.DataFrame(columns=['Days'])
-    for threshold in np.arange(0.95, 0, -0.05).round(2):
-        days_below.loc[threshold] = (sufficiency_1d['0'] < threshold).sum()
-
-    days_below.to_csv(output_path / 'days_below.csv.gz', compression='gzip')
 
 def create_and_store_lcoe(output_path, use_offwind, use_h2, use_biogas, generators, generators_t, links, links_t, stores, resolution):
     # Calculate renewables distribution and cost distribution (helper for the LCOE further down)
@@ -287,7 +271,7 @@ def create_and_store_lcoe(output_path, use_offwind, use_h2, use_biogas, generato
     # Calculate LCOE per energy type
     lcoe = lcoe.round(9)
     lcoe['lcoe'] = (lcoe['total_cost']/lcoe['total_energy']) / 1_000
-    lcoe['lcoe'].replace([np.inf, -np.inf], np.nan, inplace=True)
+    lcoe['lcoe'] = lcoe['lcoe'].replace([np.inf, -np.inf], np.nan)
 
     output_path.mkdir(parents=True, exist_ok=True)
     lcoe.to_csv(output_path / 'lcoe.csv.gz', compression='gzip')
