@@ -63,6 +63,16 @@ def _create_scenario_key(scenario, keys):
     scenario = dict((existing_keys[i]["code"], x) for i, x in enumerate(scenario))
     return [unique_key.format(**scenario).replace(":", "-"), scenario]
 
+def _read_geo_name(geo):        
+    with (paths.input_path / 'config.json').open('r') as gc:
+        geo_config = json.load(gc)
+
+    if len(geo) == 2:
+        return list(geo_config['weather-geo'].keys())[0]
+
+    if len(geo) > 2:
+        return {'-'.join(v) if isinstance(v, list) else v: k for k,v in list(geo_config['weather-geo'].values())[0]['sections'].items()}[geo]
+
 def _create_scenario(config, scenario, keys, tidy):
     [unique_key, scenario] = _create_scenario_key(scenario, keys)
 
@@ -74,12 +84,14 @@ def _create_scenario(config, scenario, keys, tidy):
     config["scenario"]["geography_lan_code"] = config["scenario"]["geography"].split(":")[0]
     config["scenario"]["geography_kom_code"] = config["scenario"]["geography"].split(":")[1] if ":" in config["scenario"]["geography"] else None
 
+    config['scenario']['geography-name'] = _read_geo_name(config["scenario"]["geography"].split(":",1)[-1])
+
     if os.path.isfile(data_path / 'config.json'):
         print(f"{data_path}/config.json already exists")
     else:
         data_path.mkdir(parents=True, exist_ok=True)
         with (data_path / 'config.json').open('w') as fp:
-            json.dump(config, fp, indent=4)
+            json.dump(config, fp, indent=4, ensure_ascii=False)
 
         run_scenario(config, tidy)
 
