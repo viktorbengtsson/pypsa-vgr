@@ -38,7 +38,7 @@ def _performance_chart(data):
             hovertemplate=(
                 "<b>" + TEXTS["Met need"] + "</b><br><extra></extra>"
                 "" + TEXTS["Percentage"] + ": %{x:.2%}<br>"
-                "" + TEXTS["Energy"] + ": " + round_and_prefix(data.loc['Total energy','Value'], 'M', 'Wh', 2)
+                "" + TEXTS["Energy"] + ": " + round_and_prefix(data.loc['Produced energy','Value'], 'M', 'Wh', 2)
             ),
             orientation='h',
             legendrank=3
@@ -48,13 +48,13 @@ def _performance_chart(data):
     fig.add_trace(
         go.Bar(
             x=[data.loc['Shortfall','Value']],
-            marker_color=color_mapping["OFF"],
+            marker_color=color_mapping["import"],
             opacity=color_mapping['opacity'],
             name=TEXTS["Unmet need"],
             hovertemplate=(
                 "<b>" + TEXTS["Unmet need"] + "</b><br><extra></extra>"
                 "" + TEXTS["Percentage"] + ": %{x:.2%}<br>"
-                "" + TEXTS["Energy"] + ": " + round_and_prefix(data.loc['Backstop energy','Value'], 'M', 'Wh', 2)
+                "" + TEXTS["Energy"] + ": " + round_and_prefix(data.loc['Imported energy','Value'], 'M', 'Wh', 2)
             ),
             orientation='h',
             legendrank=2
@@ -100,11 +100,11 @@ def _performance_chart(data):
 
     st.plotly_chart(fig, config={'displayModeBar': False})
 
-def performance_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, modal):
+def performance_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, modal):
     # State management
     data_root = set_data_root()
 
-    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'performance' / "performance_metrics.csv.gz"
+    fname = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'performance' / "performance_metrics.csv.gz"
     if fname.is_file():
         data = pd.read_csv(fname, compression='gzip')
         data.rename(columns={'Unnamed: 0': 'type'}, inplace=True)

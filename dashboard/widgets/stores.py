@@ -57,7 +57,7 @@ def _bar_chart(data):
 
     st.plotly_chart(fig, config={'displayModeBar': False})
 
-def stores_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit):
+def stores_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit):
     # State management
     data_root = set_data_root()
 
@@ -66,7 +66,7 @@ def stores_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
     stores=["h2", "battery"]
 
     for store_key in stores:
-        fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'stores' / store_key / "details.csv.gz"
+        fname = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'stores' / store_key / "details.csv.gz"
         if fname.is_file():
             stores_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
             stores_data.rename(columns={'Unnamed: 0': 'value_type'}, inplace=True)

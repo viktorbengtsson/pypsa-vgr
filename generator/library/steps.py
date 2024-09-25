@@ -16,7 +16,7 @@ from library.assumptions import read_assumptions
 from library.network import build_network
 from generator.library.tools import delete_file
 from generator.library.output_files import create_and_store_demand, create_and_store_links, create_and_store_generators, create_and_store_stores, create_and_store_sufficiency
-from generator.library.output_files import create_and_store_performance_metrics, create_and_store_worst, create_and_store_days_below, create_and_store_lcoe, select_and_store_land_use
+from generator.library.output_files import create_and_store_performance_metrics, create_and_store_lcoe, select_and_store_land_use
 
 def _get_geo(config):
     keys = config['scenario']['geography'].split(":", 1)
@@ -64,24 +64,27 @@ def check_renewables_files(config):
         print(f"Renewables files do not exist for geography {geo['section_key']}. Please see /input/renewables/generate-renewables.ipynb")
 
 
-# Store demand/load time series
+# Copy demand/load time series
 def create_and_store_demand_input(config):
     data_path = paths.output_path / config['scenario']['data-path']
     data_path.mkdir(parents=True, exist_ok=True)
 
-    if (data_path / 'demand.csv').is_file():
+    if (data_path / 'demand.csv.gz').is_file():
         print("Demand series already exists, continue")
         return
+    
+    # Build file name of projected-demand file
+    projected_demand = f"projected-demand,geography={config['scenario']['geography'].replace(':','-')},target-year={config['scenario']['target-year']},growth-only={config['demand']['growth-only']}.csv.gz"
+    
+    # Copy to data dir
+    shutil.copy(paths.input_path / 'demand' / 'geo' / projected_demand, data_path / 'demand.csv.gz')
 
-    # Load normalized load (for SE3 from file)
-    demand = pd.read_csv(paths.input_path / 'demand/normalized-demand-2023-3h.csv', delimiter=',', index_col=0, parse_dates=True)
-
-    # Create a new load using total yearly target from config and save as file
-    demand['value'] = config['scenario']['load-target'] * demand['value'] * 1_000_000
-    demand.to_csv(data_path / 'demand.csv')
 
 
 # Build network and store in file
+def biogas_max(biogas_limit, load, gas_efficiency, method):
+    return np.mean(load)*biogas_limit/gas_efficiency    
+
 def create_and_store_network(config):
     data_path = paths.output_path / config['scenario']['data-path']
     data_path.mkdir(parents=True, exist_ok=True)
@@ -101,7 +104,7 @@ def create_and_store_network(config):
     index = pd.to_datetime(pd.read_csv(weather_path / f"index-{geo['weather'][:2]}-{weather_config['weather-start']}-{weather_config['weather-end']}.csv")['0'])
     resolution = 3
     geography = gpd.read_file(weather_path / f"selection-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}.shp").total_bounds
-    demand = pd.read_csv(data_path / 'demand.csv', index_col=0).values.flatten()
+    demand = pd.read_csv(data_path / 'demand.csv.gz', index_col=0, compression='gzip').values.flatten()
     assumptions = pd.read_csv(data_path / 'assumptions.csv.gz', compression='gzip', index_col=[0,1])
 
     capacity_factor_solar = xr.open_dataarray(renewables_path / f"capacity-factor-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}-solar.nc").values.flatten()
@@ -109,14 +112,18 @@ def create_and_store_network(config):
     capacity_factor_offwind = xr.open_dataarray(renewables_path / f"capacity-factor-{geo['section_key']}-{weather_config['weather-start']}-{weather_config['weather-end']}-offwind.nc").values.flatten()
 
     #use_nuclear = bool(config['scenario']["network-nuclear"])
+    self_sufficiency = config['scenario']['self-sufficiency']
     offwind = bool(config['scenario']["offwind"])
     h2 = bool(config['scenario']["h2"])
     biogas_limit = config['scenario']["biogas-limit"]
     h2_initial = config['h2-initial']
+    discount_rate = config['discount-rate']
 
-    print(f"Using config:\n\th2:{h2}\n\toffwind:{offwind}\n\tbiogas:{biogas_limit}")
+    print(f"Using config:\n\th2:{h2}\n\toffwind:{offwind}\n\tbiogas:{biogas_limit}") # TODO: Update this text
 
-    network = build_network(index, resolution, geography, demand, assumptions, capacity_factor_solar, capacity_factor_onwind, capacity_factor_offwind, offwind, h2, h2_initial, biogas_limit)
+    biogas = biogas_max(biogas_limit, demand, assumptions.loc['combined_cycle_gas_turbine','efficiency'].value, "average")
+
+    network = build_network(index, resolution, geography, demand, assumptions, discount_rate, capacity_factor_solar, capacity_factor_onwind, capacity_factor_offwind, offwind, h2, h2_initial, biogas)
 
     network.export_to_netcdf(data_path / 'network.nc')
 
@@ -129,18 +136,27 @@ def create_and_store_optimize(config):
     network.import_from_netcdf(data_path / 'network.nc')
     model = network.optimize.create_model()
 
-    offwind = bool(config["scenario"]["offwind"])
+    demand = pd.read_csv(data_path / 'demand.csv.gz', compression='gzip', index_col='timestamp')
+    total_e = demand['value'].values.flatten().sum()
+
+#    offwind = bool(config["scenario"]["offwind"])
+    self_sufficiency = config['scenario']['self-sufficiency']
+
+    ## Add self-sufficiency constraint on the import market
+    market_e = model.variables['Generator-p'].loc[:,'market'].sum()
+    non_sufficiency_e = total_e * (1 - self_sufficiency)
+    model.add_constraints(market_e <= non_sufficiency_e, name="Self_sufficiency_constraint")
     
     ## TODO: UPDATE THIS CONSTRAINT AFTER WE GET A NEW SOLVER
     ## Offwind constraint
-    if False:
-        generator_capacity = model.variables["Generator-p_nom"]
-        offwind_percentage = config['offwind-ratio']
+    #if False:
+    #    generator_capacity = model.variables["Generator-p_nom"]
+    #    offwind_percentage = config['offwind-ratio']
+#
+#        offwind_constraint = (1 - offwind_percentage) / offwind_percentage * generator_capacity.loc['offwind'] - generator_capacity.loc['onwind']
+#        model.add_constraints(offwind_constraint == 0, name="Offwind_constraint")
 
-        offwind_constraint = (1 - offwind_percentage) / offwind_percentage * generator_capacity.loc['offwind'] - generator_capacity.loc['onwind']
-        model.add_constraints(offwind_constraint == 0, name="Offwind_constraint")
-
-    ## Battery charge/discharge ratio
+    ## Add battery charge/discharge ratio constraint
     link_capacity = model.variables["Link-p_nom"]
     lhs = link_capacity.loc["battery-charge"] - network.links.at["battery-charge", "efficiency"] * link_capacity.loc["battery-discharge"]
     model.add_constraints(lhs == 0, name="Link-battery_fix_ratio")
@@ -176,7 +192,7 @@ def create_and_store_results(config):
     shutil.copy(paths.input_path / 'assumptions.csv', paths.output_path / 'assumptions.csv')
     
     ## Create files for demand data
-    create_and_store_demand(data_path / 'demand.csv', data_path / 'demand', resolution)
+    create_and_store_demand(data_path / 'demand.csv.gz', data_path / 'demand', resolution)
 
     ## Add active links data (battery inverters, electrolysis, and gas turbines)
     create_and_store_links(data_path / 'converters', use_h2, use_biogas, network.links, network.links_t, resolution)
@@ -188,12 +204,10 @@ def create_and_store_results(config):
     create_and_store_stores(data_path / 'stores', use_offwind, use_h2, network.stores, network.stores_t.p, network.links, network.links_t, network.loads_t, network.generators_t, gas_turbine_efficiency, resolution)
 
     ## Create sufficiency data
-    create_and_store_sufficiency(data_path / 'performance', network.generators_t.p['backstop'], network.loads_t.p, resolution)
+    create_and_store_sufficiency(data_path / 'performance', network.generators_t.p['backstop'], network.generators_t.p['market'], network.loads_t.p, resolution)
 
     ## Create performance metrics
-    create_and_store_performance_metrics(data_path / 'performance', use_offwind, network.generators, network.generators_t, network.loads_t.p, network.generators_t.p['backstop'], resolution)
-    create_and_store_worst(data_path / 'performance', data_path / 'performance')
-    create_and_store_days_below(data_path / 'performance', data_path / 'performance')
+    create_and_store_performance_metrics(data_path / 'performance', use_offwind, network.generators, network.generators_t, network.loads_t.p, resolution)
 
     ## Create LCOE data
     create_and_store_lcoe(data_path / 'price', use_offwind, use_h2, use_biogas, network.generators, network.generators_t.p, network.links, network.links_t, network.stores, resolution)
@@ -225,5 +239,5 @@ def create_and_store_results(config):
 
 def clear_working_files(config):
     data_path = paths.output_path / config['scenario']['data-path']
-    delete_file(data_path / 'demand.csv')
+    delete_file(data_path / 'demand.csv.gz')
     delete_file(data_path / 'network.nc')
