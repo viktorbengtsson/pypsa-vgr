@@ -20,14 +20,14 @@ def _bar_chart(data):
         color='color',
         color_discrete_map='identity',
         opacity=color_mapping['opacity'],
-        custom_data=[data['generator_formatted'], data['lcoe'], data['total_energy_formatted'], data['total_cost_formatted']],
+        custom_data=[data['generator_formatted'], data['lcoe']*100, data['total_energy_formatted'], data['total_cost_formatted']],
         orientation='h',
     )
 
     fig.update_traces(
         hovertemplate=(
             "<b>%{customdata[0]}</b><br>"
-            "" + TEXTS["electricity price"] + ": %{customdata[1]:.2f} " + TEXTS["electricity price unit"] + "<br>"  # lcoe per energy type
+            "" + TEXTS["electricity price"] + ": %{customdata[1]:.0f} " + TEXTS["electricity price unit"] + "<br>"  # lcoe per energy type
             "" + TEXTS["total_energy"] + ": %{customdata[2]}<br>"
             "" + TEXTS["total_cost"] + ": %{customdata[3]}<br>"  # total_cost (formatted with commas and no decimals)
             "<extra></extra>"
@@ -66,14 +66,14 @@ def _bar_chart(data):
 
     st.plotly_chart(fig, config={'displayModeBar': False})
 
-def price_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, modal):
+def price_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, modal):
     # State management
     data_root = set_data_root()
 
     color_mapping = full_palette()
     data = pd.DataFrame()
 
-    fname = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'price' / "lcoe.csv.gz"
+    fname = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'price' / "lcoe.csv.gz"
     if fname.is_file():
         data = pd.read_csv(fname, compression='gzip', parse_dates=True)
         data.rename(columns={'Unnamed: 0': 'generator'}, inplace=True)

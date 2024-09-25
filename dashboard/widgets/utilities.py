@@ -49,8 +49,8 @@ def round_and_percentage(value):
     else:
         return f"{round(value*100,0):,.0f}%"
 
-def scenario(geo, year, floor, load, h2, offwind, biogas):
-    return f"geography={geo},target-year={year},floor={floor},load-target={load},h2={h2},offwind={offwind},biogas-limit={biogas}"
+def scenario(geo, year, self_sufficiency, h2, offwind, biogas):
+    return f"geography={geo},target-year={year},self-sufficiency={self_sufficiency},h2={h2},offwind={offwind},biogas-limit={biogas}"
 
 def gen_palette(generator):
     return full_palette().get(generator, "#000000")
@@ -67,7 +67,9 @@ def full_palette():
         'biogas-market': "#EF476F",
         'biogas': "#EF476F",
         'gas-turbine': "#EF476F",
+        'market': "#B7B5B3",
         'backstop': "#B7B5B3",
+        'import': "#B7B5B3",
         'battery': "#E3813D",
         'battery-charge': "#E3813D",
         'battery-discharge': "#E3813D",

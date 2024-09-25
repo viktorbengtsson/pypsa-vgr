@@ -59,13 +59,13 @@ def _circles_chart(labels, values, cmap):
     st.plotly_chart(fig, config={'displayModeBar': False})
 
 
-def comparison_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, modal):
+def comparison_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, modal):
     data_root = set_data_root()
 
-    solar_path = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / 'solar' / 'details.csv.gz'
-    onwind_path = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / 'onwind' / 'details.csv.gz'
-    biogas_path = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'converters' / 'gas-turbine' / 'details.csv.gz'
-    land_path = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'landuse.csv.gz'
+    solar_path = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'generators' / 'solar' / 'details.csv.gz'
+    onwind_path = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'generators' / 'onwind' / 'details.csv.gz'
+    biogas_path = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'converters' / 'gas-turbine' / 'details.csv.gz'
+    land_path = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'landuse.csv.gz'
 
     if solar_path.is_file():
         solar_details = pd.read_csv(solar_path, compression='gzip', index_col=0)

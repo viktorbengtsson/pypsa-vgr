@@ -11,23 +11,23 @@ def controls_widget(variables):
 
     SCENARIOS = read_dashboard_available_variables(data_root)
 
-    # LOAD TARGET
-    load_target_title = f'{TEXTS["Production target"]} [TWh]'
-    if len(SCENARIOS["load-target"]) > 1:
-        if 'is_loaded_load_target' not in st.session_state:
-            load_target = st.select_slider(load_target_title, options=SCENARIOS["load-target"], value=variables["load_target"], on_change=lambda: _is_loaded("load_target"))
+    # SELF SUFFICIENCY
+    self_sufficiency_title = f'{TEXTS["Self-sufficiency"]}'
+    if len(SCENARIOS["self-sufficiency"]) > 1:
+        if 'is_loaded_self_sufficiency' not in st.session_state:
+            self_sufficiency = st.select_slider(self_sufficiency_title, options=SCENARIOS["self-sufficiency"], value=variables["self_sufficiency"], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("self_sufficiency"))
         else:
-            load_target = st.select_slider(load_target_title, options=SCENARIOS["load-target"])
+            self_sufficiency = st.select_slider(self_sufficiency_title, options=SCENARIOS["self-sufficiency"], format_func=lambda x: f"{x:.0%}")
     else:
-        if SCENARIOS["load-target"][0] != variables["load_target"]:
+        if SCENARIOS["self-sufficiency"][0] != variables["self_sufficiency"]:
             st.write("")
             st.write("It seems like you have a /output/config.json file that does not match the data in /output")
             return
         
-        if 'is_loaded_load_target' not in st.session_state:
-            load_target = st.select_slider(load_target_title, options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]], value=SCENARIOS["load-target"][0], on_change=lambda: _is_loaded("load_target"))
+        if 'is_loaded_self_sufficiency' not in st.session_state:
+            self_sufficiency = st.select_slider(self_sufficiency_title, options=[SCENARIOS["self-sufficiency"][0], SCENARIOS["self-sufficiency"][0]], value=SCENARIOS["self-sufficiency"][0], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("self_sufficiency"))
         else:
-            load_target = st.select_slider(load_target_title, options=[SCENARIOS["load-target"][0], SCENARIOS["load-target"][0]])
+            self_sufficiency = st.select_slider(self_sufficiency_title, options=[SCENARIOS["self-sufficiency"][0], SCENARIOS["self-sufficiency"][0]], format_func=lambda x: f"{x:.0%}")
 
     # H2
     if 'is_loaded_h2' not in st.session_state:
@@ -52,8 +52,7 @@ def controls_widget(variables):
         biogas = SCENARIOS["biogas-limit"][0]
 
     variables["target_year"] = 2030 # Controls for this?
-    variables["floor"] = 1 # Controls for this?
-    variables["load_target"] = load_target
+    variables["self_sufficiency"] = self_sufficiency
     variables["h2"] = h2
     variables["offwind"] = offwind
     variables["biogas_limit"] = biogas
@@ -66,11 +65,11 @@ def controls_readonly_widget(variables):
 
     SCENARIOS = read_dashboard_available_variables(data_root)
 
-    # LOAD TARGET
-    if len(SCENARIOS["load-target"]) > 1:
-        st.select_slider("", options=SCENARIOS["load-target"], value=variables["load_target"], disabled=True, label_visibility="hidden", key="readonly_load_target")
+    # SELF SUFFICIENCY
+    if len(SCENARIOS["self-sufficiency"]) > 1:
+        st.select_slider("", options=SCENARIOS["self-sufficiency"], value=variables["self_sufficiency"], disabled=True, label_visibility="hidden", key="readonly_self_sufficiency")
     else:
-        st.select_slider("", options=[variables["load_target"], variables["load_target"]], value=variables["load_target"], disabled=True, label_visibility="hidden", key="readonly_load_target")
+        st.select_slider("", options=[variables["self_sufficiency"], variables["self_sufficiency"]], value=variables["self_sufficiency"], disabled=True, label_visibility="hidden", key="readonly_self_sufficiency")
 
     # H2
     st.toggle("", value=(variables["h2"]), disabled=True, label_visibility="hidden", key="readonly_h2")

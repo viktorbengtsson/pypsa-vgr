@@ -48,10 +48,10 @@ def _safely_load_data(path, generator):
             { "key": TEXTS["fraction_energy"], "value": f"{round_and_format(details.loc['fraction_energy'][generator] * 100)}{'%' if details.loc['fraction_energy'][generator] != 0 else ''}" }
         ]
 
-def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, generator, modal):
+def energy_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, generator, modal):
     # State management
     data_root = set_data_root()
-    data_path = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / generator / 'details.csv.gz'
+    data_path = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'generators' / generator / 'details.csv.gz'
     metrics = _safely_load_data(data_path, generator)
 
     with st.container(border=True):
@@ -61,10 +61,10 @@ def energy_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limi
             modal(generator)
         _html_wrapper(TEXTS[generator], metrics, gen_palette(generator))
 
-def store_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, store, modal):
+def store_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, store, modal):
     # State management
     data_root = set_data_root()
-    data_path = data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'stores' / store / 'details.csv.gz'
+    data_path = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'stores' / store / 'details.csv.gz'
 
     if not os.path.isfile(data_path):
         metrics = [
@@ -87,17 +87,19 @@ def store_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit
             modal(store)
         _html_wrapper(TEXTS[store], metrics, stor_palette(store))
 
-def backstop_widget(geo, target_year, floor, load_target, h2, offwind, biogas_limit, modal):
+def backstop_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, modal):
     # State management
     data_root = set_data_root()
-    details = pd.read_csv(data_root / scenario(geo, target_year, floor, load_target, h2, offwind, biogas_limit) / 'generators' / "backstop" / 'details.csv.gz', compression='gzip', index_col=0)
+    market = pd.read_csv(data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'generators' / "market" / 'details.csv.gz', compression='gzip', index_col=0)
+    backstop = pd.read_csv(data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'generators' / "backstop" / 'details.csv.gz', compression='gzip', index_col=0)
     metrics = [
-        { "key": TEXTS["total_energy"], "value": round_and_prefix(details.loc['total_energy']["backstop"],'M','Wh', 0) },
+        { "key": TEXTS["imported_energy"], "value": round_and_prefix(market.loc['total_energy']['market'],'M','Wh', 0) },
+        { "key": TEXTS["shortfall_energy"], "value": round_and_prefix(backstop.loc['total_energy']["backstop"],'M','Wh', 0) },
     ]
 
     with st.container(border=True):
         col1, col2 = st.columns([3,1])
-        col1.markdown(f'<div style="font-size:16px; margin-bottom: 10px;"><div style="background-color: {gen_palette("backstop")}; opacity: {color_mapping["opacity"]}; width: 10px; height: 10px; display: inline-block; margin-right: 5px;"></div><span>{TEXTS["backstop"]}</span>', unsafe_allow_html=True)
+        col1.markdown(f'<div style="font-size:16px; margin-bottom: 10px;"><div style="background-color: {gen_palette("import")}; opacity: {color_mapping["opacity"]}; width: 10px; height: 10px; display: inline-block; margin-right: 5px;"></div><span>{TEXTS["backstop"]}</span>', unsafe_allow_html=True)
         if col2.button(":material/help:", key='backstop'):
             modal('backstop')
-        _html_wrapper(TEXTS["backstop"], metrics, gen_palette("backstop"))
+        _html_wrapper(TEXTS["backstop"], metrics, gen_palette("import"))
