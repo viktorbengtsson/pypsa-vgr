@@ -169,7 +169,7 @@ cython_debug/
 *.prj
 *.shp
 *.shx
-index,geography=*.csv
+index*.csv
 
 # Generated output files
 api
@@ -179,7 +179,6 @@ output
 corine.tif
 
 # Other
-vgr-celin-lab.ipynb
 !generator/lib
 .streamlit/secrets.toml
 dashboard/constants.pkl
