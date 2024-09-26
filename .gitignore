@@ -169,10 +169,11 @@ cython_debug/
 *.prj
 *.shp
 *.shx
-index-*-????-??-????-??.csv
+index,geography=*.csv
 
 # Generated output files
 api
+output
 
 # Too large
 corine.tif

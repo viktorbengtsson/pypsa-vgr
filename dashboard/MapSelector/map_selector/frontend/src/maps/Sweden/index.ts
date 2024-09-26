@@ -55,13 +55,15 @@ class MapSweden implements IMap {
       return this.mainGeo;
     }
     else if (selection.length > 1) {
-      return this.mainGeo + "-" + selection.join("-")
+      return selection.join("-")
+      //return this.mainGeo + "-" + selection.join("-")
     }
     else if (this.mainGeo === selection[0]) {
       return this.mainGeo
     }
 
-    return this.mainGeo + "-" + selection[0]
+    //return this.mainGeo + "-" + selection[0]
+    return selection[0]
   }
 
   getSelectionItems (selection: string[], geo_level: number) {

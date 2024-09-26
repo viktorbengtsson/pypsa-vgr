@@ -78,11 +78,11 @@ def comparison_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_li
 
     area_per_turbine = 20
 
-    total_land = float(land_use.loc['total landareal', geo.split('-',1)[-1]])
-    farm_land = float(land_use.loc['total jordbruksmark', geo.split('-',1)[-1]])
-    built_land = float(land_use.loc['bebyggd och anlagd mark ', geo.split('-',1)[-1]])
-    housing_land = float(land_use.loc['byggnad_bostad', geo.split('-',1)[-1]])
-    non_housing_land = float(land_use.loc['byggnad_ej_bostad', geo.split('-',1)[-1]])
+    total_land = float(land_use.loc['total landareal', geo])
+    farm_land = float(land_use.loc['total jordbruksmark', geo])
+    built_land = float(land_use.loc['bebyggd och anlagd mark ', geo])
+    housing_land = float(land_use.loc['byggnad_bostad', geo])
+    non_housing_land = float(land_use.loc['byggnad_ej_bostad', geo])
     solar_land = float(solar_details.loc['mod_units','solar'])
     onwind_land = float(onwind_details.loc['mod_units','onwind']) * area_per_turbine
 

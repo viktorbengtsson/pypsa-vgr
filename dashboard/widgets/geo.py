@@ -44,4 +44,4 @@ def main_geo_selector(current_main_geo):
         else:
             available_geo.append(value)
 
-    return available_geo, main_geo
+    return section_values, main_geo
