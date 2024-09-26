@@ -21,7 +21,7 @@ def controls_widget(variables):
     else:
         if SCENARIOS["self-sufficiency"][0] != variables["self_sufficiency"]:
             st.write("")
-            st.write("It seems like you have a /output/config.json file that does not match the data in /output")
+            st.write("It seems like you have a /api/config.json file that does not match the data in /api")
             return
         
         if 'is_loaded_self_sufficiency' not in st.session_state:

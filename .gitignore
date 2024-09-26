@@ -172,7 +172,7 @@ cython_debug/
 index-*-????-??-????-??.csv
 
 # Generated output files
-output
+api
 
 # Too large
 corine.tif
