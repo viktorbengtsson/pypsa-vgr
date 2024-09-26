@@ -41,7 +41,8 @@ class MapSelector extends StreamlitComponentBase<State> {
     
     switch(country) {
       case "sweden":
-        this.map = new SwedenMap({ mainGeo: this.props.args["main_geo"] as (string | undefined),  available_geo: available_geo.map(s => s.split("-")).flat() });
+        this.map = new SwedenMap({ mainGeo: this.props.args["main_geo"] as (string | undefined),  available_geo: available_geo });
+        //this.map = new SwedenMap({ mainGeo: this.props.args["main_geo"] as (string | undefined),  available_geo: available_geo.map(s => s.split("-")).flat() });
         break;
       default:
         throw new Error(`Country map ${country} does not exist`)
@@ -69,16 +70,22 @@ class MapSelector extends StreamlitComponentBase<State> {
 
   private clear = (): void => {
     const { geo_level } = this.state
-    let newSelection = [this.map.mainGeo]
+    let newSelection: string[] = [] // = [this.map.mainGeo]
     if (geo_level === 1) {
-      newSelection = this.avalableLevel1Geos[0].split("-")
+      newSelection = [this.avalableLevel1Geos[0]] //.split("-")
     } else {
       newSelection = [this.avalableLevel2Geos[0]]
     }
 
+    /*
     this.setState({ selection: newSelection }, () => {
       const geo = this.map.getGeo(newSelection);
       Streamlit.setComponentValue(geo)
+    })
+    */
+    this.setState({ selection: newSelection }, () => {
+      const geo = this.map.getGeo(newSelection);
+      Streamlit.setComponentValue(geo);
     })
 
   }
@@ -121,6 +128,7 @@ class MapSelector extends StreamlitComponentBase<State> {
         }*/
         // Currently only selecting single item
 
+        /*
         if (geo_level === 1) {
           const level1Area = this.avalableLevel1Geos.find(one => one.includes(val))
           if (level1Area) {
@@ -130,6 +138,12 @@ class MapSelector extends StreamlitComponentBase<State> {
         else {
           newSelection = [val]
         }
+        */
+        if (geo_level === 0) {
+          newSelection = [this.map.mainGeo];  // Ensure main geo is selected
+        } else {
+          newSelection = [val];
+        }        
       }
     })
 
@@ -143,11 +157,13 @@ class MapSelector extends StreamlitComponentBase<State> {
     e: React.ChangeEvent<HTMLSelectElement>
   ): void => {
     const newLevel = parseInt(e.target.value)
-    let newSelection = [this.map.mainGeo]
+    let newSelection: string[] = [] // = [this.map.mainGeo]
     if (newLevel === 1) {
-      newSelection = this.avalableLevel1Geos[0].split("-")
+      newSelection = [this.avalableLevel1Geos[0]] //.split("-")
     } else if (newLevel === 2) {
       newSelection = [this.avalableLevel2Geos[0]]
+    } else {
+      newSelection = [this.map.mainGeo];  // Ensure main geo is selected when geo_level is 0
     }
     
     this.setState({ geo_level: newLevel, selection: newSelection }, () => {
@@ -174,7 +190,16 @@ class MapSelector extends StreamlitComponentBase<State> {
            ${ geo_level === 0 ? "" : (geo_level === 1 ? this.avalableLevel1Geos.map(g => g.split("-")).flat() : this.avalableLevel2Geos).map(g => `.map-selector .sections path.section-${g} { opacity: 1; pointer-events: auto; cursor: pointer }`).join(" ") }
 
            /* Mark the selected geo areas */
-           ${ selection.map(s => `.map-selector .sections path.${levelSelector}-${s} { fill: var(--primary-color) }`).join(" ") }
+           ${ selection.map(s => {
+                // Check if the selected item is the main geo (e.g., 14)
+                if (s === this.map.mainGeo) {
+                  return `.map-selector .sections path.main-${this.map.mainGeo} { fill: var(--primary-color); }`;
+                }
+
+                // Handle groups by splitting the string and generating selectors for each geo
+                const parts = s.includes('-') ? s.split('-') : [s];
+                return parts.map(part => `.map-selector .sections path.${levelSelector}-${part} { fill: var(--primary-color); }`).join(" ");
+              }).join(" ") }
         `}}
         />
         <MapComponent onSelectionChanged={this.onSelectionChanged} width={size.width} height={size.height} viewBox={size.viewBox ?? ""} />

@@ -17,7 +17,7 @@ def set_data_root():
         # Manually set in Community Cloud Secrets
         return st.secrets["DATA_ROOT"]
     else:
-        return paths.output_path
+        return paths.api_path
 
 def clear_cache():
     print("Clearing cache")

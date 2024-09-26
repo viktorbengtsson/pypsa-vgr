@@ -17,7 +17,7 @@ The overall purpose is to allow the user to build and tinker with a general mode
 - input: contains all the input required for running one or more scenarios
 - library: contains general functions that can be used both by the generator and in notebooks
 - notebooks: contains an example notebook
-- output: empty at first, contains all the output data from running generator
+- api: empty at first, contains all the output data from running generator
 
 
 ## Installation

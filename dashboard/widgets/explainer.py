@@ -82,8 +82,8 @@ def explainer_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_lim
 
     area_per_turbine = 20
 
-    total_land = float(land_use.loc['total landareal', geo.split('-',1)[-1]])
-    built_land = float(land_use.loc['bebyggd och anlagd mark ', geo.split('-',1)[-1]])
+    total_land = float(land_use.loc['total landareal', geo])
+    built_land = float(land_use.loc['bebyggd och anlagd mark ', geo])
     solar_land_percentage = float(solar_details.loc['mod_units','solar']) / built_land
     onwind_land_percentage = float(onwind_details.loc['mod_units','onwind']) * area_per_turbine / built_land
     solar_land_percentage_total = float(solar_details.loc['mod_units','solar']) / total_land

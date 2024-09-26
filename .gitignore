@@ -169,16 +169,16 @@ cython_debug/
 *.prj
 *.shp
 *.shx
-index-*-????-??-????-??.csv
+index*.csv
 
 # Generated output files
+api
 output
 
 # Too large
 corine.tif
 
 # Other
-vgr-celin-lab.ipynb
 !generator/lib
 .streamlit/secrets.toml
 dashboard/constants.pkl
