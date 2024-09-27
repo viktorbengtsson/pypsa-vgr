@@ -4,5 +4,5 @@
 ## The get_geo function returns an object with the codes of the 
 
 def get_geo(config):
-    # INSERT LOGIC HERE
-    return { "weather": None, "section": None}
+    cg = config['scenario']['geography']
+    return { "weather": cg[:2], "section": cg}

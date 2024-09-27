@@ -1,4 +1,4 @@
-LANGUAGE = "en"
+LANGUAGE = "sv"
 
 ALL_TEXTS = {
     "Effect": { "sv": "Effekt" },

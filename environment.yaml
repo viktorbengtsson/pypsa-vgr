@@ -1,4 +1,4 @@
-name: energy-toolkit
+name: pypsa-vgr
 channels:
 - conda-forge
 dependencies:
