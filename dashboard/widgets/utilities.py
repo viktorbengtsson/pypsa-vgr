@@ -49,8 +49,8 @@ def round_and_percentage(value):
     else:
         return f"{round(value*100,0):,.0f}%"
 
-def scenario(geo, year, self_sufficiency, h2, offwind, biogas):
-    return f"geography={geo},target-year={year},self-sufficiency={self_sufficiency},h2={h2},offwind={offwind},biogas-limit={biogas}"
+def scenario(geo, year, self_sufficiency, energy_scenario, h2, offwind, biogas):
+    return f"geography={geo},target-year={year},self-sufficiency={self_sufficiency},energy-scenario={energy_scenario},h2={h2},offwind={offwind},biogas-limit={biogas}"
 
 def gen_palette(generator):
     return full_palette().get(generator, "#000000")
