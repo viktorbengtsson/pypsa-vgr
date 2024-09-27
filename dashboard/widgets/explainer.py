@@ -1,11 +1,9 @@
 import streamlit as st
 import pandas as pd
-import math
 import json
 from library.config import set_data_root
 from widgets.utilities import scenario, round_and_prefix
 from library.language import TEXTS, LANGUAGE, MONTHS
-from widgets.comparison import comparison_widget
 from pathlib import Path
 
 def ambition_level(sufficiency_target):
@@ -119,4 +117,3 @@ def explainer_widget(geo, target_year, self_sufficiency, energy_scenario, h2, of
     )
     with st.container():
         st.markdown(body)
-        comparison_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal)

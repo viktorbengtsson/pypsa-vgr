@@ -1,1 +1,0 @@
-Import representerar den totala energin för året som **inte** kan tillhandahållas av systemet.
