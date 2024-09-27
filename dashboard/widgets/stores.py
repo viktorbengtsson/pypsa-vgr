@@ -66,7 +66,7 @@ def stores_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit)
     stores=["h2", "battery"]
 
     for store_key in stores:
-        fname = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'stores' / store_key / "details.csv.gz"
+        fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'stores' / store_key / "details.csv.gz"
         if fname.is_file():
             stores_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
             stores_data.rename(columns={'Unnamed: 0': 'value_type'}, inplace=True)

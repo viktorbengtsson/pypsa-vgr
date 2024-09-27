@@ -67,10 +67,11 @@ ALL_TEXTS = {
     "turbines": { "sv": "turbiner" },
 
     "Production target": { "sv": "Elproduktionsmål" },
-    "Self-sufficiency": {"sv": "Egenförsörjningsmål"},
+    "Self-sufficiency": {"sv": "Egenförsörjningsmål (minimum)"},
+    "Energy scenario": {"sv": "Energiscenario (justering av årsenergi)"},
 
     "Offshore": { "sv": "Havsvind" },
-    "Biogas": { "sv": "Biogas" },
+    "Biogas": { "sv": "Biogasbegränsning (% av årsmedeleffekt)" },
 
     "Compare": { "sv": "Jämför" },
     "Explainer": { "en": "?", "sv": "?"},

@@ -66,14 +66,14 @@ def _bar_chart(data):
 
     st.plotly_chart(fig, config={'displayModeBar': False})
 
-def price_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, modal):
+def price_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal):
     # State management
     data_root = set_data_root()
 
     color_mapping = full_palette()
     data = pd.DataFrame()
 
-    fname = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'price' / "lcoe.csv.gz"
+    fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'price' / "lcoe.csv.gz"
     if fname.is_file():
         data = pd.read_csv(fname, compression='gzip', parse_dates=True)
         data.rename(columns={'Unnamed: 0': 'generator'}, inplace=True)

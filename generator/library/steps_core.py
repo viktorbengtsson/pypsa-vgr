@@ -75,6 +75,7 @@ def create_and_store_demand_input(config):
     data_path = paths.api_path / config['scenario']['data-path']
     data_path.mkdir(parents=True, exist_ok=True)
     geo = get_geo(config)
+    energy_scenario = config['scenario']['energy-scenario']
 
     if (data_path / 'demand.csv.gz').is_file():
         print("Demand series already exists, continue")
@@ -83,8 +84,14 @@ def create_and_store_demand_input(config):
     # Build file name of projected-demand file
     projected_demand = f"projected-demand,geography={geo['section']},target-year={config['scenario']['target-year']},growth-only={config['demand']['growth-only']}.csv.gz"
     
-    # Copy to data dir
-    shutil.copy(paths.demand / projected_demand, data_path / 'demand.csv.gz')
+    # Read projected demand
+    demand = pd.read_csv(paths.demand / projected_demand, index_col = 0, compression='gzip')
+
+    # Adjust the demand according to energy scenario
+    demand = demand * (1 + energy_scenario)
+
+    # Write to file
+    demand.to_csv(data_path / 'demand.csv.gz', compression='gzip')
 
 # CORE
 # Create and store the pypsa network

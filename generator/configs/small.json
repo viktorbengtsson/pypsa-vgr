@@ -19,19 +19,21 @@
     },
     "scenarios": {
         "geography": [
-            "14"
+            "14", "1480", "1489", "1463"
         ],
         "target-year": [
             2030
-        ], 
+        ],
         "self-sufficiency": [
-            0.5, 0.75, 1
+            0.5, 0.85, 1
+        ],
+        "energy-scenario": [
+            -0.2, 0, 0.2
         ],
         "h2": [true],
         "offwind": [true],
         "biogas-limit": [
             0,
-            0.25,
             0.5
         ]
     }

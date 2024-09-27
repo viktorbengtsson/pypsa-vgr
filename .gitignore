@@ -172,7 +172,7 @@ cython_debug/
 index,geography=*,start=????-??,end=????-??.csv
 
 # Generated output files
-/api/
+/api/*
 !/generator/library/api/
 
 # Too large
