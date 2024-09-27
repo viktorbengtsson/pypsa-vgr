@@ -52,7 +52,7 @@ def get_default_variables(DATA_ROOT, query_params):
         "energy_scenario": float(SCENARIOS["energy-scenario"][1]) if not "energy_scenario" in query_params else float(query_params["energy_scenario"]),
         "h2": SCENARIOS["h2"][0] if not "h2" in query_params else (query_params["h2"] == "True"),
         "offwind": SCENARIOS["offwind"][0] if not "offwind" in query_params else (query_params["offwind"] == "True"),
-        "biogas_limit": float(SCENARIOS["biogas-limit"][0]) if not "biogas_limit" in query_params else float(query_params["biogas_limit"]),
+        "biogas_limit": float(SCENARIOS["biogas-limit"][1]) if not "biogas_limit" in query_params else float(query_params["biogas_limit"]),
     }
 
     return defaults
