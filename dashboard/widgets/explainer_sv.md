@@ -1,7 +1,0 @@
-### Elproduktion 2030
-
-Elbehovet i **{geography}** väntas växa med **{target}** till år **{year}**. Det här systemet har målet att klara **{sufficiency_target}** av det tillkommna behovet genom egenproduktion. Detta är ett **{ambition_level}** mål. Systemets faktiska självförsörjningsgrad blir **{sufficiency}** för hela året. {full_months}{full_months_text}{average_sufficiency_outside_full_text}{average_sufficiency_outside_full}. Systemet har kapacitet för **{super_power}** av överproduktion till låg eller nära noll kostnad.
-
-Det redovisade elpriset påverkas till stor del av hur hur mycket de installerade kraftverken används. I detta scenario så producerar solkraft **{solar_cf} ({solar_cf_level})** och vindkraft (land) **{onwind_cf} ({onwind_cf_level})** av sina respektive maximum givet väderförhållanden.{gas_turbine_text1}{biogas_turbine_cf}{gas_turbine_text2}
-
-Solkraftsinstallationer väntas uppta motsvarande **{solar_area_percentage}** av områdets bebyggda ytan eller **{solar_area_percentage_total}** av den totala arean och vindkraftsinstallationer motsvarande **{onwind_area_percentage}** resp. **{onwind_area_percentage_total}** Notera att både ytan för solkraft och den för vindkraft fortfarande kan användas för andra ändamål såsom bebyggelse (solpaneler på tak) samt jordbruk och skogsbruk kring vindkraftsverk.
