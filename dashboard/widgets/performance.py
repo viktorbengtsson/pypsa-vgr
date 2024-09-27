@@ -100,11 +100,11 @@ def _performance_chart(data):
 
     st.plotly_chart(fig, config={'displayModeBar': False})
 
-def performance_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, modal):
+def performance_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal):
     # State management
     data_root = set_data_root()
 
-    fname = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'performance' / "performance_metrics.csv.gz"
+    fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'performance' / "performance_metrics.csv.gz"
     if fname.is_file():
         data = pd.read_csv(fname, compression='gzip')
         data.rename(columns={'Unnamed: 0': 'type'}, inplace=True)

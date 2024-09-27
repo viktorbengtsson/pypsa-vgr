@@ -45,8 +45,8 @@ def full_months_text(fm):
     else:
         return TEXTS['The demand is not fully met during any month']
     
-def explainer_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, modal):
-    data_path = set_data_root() / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit)
+def explainer_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal):
+    data_path = set_data_root() / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)
     resolution = '1M'
     performance_path = data_path / 'performance' / "performance_metrics.csv.gz"
     sufficiency_path = data_path / 'performance' / f"sufficiency_t_{resolution}.csv.gz"
@@ -106,9 +106,10 @@ def explainer_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_lim
         solar_cf_level = cf_level(1- solar_details.loc['curtailment', 'solar']),
         onwind_cf = f"{1 - onwind_details.loc['curtailment', 'onwind']:.1%}",
         onwind_cf_level = cf_level(1- onwind_details.loc['curtailment', 'onwind']),
-        gas_turbine_text1 = TEXTS['gas_turbine_text1'] if not math.isnan(biogas_turbine_details.loc['curtailment', 'biogas-turbine']) else '',
-        gas_turbine_text2 = TEXTS['gas_turbine_text2'] if not math.isnan(biogas_turbine_details.loc['curtailment', 'biogas-turbine']) else '',
-        biogas_turbine_cf = f"{1 - biogas_turbine_details.loc['curtailment', 'biogas-turbine']:.1%}" if not math.isnan(biogas_turbine_details.loc['curtailment', 'biogas-turbine']) else '',
+        # TODO: Fix this
+        gas_turbine_text1 = '', #if biogas_limit == '0' else TEXTS['gas_turbine_text1'],# if not math.isnan(biogas_turbine_details.loc['curtailment', 'biogas-turbine']) else '',
+        gas_turbine_text2 = '', #if biogas_limit == '0' else TEXTS['gas_turbine_text2'],# if not math.isnan(biogas_turbine_details.loc['curtailment', 'biogas-turbine']) else '',
+        biogas_turbine_cf = '', #if biogas_limit == '0' else f"{1 - biogas_turbine_details.loc['curtailment', 'biogas-turbine']:.1%}",# if not math.isnan(biogas_turbine_details.loc['curtailment', 'biogas-turbine']) else '',
         solar_area_percentage = f"{solar_land_percentage:.2%}",
         solar_area_percentage_total = f"{solar_land_percentage_total:.2%}",
         built_area = f"{built_land:,.0f} ha",
@@ -118,4 +119,4 @@ def explainer_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_lim
     )
     with st.container():
         st.markdown(body)
-        comparison_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, modal)
+        comparison_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal)

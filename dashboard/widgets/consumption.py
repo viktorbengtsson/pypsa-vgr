@@ -104,7 +104,7 @@ def _big_chart(power, store, demand):
 
     st.plotly_chart(fig, config={'displayModeBar': False})
 
-def big_chart_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_limit, modal):
+def big_chart_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal):
     # State management
     data_root = set_data_root()
 
@@ -119,7 +119,7 @@ def big_chart_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_lim
 
     for generator in generators:
         power_type = "power_to_load_t_"
-        fname = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'generators' / generator / f"{power_type}{resolution}.csv.gz"
+        fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'generators' / generator / f"{power_type}{resolution}.csv.gz"
         if fname.is_file():
             generator_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
             generator_data = generator_data[:-1]
@@ -127,7 +127,7 @@ def big_chart_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_lim
             generator_data['type'] = generator
             power = pd.concat([power, generator_data], axis=0)
     for discharger in discharge_converters:
-        fname = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'converters' / discharger / f"power_t_{resolution}.csv.gz"
+        fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'converters' / discharger / f"power_t_{resolution}.csv.gz"
         if fname.is_file():
             discharger_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
             discharger_data = discharger_data[:-1]
@@ -136,7 +136,7 @@ def big_chart_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_lim
             power = pd.concat([power, discharger_data], axis=0)
     for generator in imports:
         power_type = "power_t_"
-        fname = data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'generators' / generator / f"{power_type}{resolution}.csv.gz"
+        fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'generators' / generator / f"{power_type}{resolution}.csv.gz"
         if fname.is_file():
             generator_data = pd.read_csv(fname, compression='gzip', parse_dates=True)
             generator_data = generator_data[:-1]
@@ -154,7 +154,7 @@ def big_chart_widget(geo, target_year, self_sufficiency, h2, offwind, biogas_lim
             charger_data['value'] = charger_data['value']
             store = pd.concat([store, charger_data], axis=0)
     '''
-    demand = pd.read_csv(data_root / scenario(geo, target_year, self_sufficiency, h2, offwind, biogas_limit) / 'demand' / f"demand_t_{resolution}.csv.gz", compression='gzip')
+    demand = pd.read_csv(data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'demand' / f"demand_t_{resolution}.csv.gz", compression='gzip')
     
     demand = demand.rename(columns={"timestamp": 'snapshot'})
     demand = demand[:-1]

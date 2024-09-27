@@ -25,6 +25,9 @@
         "self-sufficiency": [
             0.95
         ],
+        "energy-scenario": [
+            0
+        ],
         "h2": [true],
         "offwind": [true],
         "biogas-limit": [
