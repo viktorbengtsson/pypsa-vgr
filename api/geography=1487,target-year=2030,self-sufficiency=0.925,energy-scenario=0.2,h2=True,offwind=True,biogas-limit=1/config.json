@@ -1,0 +1,31 @@
+{
+    "config-name": "single",
+    "base-currency": "SEK",
+    "exchange-rates": {
+        "EUR": 10.508,
+        "USD": 9.2521
+    },
+    "base-year": 2024,
+    "discount-rate": 0.04,
+    "h2-initial": 1000,
+    "offwind-ratio": 0.5,
+    "biogas-method": "average",
+    "demand": {
+        "base-demand": 19000000,
+        "projection": {
+            "2030": 34000000
+        },
+        "growth-only": true
+    },
+    "scenario": {
+        "geography": "1487",
+        "target-year": 2030,
+        "self-sufficiency": 0.925,
+        "energy-scenario": 0.2,
+        "h2": true,
+        "offwind": true,
+        "biogas-limit": 1,
+        "data-path": "geography=1487,target-year=2030,self-sufficiency=0.925,energy-scenario=0.2,h2=True,offwind=True,biogas-limit=1",
+        "geography-name": "Vänersborg"
+    }
+}
