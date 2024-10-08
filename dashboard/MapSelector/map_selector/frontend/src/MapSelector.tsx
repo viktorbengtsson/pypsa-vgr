@@ -141,6 +141,11 @@ class MapSelector extends StreamlitComponentBase<State> {
         */
         if (geo_level === 0) {
           newSelection = [this.map.mainGeo];  // Ensure main geo is selected
+        } else if (geo_level === 1) {
+          const level1Area = this.avalableLevel1Geos.find((one) => one.includes(val));
+          if (level1Area) {
+            newSelection = level1Area.split("-"); // Select all Kommuner in the Förbund
+          }
         } else {
           newSelection = [val];
         }        
