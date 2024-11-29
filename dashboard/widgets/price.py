@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-from library.config import set_data_root
+#from library.config import set_data_root
+from library.api import file_exists, read_csv
 from widgets.utilities import scenario, full_palette, round_and_prefix
 from library.language import TEXTS
 import math
@@ -68,14 +69,15 @@ def _bar_chart(data):
 
 def price_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal):
     # State management
-    data_root = set_data_root()
+    #data_root = set_data_root()
 
     color_mapping = full_palette()
     data = pd.DataFrame()
 
-    fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'price' / "lcoe.csv.gz"
-    if fname.is_file():
-        data = pd.read_csv(fname, compression='gzip', parse_dates=True)
+    #fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'price' / "lcoe.csv.gz"
+    fpath = f"{scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)}/price/lcoe.csv.gz"
+    if file_exists(fpath):
+        data = read_csv(fpath, compression='gzip', parse_dates=True)
         data.rename(columns={'Unnamed: 0': 'generator'}, inplace=True)
         data["color"] = data["generator"].map(color_mapping)
     

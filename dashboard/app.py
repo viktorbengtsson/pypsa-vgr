@@ -15,4 +15,5 @@ assumptions = st.Page("assumptions.py", title=TEXTS["Assumptions"])
 cta = st.Page("cta.py", title=TEXTS["CTA"])
 
 pg = st.navigation([index, about, assumptions, cta])
+
 pg.run()

@@ -1,14 +1,8 @@
 altair
 pandas
 numpy==1.26.4
-streamlit
-matplotlib
-shapely
-geopandas==0.14.4
-pypsa
-atlite
+streamlit==1.38
 plotly
-xarray
-seaborn
+ibm-cos-sdk
 extra_streamlit_components
-./dashboard/MapSelector
+-e ./MapSelector

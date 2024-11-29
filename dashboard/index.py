@@ -1,6 +1,6 @@
 import streamlit as st
 from pathlib import Path
-from library.config import set_data_root, clear_cache, get_default_variables
+from library.config import clear_cache, get_default_variables#, set_data_root
 #from MapSelector.map_selector.map_selector import streamlit_map_selector
 from map_selector.map_selector import streamlit_map_selector
 from widgets.geo import main_geo_selector
@@ -13,7 +13,7 @@ from widgets.controls import controls_widget, controls_readonly_widget
 from library.language import TEXTS, LANGUAGE
 
 # State management
-data_root = set_data_root()
+#data_root = set_data_root()
 default_main_geo = "14" #VGR
 
 if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
@@ -25,7 +25,7 @@ if 'main_geo' not in st.session_state or 'geo' not in st.session_state or 'varia
 
     st.session_state['main_geo'] = default_main_geo if not "main_geo" in st.query_params or st.query_params.main_geo is None or st.query_params.main_geo == "" else st.query_params.main_geo
     st.session_state['geo'] = "" if not "geo" in st.query_params or st.query_params.geo is None or st.query_params.geo == "" else st.query_params.geo
-    st.session_state['variables'] = get_default_variables(data_root, st.query_params)
+    st.session_state['variables'] = get_default_variables(st.query_params)
     st.session_state['compare_variables'] = None
 
 main_geo = st.session_state['main_geo']
@@ -53,6 +53,7 @@ def help(location):
     content_path = Path(__file__).parent / 'content/help'
     body = (content_path / f"{location}_{LANGUAGE}.md").read_text(encoding='utf-8')
     st.markdown(body)
+
 
 # Define columns
 sidebar = st.sidebar
@@ -106,7 +107,6 @@ with col1:
         #comparison_widget(geo=geo, **variables, modal=help)
         # stores_widget(geo=geo, **variables)
 
-
 with col2:
     #legends()
     energy_widget(geo=geo, **variables, generator='solar', modal=help)
@@ -118,7 +118,6 @@ with col2:
     backstop_widget(geo=geo, **variables, modal=help)
 
 # The right-side column holds energy widgets
-
 
 # Persist session values and query string
 st.query_params["main_geo"] = main_geo

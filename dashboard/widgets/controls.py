@@ -1,5 +1,5 @@
 import streamlit as st
-from library.config import set_data_root, read_dashboard_available_variables
+from library.config import read_dashboard_available_variables#, set_data_root
 from library.language import TEXTS
 
 def _is_loaded(key):
@@ -7,27 +7,9 @@ def _is_loaded(key):
 
 def controls_widget(variables):
     # State management
-    data_root = set_data_root()
+    #data_root = set_data_root()
 
-    SCENARIOS = read_dashboard_available_variables(data_root)
-
-    # SELF SUFFICIENCY
-    self_sufficiency_title = f'{TEXTS["Self-sufficiency"]}'
-    if len(SCENARIOS["self-sufficiency"]) > 1:
-        if 'is_loaded_self_sufficiency' not in st.session_state:
-            self_sufficiency = st.select_slider(self_sufficiency_title, options=SCENARIOS["self-sufficiency"], value=variables["self_sufficiency"], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("self_sufficiency"))
-        else:
-            self_sufficiency = st.select_slider(self_sufficiency_title, options=SCENARIOS["self-sufficiency"], format_func=lambda x: f"{x:.0%}")
-    else:
-        if SCENARIOS["self-sufficiency"][0] != variables["self_sufficiency"]:
-            st.write("")
-            st.write("It seems like you have a /api/config.json file that does not match the data in /api")
-            return
-        
-        if 'is_loaded_self_sufficiency' not in st.session_state:
-            self_sufficiency = st.select_slider(self_sufficiency_title, options=[SCENARIOS["self-sufficiency"][0], SCENARIOS["self-sufficiency"][0]], value=SCENARIOS["self-sufficiency"][0], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("self_sufficiency"))
-        else:
-            self_sufficiency = st.select_slider(self_sufficiency_title, options=[SCENARIOS["self-sufficiency"][0], SCENARIOS["self-sufficiency"][0]], format_func=lambda x: f"{x:.0%}")
+    SCENARIOS = read_dashboard_available_variables()
 
     # ENERGY SCENARIO
     energy_scenario_title = f'{TEXTS["Energy scenario"]}'
@@ -46,6 +28,24 @@ def controls_widget(variables):
             energy_scenario = st.select_slider(energy_scenario_title, options=[SCENARIOS["energy-scenario"][0], SCENARIOS["energy-scenario"][0]], value=SCENARIOS["energy-scenario"][0], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("energy_scenario"))
         else:
             energy_scenario = st.select_slider(energy_scenario_title, options=[SCENARIOS["energy-scenario"][0], SCENARIOS["energy-scenario"][0]], format_func=lambda x: f"{x:.0%}")
+
+    # SELF SUFFICIENCY
+    self_sufficiency_title = f'{TEXTS["Self-sufficiency"]}'
+    if len(SCENARIOS["self-sufficiency"]) > 1:
+        if 'is_loaded_self_sufficiency' not in st.session_state:
+            self_sufficiency = st.select_slider(self_sufficiency_title, options=SCENARIOS["self-sufficiency"], value=variables["self_sufficiency"], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("self_sufficiency"))
+        else:
+            self_sufficiency = st.select_slider(self_sufficiency_title, options=SCENARIOS["self-sufficiency"], format_func=lambda x: f"{x:.0%}")
+    else:
+        if SCENARIOS["self-sufficiency"][0] != variables["self_sufficiency"]:
+            st.write("")
+            st.write("It seems like you have a /api/config.json file that does not match the data in /api")
+            return
+        
+        if 'is_loaded_self_sufficiency' not in st.session_state:
+            self_sufficiency = st.select_slider(self_sufficiency_title, options=[SCENARIOS["self-sufficiency"][0], SCENARIOS["self-sufficiency"][0]], value=SCENARIOS["self-sufficiency"][0], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("self_sufficiency"))
+        else:
+            self_sufficiency = st.select_slider(self_sufficiency_title, options=[SCENARIOS["self-sufficiency"][0], SCENARIOS["self-sufficiency"][0]], format_func=lambda x: f"{x:.0%}")
 
     # H2
     if 'is_loaded_h2' not in st.session_state:
@@ -80,9 +80,9 @@ def controls_widget(variables):
 
 def controls_readonly_widget(variables):
     # State management
-    data_root = set_data_root()
+    #data_root = set_data_root()
 
-    SCENARIOS = read_dashboard_available_variables(data_root)
+    SCENARIOS = read_dashboard_available_variables()
 
     # SELF SUFFICIENCY
     if len(SCENARIOS["self-sufficiency"]) > 1:
