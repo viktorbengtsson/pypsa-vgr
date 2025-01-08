@@ -1,0 +1,5 @@
+# This folder contains the demand output
+# Therefore we ignore everything in this directory
+*
+# Except this file
+!.gitignore

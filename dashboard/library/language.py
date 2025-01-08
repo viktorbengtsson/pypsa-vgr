@@ -1,7 +1,9 @@
 LANGUAGE = "sv"
 
 ALL_TEXTS = {
+    "Welcome": {"en": "Welcome", "sv": "Välkommen till Energy Toolkit: VGR"},
     "Effect": { "sv": "Effekt" },
+    "Fuel usage": { "sv": "Bränsleanvändning"},
     "units_required_solar": { "en": "Area (ha)", "sv": "Yta (ha)"},
     "units_required_onwind": { "en": "Turbines", "sv": "Turbiner"},
     "units_required_offwind": { "en": "Turbines", "sv": "Turbiner"},
@@ -52,8 +54,11 @@ ALL_TEXTS = {
     "more than half of the": { "sv": "mer än hälften av all el är" },
 
     "solar": { "sv": "Solkraft", "en": "Solar" },
+    "solar direct": { "sv": "Solkraft (direkt last)", "en": "Solar" },
     "onwind": { "sv": "Vindkraft (land)", "en": "Onshore wind" },
+    "onwind direct": { "sv": "Vindkraft (land, direkt last)", "en": "Onshore wind" },
     "offwind": { "sv": "Vindkraft (hav)", "en": "Offshore wind" },
+    "offwind direct": { "sv": "Vindkraft (hav, direkt last)", "en": "Offshore wind" },
     "biogas-turbine": { "sv": "Biogas", "en": "Biogas" },
     "biogas": { "sv": "Biogas", "en": "Biogas" },
     "backstop": { "sv": "Import", "en": "Import" },
@@ -67,11 +72,11 @@ ALL_TEXTS = {
     "turbines": { "sv": "turbiner" },
 
     "Production target": { "sv": "Elproduktionsmål" },
-    "Self-sufficiency": {"sv": "Egenförsörjningsmål (minimum)"},
-    "Energy scenario": {"sv": "Energiscenario (justering av årsenergi)"},
+    "Self-sufficiency": {"sv": "Egenförsörjningsmål"},
+    "Energy scenario": {"sv": "Energiscenario"},
 
     "Offshore": { "sv": "Havsvind" },
-    "Biogas": { "sv": "Biogasbegränsning (% av årsmedeleffekt)" },
+    "Biogas": { "sv": "Biogasbegränsning (% av total energi)" },
 
     "Compare": { "sv": "Jämför" },
     "Explainer": { "en": "?", "sv": "?"},
@@ -87,11 +92,11 @@ ALL_TEXTS = {
     "Sufficiency": { "sv": "Tillförlitlighet" },
     "Days below": { "sv": "Otillräckliga dagar" },
     "Number of days": { "sv": "Antal dagar" },
-    "LCOE": { "en": "Electricity price (LCOE)", "sv": "Elpris (LCOE)" },
+    "LCOE": { "en": "Electricity cost (LCOE)", "sv": "Elkostnad (LCOE)" },
     "electricity price": { "en": "Electricity price", "sv": "Elpris" },
     "Store capacity": { "sv": "Lagringskapacitet" },
     "Production": { "sv": "Produktion" },
-    "Consumption": { "sv": "Elkonsumption" },
+    "Consumption": { "sv": "Elkonsumtion/Elproduktionsmix" },
     "Overall": { "sv": "Total" },
     "Stores": { "sv": "Lagring" },
     "Demand": { "sv": "Behov" },

@@ -1,14 +1,14 @@
 import streamlit as st
 import itertools
-from library.config import set_data_root, read_dashboard_available_variables
+from library.config import read_dashboard_available_variables#, set_data_root
 
 # Provide the map with the selectable geographic sections
 # Selectbox normally not visible (since we're running single main_geo). So just for testing
 def main_geo_selector(current_main_geo):
     # State management
-    data_root = set_data_root()
+    #data_root = set_data_root()
 
-    SCENARIOS = read_dashboard_available_variables(data_root)
+    SCENARIOS = read_dashboard_available_variables()
 
     sections = {}
 

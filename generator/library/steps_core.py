@@ -13,7 +13,7 @@ sys.path.append(str(root_path))
 import paths
 from model.assumptions_core import read_assumptions
 from model.network_core import build_network
-from model.constraints_core import calculate_biogas_max, add_self_sufficiency_constraint, add_battery_flow_constraint
+from model.constraints_core import calculate_biogas_max, add_self_sufficiency_constraint, add_battery_flow_constraint, add_biogas_constraint
 from library.utilities import delete_file
 from library.api.demand_core import create_and_store_demand
 from library.api.converters_core import create_and_store_links
@@ -45,6 +45,9 @@ def create_and_store_parameters(config):
                                    config["base-year"], config["scenario"]["target-year"], config["base-currency"], config["exchange-rates"], config["discount-rate"]
                                    )
     assumptions.to_csv(data_path / 'assumptions.csv.gz', compression='gzip')
+    
+    if not (paths.api_path / f'assumptions,target-year={config["scenario"]["target-year"]}.csv.gz').is_file():
+        assumptions.to_csv(paths.api_path / f'assumptions,target-year={config["scenario"]["target-year"]}.csv.gz', compression='gzip')
 
 # CORE
 # Check that weather files exist (if not see /input/weather/generate-weather.ipynb)
@@ -75,20 +78,22 @@ def create_and_store_demand_input(config):
     data_path = paths.api_path / config['scenario']['data-path']
     data_path.mkdir(parents=True, exist_ok=True)
     geo = get_geo(config)
+    energy_scenario_type = config['energy-scenario-type']
     energy_scenario = config['scenario']['energy-scenario']
 
     if (data_path / 'demand.csv.gz').is_file():
         print("Demand series already exists, continue")
         return
     
-    # Build file name of projected-demand file
-    projected_demand = f"projected-demand,geography={geo['section']},target-year={config['scenario']['target-year']},growth-only={config['demand']['growth-only']}.csv.gz"
-    
-    # Read projected demand
-    demand = pd.read_csv(paths.demand / projected_demand, index_col = 0, compression='gzip')
-
-    # Adjust the demand according to energy scenario
-    demand = demand * (1 + energy_scenario)
+    # Build file name of projected-demand file --> read the file --> adjust to scenario
+    if energy_scenario_type == "fixed":
+        projected_demand = f"normalized-demand.csv"
+        demand = pd.read_csv(paths.demand / projected_demand, index_col = 0)
+        demand = demand * energy_scenario
+    else:
+        projected_demand = f"projected-demand,geography={geo['section']},target-year={config['scenario']['target-year']},growth-only={config['demand']['growth-only']}.csv.gz"
+        demand = pd.read_csv(paths.demand / projected_demand, index_col = 0, compression='gzip')
+        demand = demand * (1 + energy_scenario)
 
     # Write to file
     demand.to_csv(data_path / 'demand.csv.gz', compression='gzip')
@@ -148,6 +153,7 @@ def create_and_store_optimize(config):
     ## Add constraints
     add_self_sufficiency_constraint(model, network.loads_t.p_set['load'].values, config['scenario']['self-sufficiency'])
     add_battery_flow_constraint(model, network.links.at["battery-charge", "efficiency"])
+    add_biogas_constraint(model, network.loads_t.p_set['load'].values, config['scenario']['biogas-limit'], network.links.at["gas-turbine", "efficiency"])
 
     # Run optimization
     network.optimize.solve_model(solver_name='highs')
@@ -177,7 +183,7 @@ def create_and_store_results(config):
 
     resolution = 3
 
-    ## Copy config and assumptions to api
+    ## Copy config and general assumptions to api
     shutil.copy(paths.generator_path / 'configs' / f"{config['config-name']}.json", paths.api_path / 'scenarios.json')
     shutil.copy(paths.input_root / 'assumptions.csv', paths.api_path / 'assumptions.csv')
     

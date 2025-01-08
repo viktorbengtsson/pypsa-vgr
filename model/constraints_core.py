@@ -4,6 +4,14 @@ import numpy as np
 def calculate_biogas_max(biogas_limit, load, gas_efficiency, method):
     return np.mean(load)*biogas_limit/gas_efficiency    
 
+## Add a constraint on biogas energy (annual)
+def add_biogas_constraint(model, demand, biogas_limit, gas_efficiency):
+    total_e = demand.sum()
+    biogas_e = model.variables['Generator-p'].loc[:,'biogas-market'].sum()*gas_efficiency
+    biogas_limit_e = total_e * biogas_limit
+
+    model.add_constraints(biogas_e <= biogas_limit_e, name="biogas_limit")
+
 ## Add a constraint on energy imports from market
 def add_self_sufficiency_constraint(model, demand, self_sufficiency):
     total_e = demand.sum()

@@ -1,12 +1,13 @@
 import streamlit as st
-import pandas as pd
-import math
-import json
-from library.config import set_data_root
+#import pandas as pd
+#import math
+#import json
+#from library.config import set_data_root
 from widgets.utilities import scenario, round_and_prefix
 from library.language import TEXTS, LANGUAGE, MONTHS
 from widgets.comparison import comparison_widget
 from pathlib import Path
+from library.api import read_csv, read_json, file_exists
 
 def ambition_level(sufficiency_target):
     if sufficiency_target > 0.9: return TEXTS["very high"]
@@ -46,39 +47,39 @@ def full_months_text(fm):
         return TEXTS['The demand is not fully met during any month']
     
 def explainer_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal):
-    data_path = set_data_root() / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)
+    #data_path = set_data_root() / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)
+    data_path = f"{scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)}"
     resolution = '1M'
-    performance_path = data_path / 'performance' / "performance_metrics.csv.gz"
-    sufficiency_path = data_path / 'performance' / f"sufficiency_t_{resolution}.csv.gz"
-    solar_path = data_path / 'generators' / 'solar' / 'details.csv.gz'
-    onwind_path = data_path / 'generators' / 'onwind' / 'details.csv.gz'
-    biogas_turbine_path = data_path / 'generators' / 'biogas-turbine' / 'details.csv.gz'
-    land_path = data_path / 'landuse.csv.gz'
-    config_path = data_path / 'config.json'
+    performance_path = f"{data_path}/performance/performance_metrics.csv.gz"
+    sufficiency_path = f"{data_path}/performance/sufficiency_t_{resolution}.csv.gz"
+    solar_path = f"{data_path}/generators/solar/details.csv.gz"
+    onwind_path = f"{data_path}/generators/onwind/details.csv.gz"
+    biogas_turbine_path = f"{data_path}/generators/biogas-turbine/details.csv.gz"
+    land_path = f"{data_path}/landuse.csv.gz"
+    config_path = f"{data_path}/config.json"
 
-    with config_path.open('r') as cf:
-        config = json.load(cf)
+    config = read_json(config_path)
 
-    if performance_path.is_file():
-        performance = pd.read_csv(performance_path, compression='gzip')
+    if file_exists(performance_path):
+        performance = read_csv(performance_path, compression='gzip')
         performance.rename(columns={'Unnamed: 0': 'type'}, inplace=True)
         performance.set_index('type', inplace=True)
 
-    if sufficiency_path.is_file():
-        sufficiency = pd.read_csv(sufficiency_path, compression='gzip', parse_dates=True, index_col='snapshot')
+    if file_exists(sufficiency_path):
+        sufficiency = read_csv(sufficiency_path, compression='gzip', parse_dates=True, index_col='snapshot')
         sufficiency.rename(columns={'0': 'value'}, inplace=True)
 
     sufficient_months, average_outside_full = sufficiency_metrics(sufficiency)
 
 
-    if solar_path.is_file():
-        solar_details = pd.read_csv(solar_path, compression='gzip', index_col=0)
-    if onwind_path.is_file():
-        onwind_details = pd.read_csv(onwind_path, compression='gzip', index_col=0)
-    if biogas_turbine_path.is_file():
-        biogas_turbine_details = pd.read_csv(biogas_turbine_path, compression='gzip', index_col=0)
-    if land_path.is_file():
-        land_use = pd.read_csv(land_path, compression='gzip', index_col=0)
+    if file_exists(solar_path):
+        solar_details = read_csv(solar_path, compression='gzip', index_col=0)
+    if file_exists(onwind_path):
+        onwind_details = read_csv(onwind_path, compression='gzip', index_col=0)
+    if file_exists(biogas_turbine_path):
+        biogas_turbine_details = read_csv(biogas_turbine_path, compression='gzip', index_col=0)
+    if file_exists(land_path):
+        land_use = read_csv(land_path, compression='gzip', index_col=0)
 
     area_per_turbine = 20
 

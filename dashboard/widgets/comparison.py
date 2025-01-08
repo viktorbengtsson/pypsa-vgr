@@ -9,7 +9,8 @@ import numpy as np
 root_path = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(root_path))
 
-from library.config import set_data_root
+from library.api import read_csv, file_exists
+#from library.config import set_data_root
 from widgets.utilities import scenario, full_palette
 from library.language import TEXTS
 
@@ -60,21 +61,25 @@ def _circles_chart(labels, values, cmap):
 
 
 def comparison_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal):
-    data_root = set_data_root()
+    #data_root = set_data_root()
 
-    solar_path = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'generators' / 'solar' / 'details.csv.gz'
-    onwind_path = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'generators' / 'onwind' / 'details.csv.gz'
-    biogas_path = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'converters' / 'gas-turbine' / 'details.csv.gz'
-    land_path = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'landuse.csv.gz'
+    #solar_path = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'generators' / 'solar' / 'details.csv.gz'
+    #onwind_path = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'generators' / 'onwind' / 'details.csv.gz'
+    #biogas_path = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'converters' / 'gas-turbine' / 'details.csv.gz'
+    #land_path = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'landuse.csv.gz'
+    solar_path = f"{scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)}/generators/solar/details.csv.gz"
+    onwind_path = f"{scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)}/generators/onwind/details.csv.gz"
+    biogas_path = f"{scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)}/converters/gas-turbine/details.csv.gz"
+    land_path = f"{scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)}/landuse.csv.gz"
 
-    if solar_path.is_file():
-        solar_details = pd.read_csv(solar_path, compression='gzip', index_col=0)
-    if onwind_path.is_file():
-        onwind_details = pd.read_csv(onwind_path, compression='gzip', index_col=0)
-    if biogas_path.is_file():
-        biogas_details = pd.read_csv(biogas_path, compression='gzip', index_col=0)
-    if land_path.is_file():
-        land_use = pd.read_csv(land_path, compression='gzip', index_col=0)
+    if file_exists(solar_path):
+        solar_details = read_csv(solar_path, compression='gzip', index_col=0)
+    if file_exists(onwind_path):
+        onwind_details = read_csv(onwind_path, compression='gzip', index_col=0)
+    if file_exists(biogas_path):
+        biogas_details = read_csv(biogas_path, compression='gzip', index_col=0)
+    if file_exists(land_path):
+        land_use = read_csv(land_path, compression='gzip', index_col=0)
 
     area_per_turbine = 20
 

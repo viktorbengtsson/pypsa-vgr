@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-from library.config import set_data_root
+#from library.config import set_data_root
+from library.api import file_exists, read_csv
 from widgets.utilities import scenario, full_palette, round_and_prefix
 from library.language import TEXTS, MONTHS
 
@@ -102,11 +103,12 @@ def _performance_chart(data):
 
 def performance_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal):
     # State management
-    data_root = set_data_root()
+    #data_root = set_data_root()
 
-    fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'performance' / "performance_metrics.csv.gz"
-    if fname.is_file():
-        data = pd.read_csv(fname, compression='gzip')
+    #fname = data_root / scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit) / 'performance' / "performance_metrics.csv.gz"
+    fpath = f"{scenario(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit)}/performance/performance_metrics.csv.gz"
+    if file_exists(fpath):
+        data = read_csv(fpath, compression='gzip')
         data.rename(columns={'Unnamed: 0': 'type'}, inplace=True)
         data.set_index('type', inplace=True)
 

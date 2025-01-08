@@ -171,10 +171,6 @@ cython_debug/
 *.shx
 index,geography=*,start=????-??,end=????-??.csv
 
-# Generated output files
-/api/*
-!/generator/library/api/
-
 # Too large
 corine.tif
 
@@ -182,3 +178,5 @@ corine.tif
 .streamlit/secrets.toml
 dashboard/constants.pkl
 node_modules
+apikey.json
+.vscode

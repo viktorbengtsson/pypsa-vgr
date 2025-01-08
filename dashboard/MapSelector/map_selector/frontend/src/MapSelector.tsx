@@ -19,6 +19,7 @@ interface State {
 class MapSelector extends StreamlitComponentBase<State> {
   private map: IMap;
   private availableLevels: number[]
+  private avalableLevel0Geos: string[]
   private avalableLevel1Geos: string[]
   private avalableLevel2Geos: string[]
 
@@ -42,7 +43,6 @@ class MapSelector extends StreamlitComponentBase<State> {
     switch(country) {
       case "sweden":
         this.map = new SwedenMap({ mainGeo: this.props.args["main_geo"] as (string | undefined),  available_geo: available_geo });
-        //this.map = new SwedenMap({ mainGeo: this.props.args["main_geo"] as (string | undefined),  available_geo: available_geo.map(s => s.split("-")).flat() });
         break;
       default:
         throw new Error(`Country map ${country} does not exist`)
@@ -50,10 +50,12 @@ class MapSelector extends StreamlitComponentBase<State> {
     
     this.availableLevels = []
     this.avalableLevel2Geos = available_geo.filter(g => g.length === 4)
-    if (this.avalableLevel2Geos.length > 0) {
+    this.avalableLevel1Geos = available_geo.filter(g => g.length > 4)
+    this.avalableLevel0Geos = available_geo.filter(g => g.length == 2)
+    
+    if (this.avalableLevel0Geos.length > 0) {
       this.availableLevels.push(0)
     }
-    this.avalableLevel1Geos = available_geo.filter(g => g.length > 4)
     if (this.avalableLevel1Geos.length > 0) {
       this.availableLevels.push(1)
     }
@@ -141,6 +143,11 @@ class MapSelector extends StreamlitComponentBase<State> {
         */
         if (geo_level === 0) {
           newSelection = [this.map.mainGeo];  // Ensure main geo is selected
+        } else if (geo_level === 1) {
+          const level1Area = this.avalableLevel1Geos.find((one) => one.includes(val));
+          if (level1Area) {
+            newSelection = level1Area.split("-"); // Select all Kommuner in the Förbund
+          }
         } else {
           newSelection = [val];
         }        

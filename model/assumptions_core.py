@@ -24,18 +24,39 @@ def present_values(df, base_year, discount_rate):
 # Calculate the correct means across the build period for all assumptions with time-dependent values
 def calculate_means(df, base_year, target_year, build_curve):
 
-    # This function assumes a linear buildout between base year and target year
     def lambda_mean(group, base_year, target_year):
         if len(group) > 1:
-            # Calculate the years that bound the range from base_year to target_year
-            lower_bound = group.loc[group['year'] <= base_year, 'year'].values.max()
-            upper_bound = group.loc[group['year'] >= target_year, 'year'].values.min()
-            # Create an array of all the years
+            # Determine bounds for interpolation
+            lower_bound = group.loc[group['year'] <= base_year, 'year'].values.max() if len(group.loc[group['year'] <= base_year]) > 0 else base_year
+            upper_bound = group.loc[group['year'] >= target_year, 'year'].values.min() if len(group.loc[group['year'] >= target_year]) > 0 else target_year
             years = np.arange(lower_bound, upper_bound + 1)
-            # This line does the following: 1. Select only the years in group that fall within our bound, 2. Set the index to 'year', 3. Reindex series with all years and NaN on years without values 4. Interpolate the missing values 5. Select only our range 6. Calculate the mean
-            mean_value = group.loc[(group['year'] >= lower_bound) & (group['year'] <= upper_bound),['value', 'year']].set_index('year')['value'].reindex(years).interpolate(method='linear').loc[base_year:target_year].mean()
-            return pd.Series({'value': mean_value, 'year': 'mean'})
-        else:
-            return pd.Series({'value': group['value'].values[0], 'year': group['year'].values[0]})
 
-    return df.groupby(level=[0,1])[['value', 'year']].apply(lambda group: lambda_mean(group, base_year, target_year))
+            # Interpolate value
+            value_series = (
+                group.set_index('year')['value']
+                .reindex(years)
+                .interpolate(method='linear')
+                .loc[base_year:target_year]
+            )
+
+            # Calculate the mean value
+            mean_value = value_series.mean()
+
+            # Preserve additional columns (unit, source, comment)
+            preserved_cols = group.iloc[0][['unit', 'source', 'comment']].to_dict()
+            preserved_cols['value'] = mean_value
+            preserved_cols['year'] = 'mean'
+
+            return pd.Series(preserved_cols)
+        else:
+            # Single value, no interpolation needed
+            preserved_cols = group.iloc[0][['unit', 'source', 'comment']].to_dict()
+            preserved_cols['value'] = group['value'].values[0]
+            preserved_cols['year'] = group['year'].values[0]
+
+            return pd.Series(preserved_cols)
+
+    result = df.groupby(level=[0, 1]).apply(lambda group: lambda_mean(group, base_year, target_year))
+    result = result[['value', 'year', 'unit', 'source', 'comment']]  # Explicit column ordering
+
+    return result

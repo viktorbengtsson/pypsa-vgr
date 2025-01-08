@@ -1,23 +1,26 @@
 import streamlit as st
 from pathlib import Path
-from library.config import set_data_root, clear_cache, get_default_variables
-#from MapSelector.map_selector.map_selector import streamlit_map_selector
-from map_selector.map_selector import streamlit_map_selector
+from library.config import clear_cache, get_default_variables#, set_data_root
+from MapSelector.map_selector.map_selector import streamlit_map_selector
+#from MapSelector.map_selector import streamlit_map_selector
 from widgets.geo import main_geo_selector
 from widgets.consumption import big_chart_widget
 from widgets.performance import performance_widget
 from widgets.explainer import explainer_widget
 from widgets.price import price_widget
-from widgets.cards import energy_widget, store_widget, backstop_widget
+from widgets.cards import renewable_widget, biogas_widget, store_widget, backstop_widget
 from widgets.controls import controls_widget, controls_readonly_widget
 from library.language import TEXTS, LANGUAGE
 
 # State management
-data_root = set_data_root()
+#data_root = set_data_root()
 default_main_geo = "14" #VGR
 
 if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
     clear_cache()
+
+if "popup_shown" not in st.session_state:
+    st.session_state.popup_shown = False
 
 initial_load = False
 if 'main_geo' not in st.session_state or 'geo' not in st.session_state or 'variables' not in st.session_state:
@@ -25,7 +28,7 @@ if 'main_geo' not in st.session_state or 'geo' not in st.session_state or 'varia
 
     st.session_state['main_geo'] = default_main_geo if not "main_geo" in st.query_params or st.query_params.main_geo is None or st.query_params.main_geo == "" else st.query_params.main_geo
     st.session_state['geo'] = "" if not "geo" in st.query_params or st.query_params.geo is None or st.query_params.geo == "" else st.query_params.geo
-    st.session_state['variables'] = get_default_variables(data_root, st.query_params)
+    st.session_state['variables'] = get_default_variables(st.query_params)
     st.session_state['compare_variables'] = None
 
 main_geo = st.session_state['main_geo']
@@ -45,6 +48,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# The welcome modal dialog
+@st.dialog(TEXTS["Welcome"])
+def welcome():
+    # Load page data
+    content_path = Path(__file__).parent / 'content'
+    body = (content_path / f"welcome_{LANGUAGE}.md").read_text(encoding='utf-8')
+    st.markdown(body)
 
 # The help modal dialog
 @st.dialog(TEXTS["explainer_heading"])
@@ -53,6 +63,7 @@ def help(location):
     content_path = Path(__file__).parent / 'content/help'
     body = (content_path / f"{location}_{LANGUAGE}.md").read_text(encoding='utf-8')
     st.markdown(body)
+
 
 # Define columns
 sidebar = st.sidebar
@@ -106,19 +117,23 @@ with col1:
         #comparison_widget(geo=geo, **variables, modal=help)
         # stores_widget(geo=geo, **variables)
 
-
 with col2:
     #legends()
-    energy_widget(geo=geo, **variables, generator='solar', modal=help)
-    energy_widget(geo=geo, **variables, generator='onwind', modal=help)
-    energy_widget(geo=geo, **variables, generator='offwind', modal=help)
-    energy_widget(geo=geo, **variables, generator='biogas-turbine', modal=help)
+    renewable_widget(geo=geo, **variables, generator='solar', modal=help)
+    renewable_widget(geo=geo, **variables, generator='onwind', modal=help)
+    if variables['offwind']:
+        renewable_widget(geo=geo, **variables, generator='offwind', modal=help)
+    biogas_widget(geo=geo, **variables, modal=help)
     store_widget(geo=geo, **variables, store='battery', modal=help)
-    store_widget(geo=geo, **variables, store='h2', modal=help)
+    if variables['h2']:
+        store_widget(geo=geo, **variables, store='h2', modal=help)
     backstop_widget(geo=geo, **variables, modal=help)
 
-# The right-side column holds energy widgets
+if not st.session_state.popup_shown:
+    welcome()
+    st.session_state.popup_shown = True
 
+# The right-side column holds energy widgets
 
 # Persist session values and query string
 st.query_params["main_geo"] = main_geo

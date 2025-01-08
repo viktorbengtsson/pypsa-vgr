@@ -1,15 +1,40 @@
 import streamlit as st
-from library.config import set_data_root, read_dashboard_available_variables
+from library.config import read_dashboard_available_variables, get_energy_scenario_type
 from library.language import TEXTS
+from widgets.utilities import round_and_prefix
 
 def _is_loaded(key):
     st.session_state[f"is_loaded_{key}"] = True
 
 def controls_widget(variables):
     # State management
-    data_root = set_data_root()
+    #data_root = set_data_root()
 
-    SCENARIOS = read_dashboard_available_variables(data_root)
+    SCENARIOS = read_dashboard_available_variables()
+    ENERGY_SCENARIO_TYPE = get_energy_scenario_type
+
+    if ENERGY_SCENARIO_TYPE == "fixed":
+        energy_scenario_formatter = lambda x: f"{x:.0%}"
+    else:
+        energy_scenario_formatter = lambda x: round_and_prefix(x,'M','Wh',1)
+
+    # ENERGY SCENARIO
+    energy_scenario_title = f'{TEXTS["Energy scenario"]}'
+    if len(SCENARIOS["energy-scenario"]) > 1:
+        if 'is_loaded_energy_scenario' not in st.session_state:
+            energy_scenario = st.select_slider(energy_scenario_title, options=SCENARIOS["energy-scenario"], value=variables["energy_scenario"], format_func=energy_scenario_formatter, on_change=lambda: _is_loaded("energy_scenario"))
+        else:
+            energy_scenario = st.select_slider(energy_scenario_title, options=SCENARIOS["energy-scenario"], format_func=energy_scenario_formatter)
+    else:
+        if SCENARIOS["energy-scenario"][0] != variables["energy-scenario"]:
+            st.write("")
+            st.write("It seems like you have a /api/config.json file that does not match the data in /api")
+            return
+        
+        if 'is_loaded_energy_scenario' not in st.session_state:
+            energy_scenario = st.select_slider(energy_scenario_title, options=[SCENARIOS["energy-scenario"][0], SCENARIOS["energy-scenario"][0]], value=SCENARIOS["energy-scenario"][0], format_func=energy_scenario_formatter, on_change=lambda: _is_loaded("energy_scenario"))
+        else:
+            energy_scenario = st.select_slider(energy_scenario_title, options=[SCENARIOS["energy-scenario"][0], SCENARIOS["energy-scenario"][0]], format_func=energy_scenario_formatter)
 
     # SELF SUFFICIENCY
     self_sufficiency_title = f'{TEXTS["Self-sufficiency"]}'
@@ -28,24 +53,6 @@ def controls_widget(variables):
             self_sufficiency = st.select_slider(self_sufficiency_title, options=[SCENARIOS["self-sufficiency"][0], SCENARIOS["self-sufficiency"][0]], value=SCENARIOS["self-sufficiency"][0], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("self_sufficiency"))
         else:
             self_sufficiency = st.select_slider(self_sufficiency_title, options=[SCENARIOS["self-sufficiency"][0], SCENARIOS["self-sufficiency"][0]], format_func=lambda x: f"{x:.0%}")
-
-    # ENERGY SCENARIO
-    energy_scenario_title = f'{TEXTS["Energy scenario"]}'
-    if len(SCENARIOS["energy-scenario"]) > 1:
-        if 'is_loaded_energy_scenario' not in st.session_state:
-            energy_scenario = st.select_slider(energy_scenario_title, options=SCENARIOS["energy-scenario"], value=variables["energy_scenario"], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("energy_scenario"))
-        else:
-            energy_scenario = st.select_slider(energy_scenario_title, options=SCENARIOS["energy-scenario"], format_func=lambda x: f"{x:.0%}")
-    else:
-        if SCENARIOS["energy-scenario"][0] != variables["energy-scenario"]:
-            st.write("")
-            st.write("It seems like you have a /api/config.json file that does not match the data in /api")
-            return
-        
-        if 'is_loaded_energy_scenario' not in st.session_state:
-            energy_scenario = st.select_slider(energy_scenario_title, options=[SCENARIOS["energy-scenario"][0], SCENARIOS["energy-scenario"][0]], value=SCENARIOS["energy-scenario"][0], format_func=lambda x: f"{x:.0%}", on_change=lambda: _is_loaded("energy_scenario"))
-        else:
-            energy_scenario = st.select_slider(energy_scenario_title, options=[SCENARIOS["energy-scenario"][0], SCENARIOS["energy-scenario"][0]], format_func=lambda x: f"{x:.0%}")
 
     # H2
     if 'is_loaded_h2' not in st.session_state:
@@ -80,9 +87,9 @@ def controls_widget(variables):
 
 def controls_readonly_widget(variables):
     # State management
-    data_root = set_data_root()
+    #data_root = set_data_root()
 
-    SCENARIOS = read_dashboard_available_variables(data_root)
+    SCENARIOS = read_dashboard_available_variables()
 
     # SELF SUFFICIENCY
     if len(SCENARIOS["self-sufficiency"]) > 1:
