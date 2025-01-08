@@ -17,17 +17,19 @@
         },
         "growth-only": true
     },
+    "energy-scenario-type": "fixed",
     "scenarios": {
         "geography": [
-            "14"
+            "14",
+            "1440-1489-1480-1401-1482-1441-1462-1481-1402-1415-1419-1407-1384"
         ],
         "target-year": [
             2030
         ],
         "self-sufficiency": [1],
-        "energy-scenario": [-0.2, 0, 0.2],
+        "energy-scenario": [20000000, 30000000],
         "h2": [false],
         "offwind": [false],
-        "biogas-limit": [0.10]
+        "biogas-limit": [0.025]
     }
 }

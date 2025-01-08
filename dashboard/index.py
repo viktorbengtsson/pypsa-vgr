@@ -1,14 +1,14 @@
 import streamlit as st
 from pathlib import Path
 from library.config import clear_cache, get_default_variables#, set_data_root
-#from MapSelector.map_selector.map_selector import streamlit_map_selector
-from map_selector.map_selector import streamlit_map_selector
+from MapSelector.map_selector.map_selector import streamlit_map_selector
+#from MapSelector.map_selector import streamlit_map_selector
 from widgets.geo import main_geo_selector
 from widgets.consumption import big_chart_widget
 from widgets.performance import performance_widget
 from widgets.explainer import explainer_widget
 from widgets.price import price_widget
-from widgets.cards import energy_widget, store_widget, backstop_widget
+from widgets.cards import renewable_widget, biogas_widget, store_widget, backstop_widget
 from widgets.controls import controls_widget, controls_readonly_widget
 from library.language import TEXTS, LANGUAGE
 
@@ -18,6 +18,9 @@ default_main_geo = "14" #VGR
 
 if "clear-cache" in st.query_params and st.query_params["clear-cache"] == "true":
     clear_cache()
+
+if "popup_shown" not in st.session_state:
+    st.session_state.popup_shown = False
 
 initial_load = False
 if 'main_geo' not in st.session_state or 'geo' not in st.session_state or 'variables' not in st.session_state:
@@ -45,6 +48,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# The welcome modal dialog
+@st.dialog(TEXTS["Welcome"])
+def welcome():
+    # Load page data
+    content_path = Path(__file__).parent / 'content'
+    body = (content_path / f"welcome_{LANGUAGE}.md").read_text(encoding='utf-8')
+    st.markdown(body)
 
 # The help modal dialog
 @st.dialog(TEXTS["explainer_heading"])
@@ -109,13 +119,19 @@ with col1:
 
 with col2:
     #legends()
-    energy_widget(geo=geo, **variables, generator='solar', modal=help)
-    energy_widget(geo=geo, **variables, generator='onwind', modal=help)
-    energy_widget(geo=geo, **variables, generator='offwind', modal=help)
-    energy_widget(geo=geo, **variables, generator='biogas-turbine', modal=help)
+    renewable_widget(geo=geo, **variables, generator='solar', modal=help)
+    renewable_widget(geo=geo, **variables, generator='onwind', modal=help)
+    if variables['offwind']:
+        renewable_widget(geo=geo, **variables, generator='offwind', modal=help)
+    biogas_widget(geo=geo, **variables, modal=help)
     store_widget(geo=geo, **variables, store='battery', modal=help)
-    store_widget(geo=geo, **variables, store='h2', modal=help)
+    if variables['h2']:
+        store_widget(geo=geo, **variables, store='h2', modal=help)
     backstop_widget(geo=geo, **variables, modal=help)
+
+if not st.session_state.popup_shown:
+    welcome()
+    st.session_state.popup_shown = True
 
 # The right-side column holds energy widgets
 

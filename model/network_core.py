@@ -99,7 +99,7 @@ def build_network(index, resolution, geography, load, assumptions, discount_rate
                     )
 
     network.add('Link', 'Renewables load link', bus0='renewables-bus', bus1='load-bus',
-                p_nom_extendable=use_offwind,
+                p_nom_extendable=True,
                 )
 
     # Add battery storage, charging, and discharging
@@ -159,7 +159,7 @@ def build_network(index, resolution, geography, load, assumptions, discount_rate
     if biogas > 0:
         network.add('Generator', 'biogas-market', carrier='biogas', bus='turbine-bus',
                     p_nom_extendable=True,
-                    p_nom_max=biogas,
+                    #p_nom_max=biogas,
                     marginal_cost=assumptions.loc['biogas','cost'].value,
                     lifetime=100,
                     )

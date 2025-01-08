@@ -3,6 +3,6 @@ pandas
 numpy==1.26.4
 streamlit==1.38
 plotly
-ibm-cos-sdk
+boto3
 extra_streamlit_components
 -e ./MapSelector

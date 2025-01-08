@@ -1,7 +1,9 @@
 LANGUAGE = "sv"
 
 ALL_TEXTS = {
+    "Welcome": {"en": "Welcome", "sv": "Välkommen till Energy Toolkit: VGR"},
     "Effect": { "sv": "Effekt" },
+    "Fuel usage": { "sv": "Bränsleanvändning"},
     "units_required_solar": { "en": "Area (ha)", "sv": "Yta (ha)"},
     "units_required_onwind": { "en": "Turbines", "sv": "Turbiner"},
     "units_required_offwind": { "en": "Turbines", "sv": "Turbiner"},
@@ -52,8 +54,11 @@ ALL_TEXTS = {
     "more than half of the": { "sv": "mer än hälften av all el är" },
 
     "solar": { "sv": "Solkraft", "en": "Solar" },
+    "solar direct": { "sv": "Solkraft (direkt last)", "en": "Solar" },
     "onwind": { "sv": "Vindkraft (land)", "en": "Onshore wind" },
+    "onwind direct": { "sv": "Vindkraft (land, direkt last)", "en": "Onshore wind" },
     "offwind": { "sv": "Vindkraft (hav)", "en": "Offshore wind" },
+    "offwind direct": { "sv": "Vindkraft (hav, direkt last)", "en": "Offshore wind" },
     "biogas-turbine": { "sv": "Biogas", "en": "Biogas" },
     "biogas": { "sv": "Biogas", "en": "Biogas" },
     "backstop": { "sv": "Import", "en": "Import" },
@@ -71,7 +76,7 @@ ALL_TEXTS = {
     "Energy scenario": {"sv": "Energiscenario"},
 
     "Offshore": { "sv": "Havsvind" },
-    "Biogas": { "sv": "Biogasbegränsning (% av årsmedeleffekt)" },
+    "Biogas": { "sv": "Biogasbegränsning (% av total energi)" },
 
     "Compare": { "sv": "Jämför" },
     "Explainer": { "en": "?", "sv": "?"},

@@ -67,6 +67,12 @@ def _bar_chart(data):
 
     st.plotly_chart(fig, config={'displayModeBar': False})
 
+def add_direct(x):
+    if x in ['solar', 'onwind', 'offwind']:
+        return TEXTS[f"{x} direct"]
+    else:
+        return TEXTS[x]
+
 def price_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwind, biogas_limit, modal):
     # State management
     #data_root = set_data_root()
@@ -86,7 +92,7 @@ def price_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwin
     total_lcoe = total_cost / total_energy / 1000
 
     data['lcoe_adjusted'] = data['total_cost'] / total_cost * total_lcoe
-    data['generator_formatted'] = data['generator'].apply(lambda x: TEXTS[x])
+    data['generator_formatted'] = data['generator'].apply(lambda x: add_direct(x))
     data['total_energy_formatted'] = data['total_energy'].apply(lambda x: round_and_prefix(x, 'M', 'Wh', 1))
     data['total_cost_formatted'] = data['total_cost'].apply(lambda x: round_and_prefix(x, '', TEXTS["currency"], 0))
     
