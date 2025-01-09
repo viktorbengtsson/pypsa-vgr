@@ -76,7 +76,7 @@ ALL_TEXTS = {
     "Energy scenario": {"sv": "Energiscenario"},
 
     "Offshore": { "sv": "Havsvind" },
-    "Biogas": { "sv": "Biogasbegränsning (% av total energi)" },
+    "Biogas": { "sv": "Biogasbegränsning (% av total elproduktion)" },
 
     "Compare": { "sv": "Jämför" },
     "Explainer": { "en": "?", "sv": "?"},
