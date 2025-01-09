@@ -27,7 +27,7 @@
             2030
         ],
         "self-sufficiency": [1],
-        "energy-scenario": [20000000, 30000000],
+        "energy-scenario": [10000000, 15000000],
         "h2": [false],
         "offwind": [false],
         "biogas-limit": [0.025]

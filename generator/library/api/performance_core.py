@@ -31,7 +31,7 @@ def create_and_store_performance_metrics(api_path, use_offwind, generators, gene
     performance.loc['Total energy'] = round(loads_t.sum().iloc[0] * resolution, 2)
     performance.loc['Produced energy'] = round((loads_t.sum().iloc[0] - generators_t.p['market'].sum() - generators_t.p['backstop'].sum()) * resolution, 2)
     performance.loc['Imported energy'] = round((generators_t.p['backstop'].sum() + generators_t.p['market'].sum()) * resolution, 2)
-    performance.loc['Curtailed energy'] = (generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators]['p_nom_opt']).sum() - generators_t.p[renewable_generators].sum().sum()
+    performance.loc['Curtailed energy'] = round(((generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators]['p_nom_opt']).sum() - generators_t.p[renewable_generators].sum().sum()) * resolution, 2)
     performance.loc['Sufficiency'] = round((loads_t.sum().iloc[0] - generators_t.p['market'].sum() - generators_t.p['backstop'].sum()) / loads_t.sum().iloc[0],4)
     performance.loc['Shortfall'] = round((generators_t.p['market'].sum() + generators_t.p['backstop'].sum()) / loads_t.sum().iloc[0],4)
     performance.loc['Curtailment (of renewables)'] = 1 - generators_t.p[renewable_generators].sum().sum()/(generators_t.p_max_pu[renewable_generators].sum() * generators.loc[renewable_generators]['p_nom_opt']).sum()
