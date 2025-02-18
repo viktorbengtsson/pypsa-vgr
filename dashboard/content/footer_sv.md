@@ -1,3 +1,3 @@
-**Energy Toolkit v0.2**
+**Generation Toolkit (prototype)**
 
-Detta är en beta-version av Energy Toolkit, applicerad på VGR och med begränsad data.
+Detta är en prototyp av Generation Toolkit, applicerad på VGR och med begränsad data.

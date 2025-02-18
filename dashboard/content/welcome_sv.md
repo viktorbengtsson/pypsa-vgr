@@ -1,4 +1,4 @@
-Här kan du utforska olika scenarier för hur Västra Götalandsregionen, och kommunförbunden, kan åstadkomma en högre grad av egenförsörjning av el till 2030.
+Här kan du utforska olika scenarier för hur Västra Götalandsregionen, och kommunförbunden, kan åstadkomma en högre grad av egenförsörjning av el till 2035.
 
 Du kan navigera olika scenarior genom att:
 
