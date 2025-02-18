@@ -1,8 +1,8 @@
-Energy Toolkit initierades 2024 i ett pilotprojekt av [Region Västra Götaland](https://www.vgregion.se/) och [AI Sweden](https://ai.se). Målet för projektet är att sprida och fördjupa förståelsen av möjligheterna för lokal produktion av el och av självförsörjning av energi.
+Generation Toolkit initierades 2024 i ett pilotprojekt av [Region Västra Götaland](https://www.vgregion.se/) och [AI Sweden](https://ai.se). Målet för projektet är att sprida och fördjupa förståelsen av möjligheterna för lokal produktion av el och av självförsörjning av energi.
 
-## Vem kan använda Energy Toolkit
+## Vem kan använda Generation Toolkit
 
-Energy Toolkit kan användas av regionala och lokala intressenter med intresse för eller ansvar för energi, samt av industrin och allmänheten. Det visuella gränssnittet är utformat för att vara lättillgängligt för alla som har en grundläggande förståelse för elproduktion.
+Generation Toolkit kan användas av regionala och lokala intressenter med intresse för el eller ansvar för energi, samt av industrin och allmänheten. Det visuella gränssnittet är utformat för att vara lättillgängligt för alla som har en grundläggande förståelse för elproduktion.
 
 För mer tekniskt lagda användare kan den underliggande kraftmodellen och scenariogeneratorn modifieras. Detta gör det möjligt att anpassa modellen och genomföra scenarier som återspeglar de specifika förhållandena på olika platser, vilket möjliggör djupgående analyser och skräddarsydda insikter.
 
@@ -11,9 +11,9 @@ För mer tekniskt lagda användare kan den underliggande kraftmodellen och scena
 2. Energispecialist som har djupare kunskap i energifrågorna men ev. inte detaljkunskaper inom optimering och analys av kraftsystem
 3. Energimodellerare som är experter på att modellera kraftsystem
 
-## Vad är Energy Toolkit?
+## Vad är Generation Toolkit?
 
-Energy Toolkit består av fyra komponenter som kan användas delvis oberoende av varandra.
+Generation Toolkit består av fyra komponenter som kan användas delvis oberoende av varandra.
 
 ### Komponent 1: Ett ramverk för kraftsystemsoptimering och analys
 
@@ -50,9 +50,3 @@ För att visualisera resultaten har vi byggt en egen Streamlit-baserad app. Geno
 - Beslutsfattare kan använda appen för att fördjupa sin förståelse, som underlag för möten med experter och intressenter, eller i dialog med allmänheten.
 - Energispecialister kan använda appen för att lättare kommunicera i sin verksamhet.
 - Energimodellerare kan använda appen för att validera och testa nya modeller.
-
-## Användning
-
-The Energy Toolkit can be used by regional and local stakeholders with an interest in or responsibilities for energy, as well as by industry and the general public. The visual interface is designed to be broadly accessible, catering to anyone with a basic understanding of electricity generation.
-
-For more technically inclined users, the underlying power model and scenario generator can be modified. This allows for the customization of the model and the execution of scenarios that reflect the specific conditions of different localities, enabling in-depth analysis and tailored insights.
