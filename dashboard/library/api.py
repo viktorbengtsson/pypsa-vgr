@@ -24,17 +24,17 @@ def set_data_root():
         from paths import api_path
         return api_path
 
-# IBM COS configuration
+# AWS configuration
 
 if api_type == 'aws':
     import boto3
     s3 = boto3.client("s3", region_name="eu-central-1")  # Frankfurt region
-    bucket_name = 'energy-toolkit-vgr-data'
+    bucket_name = 'generation-toolkit-vgr-api-prod'
 elif api_type == 'aws-local':
     from boto3 import Session
     session = Session(profile_name="600627346413_PowerUser_with_billing")
     s3 = session.client("s3", region_name="eu-central-1")  # Frankfurt region
-    bucket_name = 'energy-toolkit-vgr-data'
+    bucket_name = 'generation-toolkit-vgr-api-prod'
 elif api_type == 'local':
     data_root = set_data_root()
 
