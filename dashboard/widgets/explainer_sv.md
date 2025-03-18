@@ -1,6 +1,6 @@
 ### Elproduktion 2035
 
-I det valda scenariot ökar elbehovet i **{geography}** med **{target}** till år **2035** och systemets mål är att klara **{sufficiency_target}** av detta behov genom egenproduktion. Detta är ett **{ambition_level}** mål. Systemets faktiska självförsörjningsgrad blir **{sufficiency}** för hela året (pga. ett elkostnadstak) och återstående behov fylls av oplanerad import. {full_months}{full_months_text}{average_sufficiency_outside_full_text}{average_sufficiency_outside_full}. Systemet har kapacitet för **{super_power}** av överproduktion till låg eller nära noll kostnad.
+I det valda scenariot ökar elbehovet i **{geography}** med **{target}** till år **2035** och systemets mål är att klara **{sufficiency_target}** av detta behov genom egenproduktion. Detta är ett **{ambition_level}** mål. Systemets faktiska självförsörjningsgrad blir **{sufficiency}** för hela året (pga. ett elkostnadstak) och återstående behov fylls av oplanerad import. {full_months}{full_months_text}{average_sufficiency_outside_full_text}{average_sufficiency_outside_full}. Systemet har **{super_power}** produktionspotential till låg eller nära noll kostnad.
 
 Det redovisade elpriset påverkas till stor del av hur hur mycket de installerade kraftverken används. I detta scenario så producerar solkraft **{solar_cf} ({solar_cf_level})** och vindkraft (land) **{onwind_cf} ({onwind_cf_level})** av sina respektive maximum givet väderförhållanden.{gas_turbine_text1}{biogas_turbine_cf}{gas_turbine_text2}
 

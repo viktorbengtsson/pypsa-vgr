@@ -51,6 +51,6 @@ För att visualisera resultaten har vi byggt en egen Streamlit-baserad app. Geno
 - Energispecialister kan använda appen för att lättare kommunicera i sin verksamhet.
 - Energimodellerare kan använda appen för att validera och testa nya modeller.
 
-## Kommentar gällande havsvind och 
+## Kommentar gällande havsvind och vätgaslagring
 
-I den nuvarande VGR-instansen av Generation Toolkit så är ingår inte havsvind eller vätgas i något scenarioresultat. Detta beror på att givet nuvarande kostnadsantagenden så krävs input från politiska beslut (andel av vind dedikerad till havsvind, samt satsningar på vätgaslagring) i modellen för att havsvind eller vätgaslagring skall inkluderas. I framtiden så kan sådan input inluderas, eller så skäl finnas att se över kostnadsantaganden på ett sådant sätt att resultatet ändras.
+I den nuvarande VGR-instansen av Generation Toolkit så är ingår inte havsvind eller vätgaslagring i något scenarioresultat. Detta beror på att givet nuvarande kostnadsantagenden så krävs input från politiska beslut (andel av vind dedikerad till havsvind, samt satsningar på vätgaslagring) i modellen för att havsvind eller vätgaslagring skall inkluderas. I framtiden så kan sådan input inkluderas, eller så skäl finnas att se över kostnadsantaganden på ett sådant sätt att resultatet ändras.
