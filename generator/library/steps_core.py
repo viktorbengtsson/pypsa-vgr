@@ -21,7 +21,7 @@ from library.api.generators_core import create_and_store_generators
 from library.api.stores_core import create_and_store_stores
 from library.api.performance_core import create_and_store_performance_metrics, create_and_store_sufficiency
 from library.api.price_core import create_and_store_lcoe
-#from library.api.addon_landuse import select_and_store_land_use
+from library.api.addon_landuse import select_and_store_land_use
 from input.geo.geo_core import get_geo
 
 # CORE
@@ -186,6 +186,7 @@ def create_and_store_results(config):
     ## Copy config and general assumptions to api
     shutil.copy(paths.generator_path / 'configs' / f"{config['config-name']}.json", paths.api_path / 'scenarios.json')
     shutil.copy(paths.input_root / 'assumptions.csv', paths.api_path / 'assumptions.csv')
+    shutil.copy(paths.geo_root / 'markanvandning.csv.gz', paths.api_path / 'markanvandning.csv.gz')
     
     ## Create and store core API files
     create_and_store_demand(data_path / 'demand.csv.gz', data_path / 'demand', resolution)
@@ -219,7 +220,7 @@ def create_and_store_results(config):
 
     ## Create and store addon API files
     ## Select and store land use data (Specific to VGR application)
-    #select_and_store_land_use(paths.input_root / 'geo', 'markanvandning.csv.gz', data_path, geo)
+    # select_and_store_land_use(paths.input_root / 'geo', 'markanvandning.csv.gz', data_path, geo)
 
 
 # CORE

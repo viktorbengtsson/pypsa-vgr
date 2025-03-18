@@ -1,7 +1,7 @@
 LANGUAGE = "sv"
 
 ALL_TEXTS = {
-    "Welcome": {"en": "Welcome", "sv": "Välkommen till Energy Toolkit: VGR"},
+    "Welcome": {"en": "Welcome", "sv": "Välkommen till Generation Toolkit: VGR"},
     "Effect": { "sv": "Effekt" },
     "Fuel usage": { "sv": "Bränsleanvändning"},
     "units_required_solar": { "en": "Area (ha)", "sv": "Yta (ha)"},
@@ -73,7 +73,7 @@ ALL_TEXTS = {
 
     "Production target": { "sv": "Elproduktionsmål" },
     "Self-sufficiency": {"sv": "Egenförsörjningsmål"},
-    "Energy scenario": {"sv": "Energiscenario"},
+    "Energy scenario": {"sv": "Scenario"},
 
     "Offshore": { "sv": "Havsvind" },
     "Biogas": { "sv": "Biogasbegränsning (% av total elproduktion)" },
@@ -102,7 +102,7 @@ ALL_TEXTS = {
     "Demand": { "sv": "Behov" },
     "Met need": { "sv": "Uppfyllt behov" },
     "Unmet need": { "sv": "Ej uppfyllt behov" },
-    "Super power": { "sv": "Överproduktion"},
+    "Super power": { "sv": "Potential"},
     "days_below_hover": { "sv": "I %{x} dagar täcktes endast %{y} av behovet", "en": "In %{x} days only %{y} of need was met" },
     "Capacity": { "sv": "Kapacitet" },
     "Percentage": { "sv": "Andel" },

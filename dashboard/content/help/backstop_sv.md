@@ -1,1 +1,1 @@
-Import representerar den totala energin för året som **inte** kan tillhandahållas av systemet.
+Import representerar den totala elenergin för året som **inte** kan tillhandahållas av systemet.
