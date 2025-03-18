@@ -110,12 +110,12 @@ with col1:
     big_chart_widget(geo=geo, **variables, modal=help)
     col11, col12 = col1.columns([5,6])
     with col11:
-        performance_widget(geo=geo, **variables, modal=help)
-        price_widget(geo=geo, **variables, modal=help)
-    with col12:
         explainer_widget(geo=geo, **variables, modal=help)
         #comparison_widget(geo=geo, **variables, modal=help)
         # stores_widget(geo=geo, **variables)
+    with col12:
+        price_widget(geo=geo, **variables, modal=help)
+        performance_widget(geo=geo, **variables, modal=help)
 
 with col2:
     #legends()

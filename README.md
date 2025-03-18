@@ -22,11 +22,11 @@ The toolkit has been developed with the following user groups in mind:
 
 ### Three main components
 
-** 1. The generator **
+**1. The generator**
 
-** 2. The API **
+**2. The API**
 
-** 3. The dashboard **
+**3. The dashboard**
 
 ### Philosophy
 
@@ -124,9 +124,9 @@ For more details on the assumptions, see the `input/assumptions.csv` file.
 The model consists of a PyPSA network object that is built in the `model/network_core.py` file. It has the following structure:
 
 - Load bus:
-  - Load: Total load in the geography
-  - Backstop: 
-  - Market: Electricity bought on the market to meet peak demand
+  - Demand: The load curve for the geography and target year (load)
+  - Backstop: A 0-capital cost generator with a high running cost to represent a price ceiling in the system (generator)
+  - Market: Electricity bought from an external market, representing planned imports, i.e. not self-sufficiency (generator)
 - Renewables bus
   - Solar: Solar generation (generator)
   - Onwind: Onshore wind generation (generator)
@@ -135,9 +135,10 @@ The model consists of a PyPSA network object that is built in the `model/network
   - Battery storage (store)
   - Inverter battery charge (link)
   - Interver battery discharge (link)
-
 - Turbine bus (if H2 or biogas is used)
+  - Turbine: A gas turbine (generator)
 - H2 bus (if H2 is used)
+  
 
 
 > [!IMPORTANT]
@@ -146,7 +147,7 @@ The model consists of a PyPSA network object that is built in the `model/network
 > [!IMPORTANT]
 > Currently the model does not include a representation of the grid. No constraints on transmission or distribution are included, nor any losses. The reason for this simplication is the lack of accessible grid data in Sweden.
 
-> [!INFO]
+> [!NOTE]
 > In future versions the model will include approximations of the grid, as well as existing power production.
 
 ## The API

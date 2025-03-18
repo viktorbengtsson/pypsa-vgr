@@ -90,15 +90,15 @@ def store_widget(geo, target_year, self_sufficiency, energy_scenario, h2, offwin
 
     if not file_exists(data_path):
         metrics = [
-            { "key": TEXTS["Capacity"], "value": "-" },
             { "key": TEXTS["Effect"], "value": "-" },
+            { "key": TEXTS["Capacity"], "value": "-" },
             { "key": TEXTS["fraction_energy"], "value": "-"}
         ]
     else:
         details = read_csv(data_path, compression='gzip', index_col=0)
         metrics = [
-            { "key": TEXTS["Capacity"], "value": round_and_prefix(float(details.loc['e_nom_opt'][store]),'M','Wh', 0) },
             { "key": TEXTS["Effect"], "value": round_and_prefix(float(details.loc['p_nom_opt_discharge'][store]),'M','W', 0) if round(float(details.loc['e_nom_opt'][store]),9) != 0 else '-' },
+            { "key": TEXTS["Capacity"], "value": round_and_prefix(float(details.loc['e_nom_opt'][store]),'M','Wh', 0) },
             { "key": TEXTS["fraction_stored_energy"], "value": round_and_percentage(details.loc['fraction_energy_out'][store])}
         ]
 
